@@ -1,0 +1,21 @@
+.navbar{
+    height:60px;
+    border-radius:0px;
+
+}
+.navbar-nav > li > a{
+    padding:0;
+    line-height:60px !important;
+}
+.navbar img{
+    height:50px;
+    margin-top:-12px;
+}
+
+
+.searchbar{
+    display:flex;
+}
+.searchbar > div{
+
+}

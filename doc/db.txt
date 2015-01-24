@@ -1,0 +1,73 @@
+customers
+{
+    _id:            ObjectID,
+    firstname:      String,
+    lastname:       String,
+    company:        String,
+    street:         String,
+    streetnumber:   Number,
+    zip:            Number,
+    city:           String
+}
+
+projects
+{
+    _id:        ObjectID,
+    customer:   ObjectID,
+    name:       String
+    start:      Number,
+    end:        Number,
+    equipment: [
+        {
+            _id:    ObjectID,
+            count:  Number,
+            stock: [
+                ObjectID
+            ]
+        }
+    ]
+}
+
+equipmenttypes
+{
+    _id: 	Number,
+    name: 	String, //required
+    weight: Number, //optional
+    height:	Number, //optional
+    width:	Number, //optional
+    length:	Number, //optional
+    count: 	Number, //required
+    accessories:[ //A description of what other equipment might be needed with this object
+        {
+            _id:    ObjectID,
+            count:  Number,
+            default:Boolean
+        }
+    ]
+}
+
+equipment
+{
+    _id:                Number,
+    type:               Number,
+    name:               String,
+    status:             String, //can be: normal, defective, lost, deleted
+    content: [
+        {
+            type:   Number,
+            count:  Number, //eiter count or id, not both
+            id:     Number
+        }
+    ]
+}
+
+equipmentlogs
+{
+    _id:        ObjectID,
+    time:       Number,
+    type:       Number,
+    id:         Number, //eiter count or id, not both
+    count:      Number
+    event:      String, //can be: added, broke, repaired, lost, found, maintenance, removed
+    job:        Number
+}

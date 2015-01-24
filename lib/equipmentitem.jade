@@ -1,0 +1,134 @@
+extends ./base.jade
+
+append body
+    if this.props.item
+        .container
+            h2 Equipment bearbeiten
+                .btn-toolbar.pull-right
+                    button.btn.btn-default(onClick=function(){this.cancel()}.bind(this))
+                        i.glyphicon.glyphicon-chevron-left
+                        |  Zurück
+                    button.btn.btn-primary(onClick=function(){this.save()}.bind(this))
+                        i.glyphicon.glyphicon-ok
+                        |  Speichern
+            .row
+                .col-xs-12
+                    h3 Daten
+
+                    .form-horizontal
+                        .form-group
+                            label.col-lg-2.control-label Name
+                            .col-lg-10
+                                input.form-control(type="text" placeholder="Name")
+                        .form-group
+                            label.col-lg-2.control-label Kommentar
+                            .col-lg-10
+                                TextArea.form-control(placeholder="Kommentar")
+            .row
+                .col-xs-12
+                    h3 Informationen
+                .col-md-3.col-xs-6
+                    h4 Status
+                    .badge OK
+                .col-md-3.col-xs-6
+                    h4 Aktueller Standort
+                    | Lager
+                .col-md-3.col-xs-6
+                    h4 Letzte Wartung
+                    | 12.12.2014
+                .col-md-3.col-xs-6
+                    h4 Nächste Wartung
+                    | 12.12.2015
+            .row
+                .col-xs-12
+                    h3
+                        | Log
+                        .btn-toolbar.pull-right
+                            button.btn.btn-primary
+                                i.glyphicon.glyphicon-plus
+                                |  Log hinzufügen
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Zeit
+                                th Ereignis
+                        tbody
+                            tr
+                                td 12.12.2014 17:00
+                                td Gerät wurde wieder repariert und ist nun wie neu!
+                            tr
+                                td 12.12.2014 17:00
+                                td
+                                    | Gerät wurde leicht beschädigt.
+                                    br
+                                    | Bitte nicht mehr benutzen bis es repariert ist!
+                            tr
+                                td 12.12.2014 17:00
+                                td Objekt Erfasst
+            .row
+                .col-xs-12
+                    h3
+                        | Inhalt
+                        button.btn.btn-primary.pull-right
+                            i.glyphicon.glyphicon-pencil
+                            |  Inhalt bearbeiten
+
+                    table.table.table-striped.table-hover
+                        thead
+                            tr
+                                th ID
+                                th Name
+                                th Menge
+                        tbody
+                            tr
+                                td 1
+                                td Movinghead
+                                td 2
+main.
+    var client = require("./client.js");
+    var TextArea = require("react-textarea-autosize");
+    exports.getInitialState = function(){
+        var self = this;
+        /*
+        if(!this.props.item){
+            client.getEquipmentType(this.props.params.type,function(err,item){
+                self.props.item = item;
+                self.props.weight = (item.weight||"")+"";
+                self.props.weightOk = true;
+                self.props.length = (item.length||"")+"";
+                self.props.lengthOk = true;
+                self.props.width = (item.width||"")+"";
+                self.props.widthOk = true;
+                self.props.height = (item.height||"")+"";
+                self.props.heightOk = true;
+                self.props.count = (item.count+"")
+                self.props.countOk = true;
+                self.update();
+            });
+        }*/
+        this.props.item = true;
+        return {};
+    }
+
+    exports.cancel = function(){
+        history.back();
+    }
+
+    exports.save = function(){
+
+        var data = {
+            name:this.props.item.name,
+            weight:this.props.item.weight,
+            length:this.props.item.length,
+            width:this.props.item.width,
+            height:this.props.item.height
+        };
+        if(!this.props.item.stock.length){
+            data.count = this.props.item.count;
+        }
+
+        client.saveEquipmentType(this.props.params.type,data,function(err){
+            if(err) return true;
+            back(true);
+        });
+    }

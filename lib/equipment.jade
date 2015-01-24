@@ -1,0 +1,107 @@
+extends ./base.jade
+
+append body
+    .container
+        h1 Equipment
+        - console.log(this.props)
+        h2= this.props.title||"No Title"
+        .searchbar(style="display:flex")
+            .input-group(style="flex:1;display:flex;width:auto;")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.props.search||"")
+                span.input-group-btn(style="display:inline-block;width:auto;")
+                    button.btn.btn-default Suchen
+            .btn-group(style="margin-left:10px")
+                button.btn.btn-primary(onClick=function(){this.create();}.bind(this)) Erfassen
+        table.table.table-striped.table-hover
+            thead
+                tr
+                    th ID
+                    th Name
+                    th Anzahl
+                    th.hidden-xs Grösse
+                    th.hidden-xs Gewicht
+                    th
+            tbody
+                each item in this.props.items
+                    - (function(item){
+                    tr
+                        td(onClick=function(){this.edit(item)}.bind(this))= item._id
+                        td(onClick=function(){this.edit(item)}.bind(this))= item.name
+                        td(onClick=function(){this.edit(item)}.bind(this))= item.count
+                        td.hidden-xs(onClick=function(){this.edit(item)}.bind(this))= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
+                        td.hidden-xs(onClick=function(){this.edit(item)}.bind(this))= item.weight
+                        td
+                            button.btn.btn-xs.btn-default.pull-right
+                                i.glyphicon.glyphicon-trash
+                    -}).bind(this)(item);
+    if this.props.create
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Equipmenttyp anlegen
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Name
+                                .col-lg-10
+                                    input.form-control(type="text" value=this.props.create.name onChange=this.validateCreateName.bind(this))
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
+
+
+
+main.
+    var client = require("./client.js");
+
+    exports.search = function(e){
+        this.props.search = e.target.value;
+        this.update();
+    }
+
+
+    exports.getInitialState = function(){
+        var self = this;
+        if(!this.props.items){
+            console.log("getting items...");
+            client.findEquipmentTypes({search:this.props.search},function(err,items){
+                self.props.items = items;
+                self.update();
+            });
+        }
+        return {};
+    }
+
+    exports.create = function(){
+        var self = this;
+        this.props.create = {_id:"",name:""};
+        this.update();
+        setTimeout(function(){
+            self.refs.createid.getDOMNode().focus();
+        },1);
+    }
+    exports.validateCreateName = function(e){
+        this.props.create.name = e.target.value;
+        this.update();
+    }
+    exports.cancelCreate = function(){
+        delete this.props.create;
+        this.update();
+    }
+    exports.confirmCreate = function(){
+        var self = this;
+        client.createEquipmentType(this.props.create,function(err,id){
+            if(err) return;
+            delete self.props.create;
+            self.update();
+            setTimeout(function(){
+                visit("/equipment/"+id)
+            },1)
+        });
+    }
+
+    exports.edit = function(item){
+        visit("/equipment/"+item._id)
+    }

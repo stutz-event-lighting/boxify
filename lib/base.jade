@@ -1,0 +1,14 @@
+#sel
+    .navbar.navbar-default
+        .container
+            a.navbar-brand(href="/")
+                img(src="/public/logo.png")                    
+                = require("./menu.jade")()
+    block body
+        
+main.    
+    exports.update = function(){
+        history.replaceState(this.propsm,undefined,location.pathname);
+        this.forceUpdate();
+    }
+    

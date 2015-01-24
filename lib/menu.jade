@@ -1,0 +1,12 @@
+ul.nav.navbar-nav
+    each name,link in menu
+        li
+            a(href=link)= name
+main.
+    var menu = {
+        "/equipment":"Equipment"
+    };
+    
+    function isActive(path){
+        return (location.href.indexOf(path) == 0)?"active":"";
+    }
