@@ -3,7 +3,7 @@ Relais 1     192.168.1.201
 1: Licht Werkstatt          1: Lichtschalter Werkstatt
 2: Licht Kleinteillager     2: Lichtschalter Kleinteillager
 3: Licht Abhollager         3: Lichtschalter Lager 1
-4: Licht Treppe             4: Lichtschalter Lager 2
+4: Licht Treppe             4: Hauptlichtschalter
 5: Licht Lager Kleingruppe  5: Lichtschalter Lager 3
 6: Licht Lager Grossgruppe  6:
 7: Tor Auf                  7: Torsensor Zu
