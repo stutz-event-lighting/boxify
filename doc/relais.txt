@@ -1,0 +1,55 @@
+Relais 1     192.168.1.201
+
+1: Licht Werkstatt          1: Lichtschalter Werkstatt
+2: Licht Kleinteillager     2: Lichtschalter Kleinteillager
+3: Licht Abhollager         3: Lichtschalter Lager 1
+4: Licht Treppe             4: Lichtschalter Lager 2
+5: Licht Lager Kleingruppe  5: Lichtschalter Lager 3
+6: Licht Lager Grossgruppe  6:
+7: Tor Auf                  7: Torsensor Zu
+8: Tor Zu                   8: Torsensor Offen
+
+Relais 2     192.168.1.202
+
+1: Aussenscheinwerfer   1:
+2:                      2:
+3:                      3:
+4:                      4:
+5:                      5:
+6:                      6:
+7:                      7:
+8:                      8:
+
+
+Tablet Büro Hinterausgang
+-------------------------
+Kein Login
+Buttons:
+Storen
+Büro Licht detailliert
+
+
+
+Tablet Büro-Lager
+-----------
+Kein Login
+Buttons:
+Storen rauf/runter
+Büro Licht ein/aus
+Durchgangslicht
+Tor auf/zu
+
+
+Tablet Vordereingang
+--------------------
+Bei Login:
+    Kunde:
+        Türe 1 auf für 1min
+        Abholraumlicht ein, danach sensorgesteuert für 5min
+        Aussenlicht ein, danach sensorgesteuert für 5min (nur Abends, Winter/Sommer beachten!)
+    Mitarbeiter:
+        Türe 1&2 auf
+        Abholraumlicht ein
+        Lagerlicht ein
+Buttons:
+- Klingel

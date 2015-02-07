@@ -14,7 +14,8 @@ append body
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        img.img-responsive(src="http://placehold.it/350x350")
+                        img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
+                        input(type="file" style="display:none" ref="image" onChange=this.applyImage)
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h4 Technische Daten
                     .form-horizontal
@@ -62,7 +63,6 @@ append body
                             table.table.table-striped.table-hover
                                 thead
                                     tr
-                                        th ID
                                         th Name
                                         th Letzte Wartung
                                         th
@@ -70,8 +70,7 @@ append body
                                     each item in this.props.item.stock
                                         - (function(item){
                                         tr
-                                            td(onClick=this.editItem(item))= item.id
-                                            td(onClick=this.editItem(item))= item.name
+                                            td(onClick=this.editItem(item))= this.props.item.name+" "+item.id
                                             td(onClick=this.editItem(item)) 12.12.2012
                                             td
                                                 button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem(item))
@@ -102,23 +101,6 @@ append body
                                     td
                                         button.btn.btn-default.btn-xs.pull-right
                                             i.glyphicon.glyphicon-trash
-
-    if this.props.create
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Equipment anlegen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Name
-                                .col-lg-10
-                                    input.form-control(type="text" value=this.props.create.name onChange=this.onCreateNameChange)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelCreateItem) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmCreateItem) Erstellen
     if this.props.increase
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
@@ -138,7 +120,7 @@ append body
                         button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmIncrease)= this.props.increase.type=="add"?"Hinzufügen":"Entfernen"
 main.
-    var client = require("./client.js");
+    var client = require("../client.js");
     var DropdownButton = require("react-bootstrap/DropdownButton");
     var MenuItem = require("react-bootstrap/MenuItem");
 
@@ -171,7 +153,28 @@ main.
         }
         return {};
     }
+    
+    exports.getImagePath = function(){
+        return this.props.item.image?(typeof this.props.item.image == "string"?("/api/equipment/"+this.props.item.type+"/image"):this.props.item.image.url):"http://placehold.it/350x350";
+    }
 
+    exports.choseImage = function(e){
+        this.refs.image.getDOMNode().click();
+    }
+    
+    exports.applyImage = function(e){
+        var self = this;
+        var files = e.target.files;
+        if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                self.props.item.image = {file:files[0],url:e.target.result}
+                self.update();
+            }
+            reader.readAsDataURL(files[0]);
+        }
+    }
+    
     exports.onLengthChange = function(e){
         this.props.length = e.target.value;
         this.update();
@@ -265,32 +268,10 @@ main.
     }
 
     exports.createItem = function(){
-        this.props.create = {
-            _id:"",
-            name:"",
-            namemodified:false
-        };
-        this.update();
-    }
-
-    exports.onCreateNameChange = function(e){
-        this.props.create.name = e.target.value;
-        this.update();
-    }
-
-    exports.cancelCreateItem = function(){
-        delete this.props.create;
-        this.update();
-    }
-
-    exports.confirmCreateItem = function(){
         var self = this;
-        client.createEquipment(this.props.item._id,{name:this.props.create.name},function(err,id){
+        client.createEquipment(this.props.item._id,{},function(err,id){
             if(err) return;
-            self.props.item.stock.push({id:id,type:self.props.item._id,name:self.props.create.name});
-            self.props.item.count++;
-            delete self.props.create;
-            self.update();
+            visit("/equipment/"+self.props.item._id+"/"+id);
         });
     }
 

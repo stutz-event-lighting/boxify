@@ -1,10 +1,9 @@
 extends ./base.jade
 
 append body
+    - this.checkData();
     .container
         h1 Equipment
-        - console.log(this.props)
-        h2= this.props.title||"No Title"
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
                 input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.props.search||"")
@@ -54,15 +53,8 @@ append body
 
 
 main.
-    var client = require("./client.js");
-
-    exports.search = function(e){
-        this.props.search = e.target.value;
-        this.update();
-    }
-
-
-    exports.getInitialState = function(){
+    var client = require("../client.js");
+    exports.checkData = function(){
         var self = this;
         if(!this.props.items){
             console.log("getting items...");
@@ -71,6 +63,16 @@ main.
                 self.update();
             });
         }
+    }
+    
+    exports.search = function(e){
+        this.props.search = e.target.value;
+        delete this.props.items;
+        this.update();
+    }
+
+    exports.getInitialState = function(){
+        this.checkData();
         return {};
     }
 

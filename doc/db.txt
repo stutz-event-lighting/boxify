@@ -50,13 +50,15 @@ equipment
 {
     _id:                Number,
     type:               Number,
-    name:               String,
+    comment:            String,
     status:             String, //can be: normal, defective, lost, deleted
     content: [
         {
             type:   Number,
             count:  Number, //eiter count or id, not both
-            id:     Number
+            ids:    [
+                Number
+            ]
         }
     ]
 }

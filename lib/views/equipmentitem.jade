@@ -1,6 +1,7 @@
 extends ./base.jade
 
 append body
+    - this.checkData();
     if this.props.item
         .container
             h2 Equipment bearbeiten
@@ -14,16 +15,11 @@ append body
             .row
                 .col-xs-12
                     h3 Daten
-
                     .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Name
-                            .col-lg-10
-                                input.form-control(type="text" placeholder="Name")
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar")
+                                TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.onCommentChange)
             .row
                 .col-xs-12
                     h3 Informationen
@@ -53,18 +49,15 @@ append body
                                 th Zeit
                                 th Ereignis
                         tbody
-                            tr
-                                td 12.12.2014 17:00
-                                td Gerät wurde wieder repariert und ist nun wie neu!
-                            tr
-                                td 12.12.2014 17:00
-                                td
-                                    | Gerät wurde leicht beschädigt.
-                                    br
-                                    | Bitte nicht mehr benutzen bis es repariert ist!
-                            tr
-                                td 12.12.2014 17:00
-                                td Objekt Erfasst
+                            each log in this.props.logs
+                                tr
+                                    td= moment(log.time).format("llll")
+                                    td
+                                        case log.event
+                                            when "added"
+                                                | Objekt erfasst
+                                            when "removed"
+                                                | Objekt entfernt
             .row
                 .col-xs-12
                     h3
@@ -80,34 +73,36 @@ append body
                                 th Name
                                 th Menge
                         tbody
-                            tr
-                                td 1
-                                td Movinghead
-                                td 2
+                            each item in this.props.item.content
+                                tr
+                                    td= item.type
+                                    td= item.name
+                                    td= item.count||item.ids.length
 main.
-    var client = require("./client.js");
+    var client = require("../client.js");
     var TextArea = require("react-textarea-autosize");
+    var moment = require("moment");
+    
     exports.getInitialState = function(){
+        this.checkData();
+        return {};
+    }
+    
+    exports.checkData = function(){
         var self = this;
-        /*
-        if(!this.props.item){
-            client.getEquipmentType(this.props.params.type,function(err,item){
-                self.props.item = item;
-                self.props.weight = (item.weight||"")+"";
-                self.props.weightOk = true;
-                self.props.length = (item.length||"")+"";
-                self.props.lengthOk = true;
-                self.props.width = (item.width||"")+"";
-                self.props.widthOk = true;
-                self.props.height = (item.height||"")+"";
-                self.props.heightOk = true;
-                self.props.count = (item.count+"")
-                self.props.countOk = true;
+        if(this.props.item === undefined || this.props.logs){
+            client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
+                if(err) return;
+                self.props.item = data.item;
+                self.props.logs = data.logs;
                 self.update();
             });
-        }*/
-        this.props.item = true;
-        return {};
+        }
+    }
+    
+    exports.onCommentChange = function(e){
+        this.props.item.comment = e.target.value;
+        this.update();
     }
 
     exports.cancel = function(){
@@ -115,19 +110,7 @@ main.
     }
 
     exports.save = function(){
-
-        var data = {
-            name:this.props.item.name,
-            weight:this.props.item.weight,
-            length:this.props.item.length,
-            width:this.props.item.width,
-            height:this.props.item.height
-        };
-        if(!this.props.item.stock.length){
-            data.count = this.props.item.count;
-        }
-
-        client.saveEquipmentType(this.props.params.type,data,function(err){
+        client.saveEquipment(this.props.item.type,this.props.item.id,{comment:this.props.item.comment},function(err){
             if(err) return true;
             back(true);
         });
