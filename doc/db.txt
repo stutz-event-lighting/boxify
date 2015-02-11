@@ -1,3 +1,14 @@
+users
+{
+    username:       String,
+    password:       String,
+    pin:            String,
+    permissions: {
+        users:      Bool,
+        equipment:  Bool
+    }
+}
+
 customers
 {
     _id:            ObjectID,

@@ -1,12 +1,14 @@
 ul.nav.navbar-nav
     each name,link in menu
-        li
+        li(className=isActive(link)?"active":"")
             a(href=link)= name
 main.
     var menu = {
-        "/equipment":"Equipment"
+        "/equipment":"Equipment",
+        "/users":"Benutzer"
     };
     
     function isActive(path){
-        return (location.href.indexOf(path) == 0)?"active":"";
+        console.log(location.pathname);
+        return (location.pathname.indexOf(path) == 0)?"active":"";
     }

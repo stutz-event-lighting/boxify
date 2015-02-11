@@ -30,7 +30,7 @@ append body
                         td.hidden-xs(onClick=function(){this.edit(item)}.bind(this))= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
                         td.hidden-xs(onClick=function(){this.edit(item)}.bind(this))= item.weight
                         td
-                            button.btn.btn-xs.btn-default.pull-right
+                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
                     -}).bind(this)(item);
     if this.props.create
@@ -49,7 +49,18 @@ append body
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
-
+    if this.props.delete
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Equipmenttyp löschen
+                    .modal-body= "Sind sie sicher, dass sie \""+this.props.delete.name+"\" löschen möchten?"
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+        
 
 
 main.
@@ -106,4 +117,25 @@ main.
 
     exports.edit = function(item){
         visit("/equipment/"+item._id)
+    }
+    
+    exports.delete = function(item){
+        return function(){
+            this.props.delete = item;
+            this.update();
+        }.bind(this)
+    }
+    
+    exports.cancelDelete = function(){
+        delete this.props.delete;
+        this.update();
+    }
+    exports.confirmDelete = function(){
+        var self = this;
+        var del = this.props.delete;
+        delete this.props.delete;
+        client.deleteEquipmentType(del._id,function(err){
+            delete self.props.items;
+            self.update();            
+        })
     }

@@ -1,8 +1,11 @@
-extends ./main
+extends ./base
 
 append body
+    - this.checkData();
     .container
-        h2 Benutzer
+        h2
+            | Benutzer
+            button.btn.btn-primary.pull-right(onClick=this.create) Neu
         table.table.table-striped
             thead
                 tr
@@ -10,10 +13,66 @@ append body
                     th Rechte
                     th Letze Aktivität
             tbody
-                tr
-                    td Admin
-                    td Admin
-                    td
-                        | 12.12.2014 12:34:12
-                        button.btn.btn-default.btn-xs
-                            i.glyphicon.glyphicon-trash
+                each user in this.props.users
+                    tr
+                        td= user.username
+                        td
+                        td
+                            | 12.12.2014 12:34:12
+                            button.btn.btn-default.btn-xs.pull-right
+                                i.glyphicon.glyphicon-trash
+    if this.props.create
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 User anlegen
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Benutzername
+                                .col-lg-10
+                                    input.form-control(type="text" value=this.props.create.username onChange=this.validateCreateName.bind(this))
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
+main.
+    var client = require("../client.js");
+    exports.checkData = function(){
+        var self = this;
+        if(!this.props.users){
+            client.getUsers(function(err,users){
+                if(err) return;
+                self.props.users = users;
+                self.update();
+            })
+        }
+    }
+    
+    exports.create = function(){
+        this.props.create = {username:""};
+        this.update();
+    }
+    
+    exports.validateCreateName = function(e){
+        this.props.create.username = e.target.value;
+        this.update();
+    }
+    
+    exports.cancelCreate = function(){
+        delete this.props.create;
+        this.update();
+    }
+    
+    exports.confirmCreate = function(){
+        var self = this;
+        client.createUser(this.props.create.username,function(err,id){
+            if(err) return;
+            delete self.props.create;
+            self.update();
+            visit("/users/"+id);            
+        });
+    }
+    
+    
