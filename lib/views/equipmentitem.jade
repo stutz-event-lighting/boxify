@@ -90,7 +90,7 @@ main.
     
     exports.checkData = function(){
         var self = this;
-        if(this.props.item === undefined || this.props.logs){
+        if(this.props.item === undefined || !this.props.logs){
             client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
                 if(err) return;
                 self.props.item = data.item;
