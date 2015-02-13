@@ -1,4 +1,4 @@
-Relais 1     192.168.1.201
+Relais 1     192.168.1.201:75
 
 1: Licht Werkstatt          1: Lichtschalter Werkstatt
 2: Licht Kleinteillager     2: Lichtschalter Kleinteillager
@@ -9,7 +9,7 @@ Relais 1     192.168.1.201
 7: Tor Auf                  7: Torsensor Zu
 8: Tor Zu                   8: Torsensor Offen
 
-Relais 2     192.168.1.202
+Relais 2     192.168.1.202:76
 
 1: Aussenscheinwerfer   1:
 2:                      2:
