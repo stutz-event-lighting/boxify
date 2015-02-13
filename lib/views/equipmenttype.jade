@@ -309,7 +309,7 @@ main.
             length:this.props.item.length,
             width:this.props.item.width,
             height:this.props.item.height,
-            image:this.props.item.image.url
+            image:this.props.item.image?this.props.item.image.url:undefined
         },function(err){
             if(err) return true;
             back(true);
