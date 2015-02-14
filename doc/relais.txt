@@ -4,21 +4,21 @@ Relais 1     192.168.1.201:75
 2: Licht Kleinteillager     2: Lichtschalter Kleinteillager
 3: Licht Abhollager         3: Lichtschalter Lager 1
 4: Licht Treppe             4: Hauptlichtschalter
-5: Licht Lager Kleingruppe  5: Lichtschalter Lager 3
-6: Licht Lager Grossgruppe  6:
-7: Tor Auf                  7: Torsensor Zu
-8: Tor Zu                   8: Torsensor Offen
+5: Hauptlicht halb          5: Lichtschalter Lager 3
+6: Hauptlist ganz           6:
+7: Tor Auf                  7:
+8: Tor Zu                   8:
 
 Relais 2     192.168.1.202:76
 
-1: Aussenscheinwerfer   1:
-2:                      2:
-3:                      3:
-4:                      4:
-5:                      5:
-6:                      6:
-7:                      7:
-8:                      8:
+1: Storen runter            1: Torsensor Zu
+2: Storen hoch              2: Torsensor Offen
+3:                          3:
+4:                          4:
+5:                          5:
+6:                          6:
+7:                          7:
+8:                          8:
 
 
 Tablet Büro Hinterausgang
