@@ -16,6 +16,8 @@ append body
                     div.text-center
                         img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
                         input(type="file" style="display:none" ref="image" onChange=this.applyImage)
+                        br
+                        img(src="/api/barcode/EQ-"+this.props.item._id+"/"+this.props.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h4 Technische Daten
                     .form-horizontal
@@ -23,6 +25,18 @@ append body
                             label.col-lg-2.control-label Name
                             .col-lg-10
                                 input.form-control(type="text" placeholder="Name" value=this.props.item.name onChange=function(e){this.props.item.name = e.target.value; this.forceUpdate()}.bind(this))
+                        .form-group
+                            label.col-lg-2.control-label Kategorie
+                            .col-lg-10
+                                .input-group
+                                    select.form-control(onChange=function(){this.update()}.bind(this))
+                                        option Kabel
+                                        option Audio
+                                        option Video
+                                        option Rigging
+                                    span.input-group-btn
+                                        button.btn.btn-default
+                                            i.glyphicon.glyphicon-pencil
                         .form-group
                             label.col-lg-2.control-label Gewicht
                             div(className="col-lg-10 "+(!this.props.weightOk?"has-error":""))

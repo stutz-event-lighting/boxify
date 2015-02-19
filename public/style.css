@@ -1,7 +1,9 @@
 .navbar{
     height:60px;
     border-radius:0px;
-
+}
+.navbar-header{
+    height:59px;
 }
 .navbar-nav > li{
     height:100%;
@@ -20,6 +22,10 @@
 .navbar img{
     height:50px;
     margin-top:-12px;
+}
+
+.bs-navbar-collapse{
+    background-color:#F8F8F8;
 }
 
 

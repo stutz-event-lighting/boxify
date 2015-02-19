@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "~0.9.0",
+    "barcode-generator": "git://github.com/VanCoding/node-barcode-generator",
     "body-parser": "~1.10.0",
     "browserify": "~6.3.3",
     "byline": "^4.2.1",
