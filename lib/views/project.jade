@@ -1,0 +1,82 @@
+extends ./base.jade
+
+append body
+    - this.checkData();
+    if this.props.item
+        .container
+            h2 Projekt
+                .btn-toolbar.pull-right
+                    button.btn.btn-default(onClick=this.cancel)
+                        i.glyphicon.glyphicon-chevron-left
+                        |  Zurück
+                    button.btn.btn-primary(onClick=this.save)
+                        i.glyphicon.glyphicon-ok
+                        |  Speichern
+            .row
+                .col-xs-12
+                    h3 Projektdaten
+                    .form-horizontal
+                        .form-group
+                            label.col-lg-2.control-label Name
+                            .col-lg-10
+                                input.form-control(placeholder="Kommentar" value=this.props.item.name onChange=this.onNameChange)
+            .row
+                .col-xs-12
+                    h3 Reservationen
+                    table.table.table-striped.table-hover
+                        thead
+                            tr
+                                th Von
+                                th Bis
+                                th Objekte
+                        tbody
+            .row
+                .col-xs-12
+                    h3 Ausgänge
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Datum
+                                th Mitarbeiter
+                                th Objekte
+                        tbody
+            .row
+                .col-xs-12
+                    h3 Eingänge
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Datum
+                                th Mitarbeiter
+                                th Objekte
+                        tbody
+main.
+    var client = require("../client.js");
+    var moment = require("moment");
+    
+    exports.checkData = function(){
+        var self = this;
+        if(this.props.item === undefined){
+            client.getProject(this.props.params.id,function(err,data){
+                if(err) return;
+                self.props.item = data.project;
+                self.update();
+            });
+        }
+    }
+    
+    exports.onNameChange = function(e){
+        this.props.item.name = e.target.value;
+        this.update();
+    }
+
+    exports.cancel = function(){
+        history.back();
+    }
+
+    exports.save = function(){
+        client.updateProject(this.props.item._id,{name:this.props.item.name},function(err){
+            if(err) return true;
+            back(true);
+        });
+    }

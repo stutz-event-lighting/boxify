@@ -5,7 +5,9 @@ main.
     var Nav = require("react-bootstrap/Nav")
     var menu = {
         "/equipment":"Equipment",
-        "/users":"Benutzer"
+        "/customers":"Kunden",
+        "/projects":"Projekte"/*,
+        "/users":"Benutzer"*/
     };
     
     exports.brand = function(){
@@ -26,6 +28,5 @@ main.
     }
     
     function isActive(path){
-        console.log(location.pathname);
         return (location.pathname.indexOf(path) == 0)?"active":"";
     }

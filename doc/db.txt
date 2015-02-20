@@ -12,31 +12,17 @@ users
 customers
 {
     _id:            ObjectID,
-    firstname:      String,
-    lastname:       String,
-    company:        String,
-    street:         String,
-    streetnumber:   Number,
-    zip:            Number,
-    city:           String
+    name:           String
 }
 
 projects
 {
     _id:        ObjectID,
     customer:   ObjectID,
-    name:       String
-    start:      Number,
-    end:        Number,
-    equipment: [
-        {
-            _id:    ObjectID,
-            count:  Number,
-            stock: [
-                ObjectID
-            ]
-        }
-    ]
+    name:       String,
+    reservations:{
+
+    }
 }
 
 equipmenttypes

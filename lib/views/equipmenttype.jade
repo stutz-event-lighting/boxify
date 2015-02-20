@@ -1,6 +1,7 @@
 extends ./base.jade
 
 append body
+    - this.checkData();
     if this.props.item
         .container
             h2 Equipmenttyp bearbeiten
@@ -24,18 +25,18 @@ append body
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10
-                                input.form-control(type="text" placeholder="Name" value=this.props.item.name onChange=function(e){this.props.item.name = e.target.value; this.forceUpdate()}.bind(this))
+                                input.form-control(type="text" placeholder="Name" value=this.props.item.name onChange=function(e){this.props.item.name = e.target.value; this.update()}.bind(this))
                         .form-group
                             label.col-lg-2.control-label Kategorie
                             .col-lg-10
                                 .input-group
-                                    select.form-control(onChange=function(){this.update()}.bind(this))
-                                        option Kabel
-                                        option Audio
-                                        option Video
-                                        option Rigging
+                                    - console.log(this.props.item.category,this.props.categories)
+                                    select.form-control(onChange=this.onCategoryChanged value=this.props.item.category||"null")
+                                        option(value="null") Keine
+                                        each category in this.props.categories
+                                            option(value=category._id)= category.name
                                     span.input-group-btn
-                                        button.btn.btn-default
+                                        button.btn.btn-default(onClick=this.startEditCategories)
                                             i.glyphicon.glyphicon-pencil
                         .form-group
                             label.col-lg-2.control-label Gewicht
@@ -148,8 +149,8 @@ main.
     exports.stockMode = function(){
         return !this.props.item.count || this.props.item.stock.length
     }
-
-    exports.getInitialState = function(){
+    
+    exports.checkData = function(){
         var self = this;
         if(!this.props.item){
             client.getEquipmentType(this.props.params.type,function(err,item){
@@ -165,7 +166,13 @@ main.
                 self.update();
             });
         }
-        return {};
+        if(!this.props.categories){
+            client.getEquipmentCategories(function(err,categories){
+                if(err) categories = [];
+                this.props.categories = categories;
+                this.update();
+            }.bind(this))
+        }
     }
     
     exports.getImagePath = function(){
@@ -187,6 +194,21 @@ main.
             }
             reader.readAsDataURL(files[0]);
         }
+    }
+    
+    exports.startEditCategories = function(){
+        visit("/equipment/categories",{},function(state){
+            delete state.categories;
+        });
+    }
+
+    exports.onCategoryChanged = function(e){
+        if(e.target.value=="null"){
+            delete this.props.item.category;
+        }else{
+            this.props.item.category = e.target.value;
+        }
+        this.update();
     }
     
     exports.onLengthChange = function(e){
@@ -323,7 +345,8 @@ main.
             length:this.props.item.length,
             width:this.props.item.width,
             height:this.props.item.height,
-            image:this.props.item.image?this.props.item.image.url:undefined
+            image:this.props.item.image?this.props.item.image.url:undefined,
+            category:this.props.item.category
         },function(err){
             if(err) return true;
             back(true);

@@ -4,7 +4,8 @@
         
 main.    
     exports.update = function(){
-        history.replaceState(this.propsm,undefined,location.pathname);
+        console.log("replacing state",this.props);
+        history.replaceState(this.props,undefined,location.pathname);
         this.forceUpdate();
     }
     

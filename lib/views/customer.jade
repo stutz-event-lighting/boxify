@@ -1,0 +1,72 @@
+extends ./base.jade
+
+append body
+    - this.checkData();
+    if this.props.item
+        .container
+            h2 Kunden bearbeiten
+                .btn-toolbar.pull-right
+                    button.btn.btn-default(onClick=this.cancel)
+                        i.glyphicon.glyphicon-chevron-left
+                        |  Zurück
+                    button.btn.btn-primary(onClick=this.save)
+                        i.glyphicon.glyphicon-ok
+                        |  Speichern
+            .row
+                .col-xs-12
+                    h3 Kundendaten
+                    .form-horizontal
+                        .form-group
+                            label.col-lg-2.control-label Name
+                            .col-lg-10
+                                input.form-control(placeholder="Kommentar" value=this.props.item.name onChange=this.onNameChange)
+            .row
+                .col-xs-12
+                    h3 Personen
+                    table.table.table-striped.table-hover
+                        thead
+                            tr
+                                th Vorname
+                                th Nachname
+                                th E-Mail
+                                th Telefon
+                        tbody
+            .row
+                .col-xs-12
+                    h3 Projekte
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Name
+                                th Datum
+                        tbody
+main.
+    var client = require("../client.js");
+    var moment = require("moment");
+    
+    exports.checkData = function(){
+        var self = this;
+        if(this.props.item === undefined){
+            client.getCustomer(this.props.params.id,function(err,customer){
+                if(err) return;
+                self.props.item = customer;
+                self.update();
+            });
+        }
+    }
+    
+    exports.onNameChange = function(e){
+        this.props.item.name = e.target.value;
+        this.update();
+    }
+
+    exports.cancel = function(){
+        history.back();
+    }
+
+    exports.save = function(){
+        client.updateCustomer(this.props.item._id,{name:this.props.item.name},function(err){
+            if(err) return true;
+            back(true);
+        });
+    }

@@ -1,0 +1,148 @@
+extends ./base.jade
+
+append body
+    - this.checkData();
+    .container
+        h1 Projekte
+        .searchbar(style="display:flex")
+            .input-group(style="flex:1;display:flex;width:auto;")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.props.search||"")
+                span.input-group-btn(style="display:inline-block;width:auto;")
+                    button.btn.btn-default Suchen
+            .btn-group(style="margin-left:10px")
+                button.btn.btn-primary(onClick=this.create) Erfassen
+        table.table.table-striped.table-hover
+            thead
+                tr
+                    th Name
+                    th Kunde
+            tbody
+                each item in this.props.items
+                    tr(onClick=this.edit(item))
+                        td= item.name
+                        td
+                            = item.customer
+                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
+                                i.glyphicon.glyphicon-trash
+    if this.props.create
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Projekt erstellen
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Name
+                                .col-lg-10
+                                    input.form-control(type="text" value=this.props.create.name onChange=this.validateCreateName.bind(this))
+                            .form-group
+                                label.col-lg-2.control-label Kunde
+                                .col-lg-10
+                                    Select(value=this.props.create.customer asyncOptions=this.findCustomers onChange=this.onCustomerChanged)
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
+    if this.props.delete
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Projekt löschen
+                    .modal-body= "Sind sie sicher, dass sie \""+this.props.delete.name+"\" löschen möchten?"
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+
+
+
+main.
+    var client = require("../client.js");
+    var Select = require("react-select");
+    exports.checkData = function(){
+        var self = this;
+        if(!this.props.items){
+            client.findProjects({search:this.props.search},function(err,items){
+                if(err) return;
+                self.props.items = items;
+                self.update();
+            });
+        }
+    }
+
+    exports.search = function(e){
+        this.props.search = e.target.value;
+        delete this.props.items;
+        this.update();
+    }
+
+    exports.create = function(){
+        var self = this;
+        this.props.create = {name:""};
+        this.update();
+    }
+    exports.validateCreateName = function(e){
+        this.props.create.name = e.target.value;
+        this.update();
+    }
+    
+    exports.onCustomerChanged = function(id,selection){
+        console.log(name);
+        if(id.length){
+            this.props.create.customer = id;
+            this.props.create.customername = selection[0].label;
+        }else{
+            delete this.props.create.customer;
+            delete this.props.create.customername;
+        }
+    }
+    
+    exports.findCustomers = function(input,cb){
+        client.findCustomers({search:input},function(err,customers){
+            cb(err,{options:customers.map(function(customer){return {value:customer._id,label:customer.name}})})
+        })
+    }
+    
+    exports.cancelCreate = function(){
+        delete this.props.create;
+        this.update();
+    }
+    exports.confirmCreate = function(){
+        var self = this;
+        client.createProject(this.props.create.name,this.props.create.customer,function(err,id){
+            if(err) return;
+            delete self.props.create;
+            self.update();
+            visit("/projects/"+id)
+        });
+    }
+
+    exports.edit = function(item){
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/projects/"+item._id)
+        }        
+    }
+
+    exports.delete = function(item){
+        return function(){
+            this.props.delete = item;
+            this.update();
+        }.bind(this)
+    }
+
+    exports.cancelDelete = function(){
+        delete this.props.delete;
+        this.update();
+    }
+    exports.confirmDelete = function(){
+        var self = this;
+        var del = this.props.delete;
+        delete this.props.delete;
+        client.deleteProject(del._id,function(err){
+            delete self.props.items;
+            self.update();
+        })
+    }
