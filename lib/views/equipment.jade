@@ -10,29 +10,29 @@ append body
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="margin-left:10px")
-                button.btn.btn-primary(onClick=function(){this.create();}.bind(this)) Erfassen
+                button.btn.btn-primary(onClick=this.create) Erfassen
         table.table.table-striped.table-hover
             thead
                 tr
                     th ID
                     th Name
+                    th Kategorie
                     th Anzahl
                     th.hidden-xs Grösse
                     th.hidden-xs Gewicht
                     th
             tbody
                 each item in this.props.items
-                    - (function(item){
-                    tr
-                        td(onClick=function(){this.edit(item)}.bind(this))= item._id
-                        td(onClick=function(){this.edit(item)}.bind(this))= item.name
-                        td(onClick=function(){this.edit(item)}.bind(this))= item.count
-                        td.hidden-xs(onClick=function(){this.edit(item)}.bind(this))= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
-                        td.hidden-xs(onClick=function(){this.edit(item)}.bind(this))= item.weight
+                    tr(onClick=this.edit(item))
+                        td= item._id
+                        td= item.name
+                        td= item.category?this.props.categoriesbyid[item.category]:"Keine"
+                        td= item.count
+                        td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
+                        td.hidden-xs= item.weight
                         td
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
-                    -}).bind(this)(item);
     if this.props.create
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
@@ -65,15 +65,37 @@ append body
 
 main.
     var client = require("../client.js");
+    var async = require("async");
     exports.checkData = function(){
         var self = this;
-        if(!this.props.items){
-            console.log("getting items...");
-            client.findEquipmentTypes({search:this.props.search},function(err,items){
-                self.props.items = items;
-                self.update();
-            });
-        }
+        
+        async.parallel([
+            function(cb){
+                if(self.props.items) return cb();
+                console.log("getting items...");
+                client.findEquipmentTypes({search:self.props.search},function(err,items){
+                    self.props.items = items;
+                    cb(true);
+                });
+            },
+            function(cb){
+                if(self.props.categories) return cb();
+                client.getEquipmentCategories(function(err,categories){
+                    if(err) return cb();
+                    self.props.categories = categories;
+                    self.props.categoriesbyid = {};
+                    categories.forEach(function(category){
+                        self.props.categoriesbyid[category._id] = category.name;
+                    })
+                    cb(true);
+                })
+            }
+        ],function(update){
+            if(update) self.update();
+        })
+        
+        
+        
     }
     
     exports.search = function(e){
@@ -116,7 +138,10 @@ main.
     }
 
     exports.edit = function(item){
-        visit("/equipment/"+item._id)
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/equipment/"+item._id)
+        }
     }
     
     exports.delete = function(item){
