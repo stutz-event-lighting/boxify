@@ -30,7 +30,6 @@ append body
                             label.col-lg-2.control-label Kategorie
                             .col-lg-10
                                 .input-group
-                                    - console.log(this.props.item.category,this.props.categories)
                                     select.form-control(onChange=this.onCategoryChanged value=this.props.item.category||"null")
                                         option(value="null") Keine
                                         each category in this.props.categories
@@ -138,6 +137,7 @@ main.
     var client = require("../client.js");
     var DropdownButton = require("react-bootstrap/DropdownButton");
     var MenuItem = require("react-bootstrap/MenuItem");
+    var async = require("async");
 
     function isInt(str){
         return /^[0-9]*$/.test(str)
@@ -152,26 +152,37 @@ main.
     
     exports.checkData = function(){
         var self = this;
-        if(!this.props.item){
-            client.getEquipmentType(this.props.params.type,function(err,item){
-                self.props.item = item;
-                self.props.weight = (item.weight||"")+"";
-                self.props.weightOk = true;
-                self.props.length = (item.length||"")+"";
-                self.props.lengthOk = true;
-                self.props.width = (item.width||"")+"";
-                self.props.widthOk = true;
-                self.props.height = (item.height||"")+"";
-                self.props.heightOk = true;
+        
+        if(!self.props.item || !self.props.categories && !self.props.loading){
+            self.props.loading = true;
+            async.parallel([
+                function(cb){
+                    if(self.props.item) return cb();
+                    client.getEquipmentType(self.props.params.type,function(err,item){
+                        self.props.item = item;
+                        self.props.weight = (item.weight||"")+"";
+                        self.props.weightOk = true;
+                        self.props.length = (item.length||"")+"";
+                        self.props.lengthOk = true;
+                        self.props.width = (item.width||"")+"";
+                        self.props.widthOk = true;
+                        self.props.height = (item.height||"")+"";
+                        self.props.heightOk = true;
+                        cb();
+                    });
+                },
+                function(cb){
+                    if(self.props.categories) return cb();
+                    client.getEquipmentCategories(function(err,categories){
+                        if(err) categories = [];
+                        self.props.categories = categories;
+                        cb();
+                    })
+                }
+            ],function(update){
+                self.props.loading = false;
                 self.update();
-            });
-        }
-        if(!this.props.categories){
-            client.getEquipmentCategories(function(err,categories){
-                if(err) categories = [];
-                this.props.categories = categories;
-                this.update();
-            }.bind(this))
+            })
         }
     }
     
