@@ -22,17 +22,18 @@ append body
                     th.hidden-xs Gewicht
                     th
             tbody
-                each item in this.props.items
-                    tr(onClick=this.edit(item))
-                        td= item._id
-                        td= item.name
-                        td= item.category?this.props.categoriesbyid[item.category]:"Keine"
-                        td= item.count
-                        td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
-                        td.hidden-xs= item.weight
-                        td
-                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
-                                i.glyphicon.glyphicon-trash
+                if this.props.categories && this.props.items
+                    each item in this.props.items
+                        tr(onClick=this.edit(item))
+                            td= item._id
+                            td= item.name
+                            td= item.category?this.props.categoriesbyid[item.category]:"Keine"
+                            td= item.count
+                            td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
+                            td.hidden-xs= item.weight
+                            td
+                                button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
+                                    i.glyphicon.glyphicon-trash
     if this.props.create
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
@@ -66,6 +67,7 @@ append body
 main.
     var client = require("../client.js");
     var async = require("async");
+    
     exports.checkData = function(){
         var self = this;
         
@@ -92,10 +94,7 @@ main.
             }
         ],function(update){
             if(update) self.update();
-        })
-        
-        
-        
+        })      
     }
     
     exports.search = function(e){
@@ -106,6 +105,7 @@ main.
 
     exports.getInitialState = function(){
         this.checkData();
+        this.XYZ = 5;
         return {};
     }
 

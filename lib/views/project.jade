@@ -39,8 +39,11 @@ append body
                                     td= reservation.count
                                     td
                                         = reservation.total
-                                        .btn.btn-default.btn-xs.pull-right(onClick=this.deleteReservation(reservation))
-                                            i.glyphicon.glyphicon-trash
+                                        .btn-toolbar.pull-right
+                                            .btn.btn-default.btn-xs(onClick=this.deleteReservation(reservation))
+                                                i.glyphicon.glyphicon-trash
+                                            .btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
+                                                i.glyphicon.glyphicon-log-out
                                 
             .row
                 .col-xs-12
@@ -98,6 +101,14 @@ main.
             visit("/projects/"+self.props.params.id+"/reservations/"+reservation._id)
         }
     }
+    
+    exports.checkoutReservation = function(reservation){
+        var self = this;
+        return function(){
+            
+        }
+    }
+    
     exports.deleteReservation = function(reservation){
         var self = this;
         return function(){

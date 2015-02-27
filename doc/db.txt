@@ -28,24 +28,66 @@ projects
     name:       String
 }
 
-equipmenttransactions
+equipmentreservations
 {
     _id:        ObjectID,
     project:    ObjectID,
-    type:       String, //can be reservation,rental,output,input
-    supplier:   ObjectID, //rental only
+    items:[{
+        type:   Number,
+        count:  Number
+    }]
+}
+
+equiptmentrentals
+{
+    _id:        ObjectID,
+    project:    ObjectID,
+    supplier:   ObjectID,
+    items:[{
+        type:   Number,
+        count:  Number
+    }]
+}
+
+equipmentcheckouts
+{
+    _id:        ObjectID,
+    project:    ObjectID,
+    time:       Number,
+    user:       ObjectID,
+    checklist:[{
+        type:   Number,
+        count:  Number
+    }],
+    items:[{
+        type:   Number,
+        suppliers:[{
+            _id:    ObjectID, //is not present for our own items
+            count:  Number,
+            ids:[   //is only present for our own items
+                Number
+            ]
+        }]
+    }]
+}
+
+equipmentcheckins
+{
+    _id:        ObjectID,
+    project:    ObjectID,
+    time:       Number,
+    user:       ObjectID,
     items:[
         {
             type:   Number,
-            count:  Number,
-            ids:[
-                ObjectID
-            ],
             suppliers:[
-                [
-                    ObjectID //supplierID,
-                    Number//count
-                ]
+                {
+                    _id:    ObjectID, //is not present for our own items
+                    count:  Number,
+                    ids:[   //is only present for our own items
+                        Number
+                    ]
+                }
             ]
         }
     ]

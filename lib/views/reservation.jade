@@ -30,7 +30,7 @@ append body
                                     tr
                                         td= type._id
                                         td= this.props.data.types[type._id].name
-                                        td(style="padding-top:2px;padding-bottom:2px")
+                                        td(style="paddingTop:2px;paddingBottom:2px")
                                             input.form-control.input-sm(value=type.count+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
                                         td
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
@@ -42,14 +42,15 @@ append body
                 .modal-content
                     .modal-header
                         h2 Equipment hinzufügen
-                    .modal-body
+                    .modal-body(style="maxHeight:500px;overflowY:auto")
                         each category in this.props.data.categories
                             h4= category.name
                             table.table.table-striped
-                                each type in category.types                                
-                                    if this.props.data.types[type].count === undefined
-                                        tr
-                                            td(onClick=this.addItem(type))= this.props.data.types[type].name
+                                tbody
+                                    each type in category.types                                
+                                        if this.props.data.types[type].count === undefined
+                                            tr
+                                                td(onClick=this.addItem(type))= this.props.data.types[type].name
                     .modal-footer
                         button.btn.btn-primary(onClick=this.done) Fertig
 main.
