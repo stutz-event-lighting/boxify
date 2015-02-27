@@ -331,7 +331,6 @@ main.
 
     exports.deleteItem = function(item){
         var self = this;
-        console.log(item);
         return function(){
             client.deleteEquipment(self.props.item._id,item.id,function(err){
                 if(err) return;

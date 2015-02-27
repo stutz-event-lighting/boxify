@@ -15,14 +15,40 @@ customers
     name:           String
 }
 
+suppliers
+{
+    _id:            ObjectID,
+    name:           String
+}
+
 projects
 {
     _id:        ObjectID,
     customer:   ObjectID,
-    name:       String,
-    reservations:{
+    name:       String
+}
 
-    }
+equipmenttransactions
+{
+    _id:        ObjectID,
+    project:    ObjectID,
+    type:       String, //can be reservation,rental,output,input
+    supplier:   ObjectID, //rental only
+    items:[
+        {
+            type:   Number,
+            count:  Number,
+            ids:[
+                ObjectID
+            ],
+            suppliers:[
+                [
+                    ObjectID //supplierID,
+                    Number//count
+                ]
+            ]
+        }
+    ]
 }
 
 equipmenttypes

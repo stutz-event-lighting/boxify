@@ -22,14 +22,26 @@ append body
                                 input.form-control(placeholder="Kommentar" value=this.props.item.name onChange=this.onNameChange)
             .row
                 .col-xs-12
-                    h3 Reservationen
+                    h3
+                        | Reservationen
+                        .btn.btn-primary.pull-right(onClick=this.createReservation) Neu
                     table.table.table-striped.table-hover
                         thead
                             tr
-                                th Von
-                                th Bis
+                                th Name
+                                th Objektarten
                                 th Objekte
                         tbody
+                            - var i = 1;
+                            each reservation in this.props.reservations
+                                tr(onClick=this.openReservation(reservation))
+                                    td= "Reservation "+(i++)
+                                    td= reservation.count
+                                    td
+                                        = reservation.total
+                                        .btn.btn-default.btn-xs.pull-right(onClick=this.deleteReservation(reservation))
+                                            i.glyphicon.glyphicon-trash
+                                
             .row
                 .col-xs-12
                     h3 Ausgänge
@@ -60,6 +72,7 @@ main.
             client.getProject(this.props.params.id,function(err,data){
                 if(err) return;
                 self.props.item = data.project;
+                self.props.reservations = data.reservations;
                 self.update();
             });
         }
@@ -68,6 +81,33 @@ main.
     exports.onNameChange = function(e){
         this.props.item.name = e.target.value;
         this.update();
+    }
+    
+    exports.createReservation = function(){
+        client.createReservation(this.props.params.id,function(err,id){
+            if(err) return;
+            visit("/projects/"+this.props.params.id+"/reservations/"+id);
+        }.bind(this));
+    }
+    
+    
+    exports.openReservation = function(reservation){
+        var self = this;
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/projects/"+self.props.params.id+"/reservations/"+reservation._id)
+        }
+    }
+    exports.deleteReservation = function(reservation){
+        var self = this;
+        return function(){
+            client.deleteReservation(self.props.params.id,reservation._id,function(err){
+                if(!err){
+                    self.props.reservations.splice(self.props.reservations.indexOf(reservation),1);
+                    self.update();
+                }
+            })
+        }
     }
 
     exports.cancel = function(){
