@@ -25,7 +25,10 @@ projects
 {
     _id:        ObjectID,
     customer:   ObjectID,
-    name:       String
+    name:       String,
+    start:      Number,
+    end:        Number,
+    status:     String //can be draft, offered, rejected
 }
 
 equipmentreservations
@@ -54,19 +57,13 @@ equipmentcheckouts
     _id:        ObjectID,
     project:    ObjectID,
     time:       Number,
-    user:       ObjectID,
-    checklist:[{
-        type:   Number,
-        count:  Number
-    }],
     items:[{
         type:   Number,
+        count:  Number,
+        ids:[Number],
         suppliers:[{
-            _id:    ObjectID, //is not present for our own items
-            count:  Number,
-            ids:[   //is only present for our own items
-                Number
-            ]
+            _id:    ObjectID,
+            count:  Number           
         }]
     }]
 }
@@ -76,21 +73,15 @@ equipmentcheckins
     _id:        ObjectID,
     project:    ObjectID,
     time:       Number,
-    user:       ObjectID,
-    items:[
-        {
-            type:   Number,
-            suppliers:[
-                {
-                    _id:    ObjectID, //is not present for our own items
-                    count:  Number,
-                    ids:[   //is only present for our own items
-                        Number
-                    ]
-                }
-            ]
-        }
-    ]
+    items:[{
+        type:   Number,
+        count:  Number,
+        ids:[Number],
+        suppliers:[{
+            _id:    ObjectID,
+            count:  Number           
+        }]
+    }]
 }
 
 equipmenttypes
