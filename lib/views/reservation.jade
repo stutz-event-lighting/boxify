@@ -26,12 +26,12 @@ append body
                                 th
                         tbody
                             each type in this.props.data.types
-                                if type.count !== undefined
+                                if this.props.data.reservation.items[type._id] !== undefined
                                     tr
                                         td= type._id
                                         td= this.props.data.types[type._id].name
                                         td(style="paddingTop:2px;paddingBottom:2px")
-                                            input.form-control.input-sm(value=type.count+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
+                                            input.form-control.input-sm(value=this.props.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
                                         td
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
                                                 i.glyphicon.glyphicon-trash
@@ -48,7 +48,7 @@ append body
                             table.table.table-striped
                                 tbody
                                     each type in category.types                                
-                                        if this.props.data.types[type].count === undefined
+                                        if this.props.data.reservation.items[type] === undefined
                                             tr
                                                 td(onClick=this.addItem(type))= this.props.data.types[type].name
                     .modal-footer
@@ -62,19 +62,12 @@ main.
             client.getReservation(this.props.params.project,this.props.params.reservation,function(err,data){
                 if(err) return;
                 self.props.data = data;
-                console.log(data);
                 var itemlist = [];
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
-                    console.log(type);
                     var category = data.categories[data.types[type].category];
-                    console.log(category);
                     if(!category.types) category.types = [];
                     category.types.push(type);                    
-                }
-                for(var i = 0; i < data.reservation.items.length; i++){
-                    var type = data.types[data.reservation.items[i]._id];
-                    type.count = data.reservation.items[i].count;
                 }
                 self.update();
             });
@@ -93,15 +86,15 @@ main.
     
     exports.addItem = function(type){
         return function(){
-            this.props.data.types[type].count = this.props.data.types[type].count||0;
+            this.props.data.reservation.items[type] = 0;
             this.update();
         }.bind(this);
     }
     
     exports.changeItem = function(type){
         return function(e){
-            if(/^[0-9]+$/.test(e.target.value)) this.props.data.types[type].count = parseInt(e.target.value,10);
-            if(e.target.value.length == 0) this.props.data.types[type].count = 0;            
+            if(/^[0-9]+$/.test(e.target.value)) this.props.data.reservation.items[type] = parseInt(e.target.value,10);
+            if(e.target.value.length == 0) this.props.data.reservation.items[type] = 0;            
             this.update();
         }.bind(this);
     }
@@ -112,7 +105,7 @@ main.
     
     exports.removeItem = function(type){
         return function(){
-            delete this.props.data.types[type].count;
+            delete this.props.data.reservation.items[type];
             this.update();
         }.bind(this);
     }
@@ -122,14 +115,7 @@ main.
     }
 
     exports.save = function(){
-        var items = [];
-        for(var type in this.props.data.types){
-            type = this.props.data.types[type];
-            if(type.count !== undefined){
-                items.push({_id:type._id,count:type.count});
-            }
-        }
-        client.updateReservation(this.props.params.project,this.props.params.reservation,items,function(err){
+        client.updateReservation(this.props.params.project,this.props.params.reservation,this.props.data.reservation.items,function(err){
             if(err) return true;
             back(true);
         });

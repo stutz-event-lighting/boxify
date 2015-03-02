@@ -35,10 +35,9 @@ equipmentreservations
 {
     _id:        ObjectID,
     project:    ObjectID,
-    items:[{
-        type:   Number,
-        count:  Number
-    }]
+    items:{
+        TYPE:   Number
+    }
 }
 
 equiptmentrentals
@@ -46,10 +45,9 @@ equiptmentrentals
     _id:        ObjectID,
     project:    ObjectID,
     supplier:   ObjectID,
-    items:[{
-        type:   Number,
-        count:  Number
-    }]
+    items:{
+        TYPE:   Number
+    }
 }
 
 equipmentcheckouts
@@ -57,15 +55,15 @@ equipmentcheckouts
     _id:        ObjectID,
     project:    ObjectID,
     time:       Number,
-    items:[{
-        type:   Number,
-        count:  Number,
-        ids:[Number],
-        suppliers:[{
-            _id:    ObjectID,
-            count:  Number           
-        }]
-    }]
+    items:{
+        TYPE:{
+            count:  Number,
+            ids:[Number],
+            suppliers:{
+                SUPPLIER:   Number
+            }
+        }
+    }
 }
 
 equipmentcheckins
@@ -73,15 +71,15 @@ equipmentcheckins
     _id:        ObjectID,
     project:    ObjectID,
     time:       Number,
-    items:[{
-        type:   Number,
-        count:  Number,
-        ids:[Number],
-        suppliers:[{
-            _id:    ObjectID,
-            count:  Number           
-        }]
-    }]
+    items:{
+        TYPE:{
+            count:  Number,
+            ids:[Number],
+            suppliers:{
+                SUPPLIER:   Number
+            }
+        }
+    }
 }
 
 equipmenttypes
