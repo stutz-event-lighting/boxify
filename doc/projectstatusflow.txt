@@ -1,0 +1,5 @@
+start               start
+  |                   |
+draft -> offered -> ready -> billed -> paid
+                 |
+                 -> rejected
