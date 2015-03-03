@@ -41,6 +41,14 @@ append body
                                 label.col-lg-2.control-label Kunde
                                 .col-lg-10
                                     Select(value=this.props.create.customer asyncOptions=this.findCustomers onChange=this.onCustomerChanged)
+                            .form-group
+                                label.col-lg-2.control-label Beginn
+                                .col-lg-10
+                                    DatePicker(value=this.props.create.start?new Date(this.props.create.start):undefined onChange=this.onStartChanged)
+                            .form-group
+                                label.col-lg-2.control-label Ende
+                                .col-lg-10
+                                    DatePicker(value=this.props.create.end?new Date(this.props.create.end):undefined onChange=this.onEndChanged)
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
@@ -61,6 +69,9 @@ append body
 main.
     var client = require("../client.js");
     var Select = require("react-select");
+    var DatePicker = require("react-widgets").DateTimePicker;
+    
+    
     exports.checkData = function(){
         var self = this;
         if(!this.props.items){
@@ -80,7 +91,7 @@ main.
 
     exports.create = function(){
         var self = this;
-        this.props.create = {name:""};
+        this.props.create = {name:"",start:new Date().getTime(),end:new Date().getTime()+24*60*60*1000};
         this.update();
     }
     exports.validateCreateName = function(e){
@@ -99,6 +110,16 @@ main.
         }
     }
     
+    exports.onStartChanged = function(time){
+        this.props.create.start = time.getTime();
+        this.update();
+    }
+    
+    exports.onEndChanged = function(time){
+        this.props.create.end = time.getTime();
+        this.update();
+    }
+    
     exports.findCustomers = function(input,cb){
         client.findCustomers({search:input},function(err,customers){
             cb(err,{options:customers.map(function(customer){return {value:customer._id,label:customer.name}})})
@@ -111,7 +132,12 @@ main.
     }
     exports.confirmCreate = function(){
         var self = this;
-        client.createProject(this.props.create.name,this.props.create.customer,function(err,id){
+        
+        var create = self.props.create;
+        if(!create.customer) return;
+        
+        
+        client.createProject(this.props.create,function(err,id){
             if(err) return;
             delete self.props.create;
             self.update();

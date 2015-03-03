@@ -47,7 +47,9 @@ append body
                                 
             .row
                 .col-xs-12
-                    h3 Ausgänge
+                    h3 
+                        | Ausgänge
+                        .btn.btn-primary.pull-right(onClick=this.createCheckout) Neu
                     table.table.table-striped
                         thead
                             tr
@@ -105,7 +107,7 @@ main.
     exports.checkoutReservation = function(reservation){
         var self = this;
         return function(){
-            
+            visit("/projects/"+self.props.params.id+"/checkouts/new/"+reservation._id)
         }
     }
     
@@ -119,6 +121,10 @@ main.
                 }
             })
         }
+    }
+    
+    exports.createCheckout = function(){
+        visit("/projects/"+this.props.params.id+"/checkouts/new");
     }
 
     exports.cancel = function(){
