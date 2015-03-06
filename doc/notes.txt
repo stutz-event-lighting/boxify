@@ -1,0 +1,27 @@
+Es gibt 2 Arten von gemietetem Meterial:
+
+1) Dauerhaft gemietetes Material
+   Dieses Material wird immer fest zum aktuell verfügbaren Material gerechnet.
+   Es gibt keine Zukunftsprognosen für dieses Material.
+
+2) Für ein spezifisches Projekt gemietetes Material
+   Dieses Material wird nur für ein bestimmtes Projekt gemietet und kann auch nur für dieses ausgecheckt werden.
+   Ist die Miete bestätigt, kann man das Material (jederzeit) ausgecheckt werden.
+
+Fäbu
+----
+
+Aus einer Miete kann man eine Anfrage starten, sofern der Lieferant korrekt konfiguriert ist (boxify system kommunikation).
+Der Vermieter sieht dann in seinem boxify eine Anfrage mit der Auflistung von allem Material und dem Zeitraum, indem es gebraucht wird.
+Wenn der Vermieter diese Anfrage annimmt, wird bei ihm automatisch ein Projekt erstellt, bei dem die angegebenen Artikel reserviert sind.
+Wichtig ist hier, dass der Vermieter dieses Projekt nicht editieren kann. Er kann also weder warenausgänge noch wareneingänge vornehmen.
+Das Projekt wird automatisch vom boxify des Mieters geführt.
+Checkt also der Mieter Material des Vermieters aus, wird dieses automatisch auch im Projekt des Vermieters ausgecheckt. Gleiches gilt für
+check-ins. Natürlich wird beim Vermieter wirklich nur das Material des Vermieters ausgecheckt.
+
+
+
+
+Notizen:
+- Es ist möglich ein mapping von eigenen Material IDs auf fremde IDs zu machen
+- Beim Warenausgang kann man immer wählen für welchen Anbieter man gerade scannt
