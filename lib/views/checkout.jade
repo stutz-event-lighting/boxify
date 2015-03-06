@@ -13,7 +13,7 @@ append body
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
-                .col-xs-12
+                .col-xs-12.col-md-8
                     h3 Equipment
                     table.table.table-striped.table-hover
                         thead
@@ -33,7 +33,18 @@ append body
                                         td= (type.needed||0)
                                         td= type.available
                                     tr
-                                        td(colSpan="3" tyle="text-align:center") here comes the detailed list!
+                                        td(colSpan="5" tyle="text-align:center") here comes the detailed list!
+                .col-md-4
+                    h3 Verlauf
+                    table.table.table-striped.table-hover
+                        thead
+                            th Name
+                            th Anzahl
+                        tbody
+                            each log in this.props.log
+                                tr
+                                    td= this.props.data.types[log.type].name
+                                    td= log.count
                                     
                                         
 main.
@@ -47,7 +58,7 @@ main.
             client.getCheckout(this.props.params.project,this.props.params.checkout,opts,function(err,data){
                 if(err) return;
                 self.props.data = data;
-                console.log(data);
+                self.props.log = [];
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
                     var category = data.categories[data.types[type].category];
@@ -66,6 +77,7 @@ main.
     exports.handleScan = function(code){
         if(code.kind != "EQ") return true;
         console.log(code);
+        console.log(this.props);
         
         var type = this.props.data.types[code.type];
         var count = type.count||0;
@@ -74,6 +86,7 @@ main.
             return;
         }
         this.props.data.types[code.type].count = count+(code.count||1);
+        this.props.log.push({type:code.type,count:(code.count||1)});
         this.update();
     }
 

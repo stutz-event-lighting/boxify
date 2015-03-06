@@ -14,7 +14,7 @@ append body
                         |  Speichern
             .row
                 .col-xs-12
-                    h3 Kundendaten
+                    h3 Zulieferer Daten
                     .form-horizontal
                         .form-group
                             label.col-lg-2.control-label Name
@@ -22,24 +22,13 @@ append body
                                 input.form-control(placeholder="Name" value=this.props.item.name onChange=this.onNameChange)
             .row
                 .col-xs-12
-                    h3 Personen
+                    h3 Lieferungen
                     table.table.table-striped.table-hover
                         thead
-                            tr
-                                th Vorname
-                                th Nachname
-                                th E-Mail
-                                th Telefon
-                        tbody
-            .row
-                .col-xs-12
-                    h3 Projekte
-                    table.table.table-striped
-                        thead
-                            tr
-                                th Name
-                                th Datum
-                        tbody
+                            th Datum
+                            th Projekt
+                            th Typen
+                            th Objektanzahl
 main.
     var client = require("../client.js");
     var moment = require("moment");
@@ -47,9 +36,9 @@ main.
     exports.checkData = function(){
         var self = this;
         if(this.props.item === undefined){
-            client.getCustomer(this.props.params.id,function(err,customer){
+            client.getSupplier(this.props.params.id,function(err,supplier){
                 if(err) return;
-                self.props.item = customer;
+                self.props.item = supplier;
                 self.update();
             });
         }
@@ -65,7 +54,7 @@ main.
     }
 
     exports.save = function(){
-        client.updateCustomer(this.props.item._id,{name:this.props.item.name},function(err){
+        client.updateSupplier(this.props.item._id,{name:this.props.item.name},function(err){
             if(err) return true;
             back(true);
         });
