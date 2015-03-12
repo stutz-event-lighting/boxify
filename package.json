@@ -1,6 +1,6 @@
 {
-  "name": "sel",
-  "version": "0.0.0",
+  "name": "boxify",
+  "version": "0.1.0",
   "description": "",
   "main": "lib/index.js",
   "directories": {
@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "proprietary",
   "dependencies": {
     "async": "~0.9.0",
     "barcode-generator": "git://github.com/VanCoding/node-barcode-generator",
@@ -19,7 +19,7 @@
     "express": "~4.10.4",
     "express-ws": "^0.2.4",
     "jade": "~1.8.2",
-    "jade2react": "git://github.com/VanCoding/jade2react.git#jade-parser",
+    "jade2react": "^0.2.1",
     "moment": "~2.9.0",
     "mongodb": "~1.4.26",
     "path-to-regexp": "~1.0.2",
