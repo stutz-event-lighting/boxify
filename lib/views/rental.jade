@@ -1,0 +1,137 @@
+extends ./base.jade
+
+append body
+    - this.checkData();
+    if this.props.data
+        .container
+            h2 Reservation
+                .btn-toolbar.pull-right
+                    button.btn.btn-default(onClick=this.cancel)
+                        i.glyphicon.glyphicon-chevron-left
+                        |  Zurück
+                    button.btn.btn-primary(onClick=this.save)
+                        i.glyphicon.glyphicon-ok
+                        |  Speichern
+            .row
+                .col-xs-12
+                    h3 Status
+                    select.form-control(value=this.props.data.rental.status onChange=this.onStatusChanged)
+                        option(value="booked") Gebucht
+                        option(value="received") Erhalten
+                        option(value="returned") Zurückgegeben
+                    
+                    h3
+                        | Equipment
+                        .btn.btn-primary.pull-right(onClick=this.add) Hinzufügen
+                    table.table.table-striped.table-hover
+                        thead
+                            tr
+                                th ID
+                                th Name
+                                th Anzahl
+                                th Benötigt
+                                th
+                        tbody
+                            each type in this.props.data.types
+                                if this.props.data.types[type._id].count !== undefined || this.props.data.types[type._id].available < 0
+                                    tr
+                                        td= type._id
+                                        td= this.props.data.types[type._id].name
+                                        td(style="paddingTop:2px;paddingBottom:2px")
+                                            input.form-control.input-sm(value=(this.props.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
+                                        td= (-this.props.data.types[type._id].available)+""
+                                        td
+                                            .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
+                                                i.glyphicon.glyphicon-trash
+    if this.props.add
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Equipment hinzufügen
+                    .modal-body(style="maxHeight:500px;overflowY:auto")
+                        each category in this.props.data.categories
+                            h4= category.name
+                            table.table.table-striped
+                                tbody
+                                    each type in category.types                                
+                                        if this.props.data.types[type].count === undefined
+                                            tr
+                                                td(onClick=this.addItem(type))= this.props.data.types[type].name
+                    .modal-footer
+                        button.btn.btn-primary(onClick=this.done) Fertig
+main.
+    var client = require("../client.js");
+    
+    exports.checkData = function(){
+        var self = this;
+        if(this.props.data === undefined){
+            client.getRental(this.props.params.project,this.props.params.rental,function(err,data){
+                if(err) return;
+                self.props.data = data;
+                var itemlist = [];
+                data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+                for(var type in data.types){
+                    var category = data.categories[data.types[type].category];
+                    if(!category.types) category.types = [];
+                    category.types.push(type);                    
+                }
+                self.update();
+            });
+        }
+    }
+    
+    exports.onStatusChanged = function(e){
+        this.props.data.rental.status = e.target.value;
+        this.update();
+    }
+    
+    exports.add = function(){
+        this.props.add = true;
+        this.update();
+    }
+    
+    exports.done = function(){
+        delete this.props.add;
+        this.update();
+    }
+    
+    exports.addItem = function(type){
+        return function(){
+            this.props.data.types[type].count = 0;
+            this.update();
+        }.bind(this);
+    }
+    
+    exports.changeItem = function(type){
+        return function(e){
+            if(/^[0-9]+$/.test(e.target.value)) this.props.data.types[type].count = parseInt(e.target.value,10);
+            if(e.target.value.length == 0) this.props.data.types[type].count = 0;            
+            this.update();
+        }.bind(this);
+    }
+    
+    exports.selectCount = function(e){
+        e.target.select();
+    }
+    
+    exports.removeItem = function(type){
+        return function(){
+            delete this.props.data.types[type].count;
+            this.update();
+        }.bind(this);
+    }
+
+    exports.cancel = function(){
+        history.back();
+    }
+
+    exports.save = function(){
+        var items = {};
+        for(var type in this.props.data.types) items[type] = this.props.data.types[type].count;
+        client.updateRental(this.props.params.project,this.props.params.rental,{status:this.props.data.rental.status,items:items},function(err){
+            if(err) return true;
+            back(true);
+        });
+    }

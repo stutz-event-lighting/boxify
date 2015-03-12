@@ -9,16 +9,12 @@ users
     }
 }
 
-customers
+contacts
 {
     _id:            ObjectID,
-    name:           String
-}
-
-suppliers
-{
-    _id:            ObjectID,
-    name:           String
+    name:           String,
+    customer:       Bool,
+    supplier:       Bool
 }
 
 projects
@@ -28,7 +24,30 @@ projects
     name:       String,
     start:      Number,
     end:        Number,
-    status:     String //can be draft, offered, rejected
+    status:     String //can be draft, offered, rejected,
+    balance:{
+        TYPE:{
+            count: Number, //must not be <= 0
+            suupliers:{ //optional
+                SUPPLIER:{
+                    count: Number,
+                    ids:[String] //optional
+                }
+            }
+        }
+    },
+    reserved:{
+        TYPE: Number
+    },
+    booked:{
+        TYPE:{
+            count: Number,
+            SUPPLIER:{
+                count: Number,
+                ids: [String] //optional
+            }
+        }
+    }
 }
 
 equipmentreservations
@@ -45,6 +64,7 @@ equiptmentrentals
     _id:        ObjectID,
     project:    ObjectID,
     supplier:   ObjectID,
+    status:     String, //booked, received, returned
     items:{
         TYPE:   Number
     }
@@ -58,9 +78,11 @@ equipmentcheckouts
     items:{
         TYPE:{
             count:  Number,
-            ids:[Number],
             suppliers:{
-                SUPPLIER:   Number
+                SUPPLIER:{
+                    count: Number,
+                    ids:[String] //optional
+                }
             }
         }
     }
@@ -74,9 +96,11 @@ equipmentcheckins
     items:{
         TYPE:{
             count:  Number,
-            ids:[Number],
             suppliers:{
-                SUPPLIER:   Number
+                SUPPLIER:{
+                    count: Number,
+                    ids:[String] //optional
+                }
             }
         }
     }
@@ -126,4 +150,45 @@ equipmentlogs
     count:      Number
     event:      String, //can be: added, broke, repaired, lost, found, maintenance, removed
     job:        Number
+}
+
+rentalrequests{
+    _id:        ObjectID,
+    supplier:   ObjectID,
+    start:      Number,
+    end:        Number,
+    status:     String, //can be "draft", "requested", "offered", "finished"
+    request:{
+        TYPE:   Number
+    }
+}
+
+rentaloffers{
+    _id:        ObjectID,
+    supplier:   ObjectID,
+    request:    ObjectID,
+    price:      Number,
+    items:{
+        TYPE:   Number
+    }
+}
+
+rentals {
+    _id:        ObjectID,
+    supplier:   ObjectID,
+    offer:      ObjectID,   //optional
+    start:      Number,
+    end:        Number,
+    status:     String, //can be: confirmed, received, returned
+    items:{
+        TYPE:   Number
+    },
+    returns:{
+
+    }
+}
+
+rentalreturns{
+    _id:        ObjectID,
+
 }

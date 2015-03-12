@@ -40,9 +40,9 @@ append body
                                     td
                                         = reservation.total
                                         .btn-toolbar.pull-right
-                                            .btn.btn-default.btn-xs(onClick=this.deleteReservation(reservation))
+                                            button.btn.btn-default.btn-xs(onClick=this.deleteReservation(reservation))
                                                 i.glyphicon.glyphicon-trash
-                                            .btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
+                                            button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
                                                 i.glyphicon.glyphicon-log-out
                 .col-xs-12.col-md-6
                     h3
@@ -51,11 +51,22 @@ append body
                         thead
                             tr
                                 th Zulieferer
+                                th Status
                                 th Objektarten
                                 th Objekte
                         tbody
+                            each rental in this.props.rentals
+                                tr(onClick=this.openRental(rental))
+                                    td= this.props.suppliers[rental.supplier].name
+                                    td= states[rental.status]
+                                    td= rental.count
+                                    td
+                                        = rental.total
+                                        .btn-toolbar.pull-right
+                                            button.btn.btn-default.btn-xs(onClick=this.deleteRental(rental))
+                                                i.glyphicon.glyphicon-trash
                     if this.props.needsRental
-                        .alert.alert-warning Es sind weitere Zumietungen nötig!
+                        .alert.alert-warning(onClick=this.createRental) Es sind weitere Zumietungen nötig!
             .row            
                 .col-xs-12.col-md-6
                     h3 
@@ -77,9 +88,32 @@ append body
                                 th Mitarbeiter
                                 th Objekte
                         tbody
+    if this.props.createrental
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Zumietung erfassen
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Lieferant
+                                .col-lg-10
+                                    Select(value=this.props.createrental.supplier asyncOptions=this.findSuppliers onChange=this.onRentalSupplierChanged)
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelCreateRental) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmCreateRental) Erfassen
 main.
     var client = require("../client.js");
     var moment = require("moment");
+    var Select = require("react-select");
+    
+    var states = {
+        "booked":"Gebucht",
+        "received":"Erhalten",
+        "returned":"Zurückgegeben"
+    }
     
     exports.checkData = function(){
         var self = this;
@@ -88,6 +122,8 @@ main.
                 if(err) return;
                 self.props.item = data.project;
                 self.props.reservations = data.reservations;
+                self.props.rentals = data.rentals;
+                self.props.suppliers = data.suppliers;
                 self.props.needsRental = data.needsRental;
                 self.update();
             });
@@ -132,6 +168,59 @@ main.
                 }
             })
         }
+    }
+    
+    exports.createRental = function(){
+        this.props.createrental = {supplier:null};
+        this.update();
+    }
+    
+    exports.findSuppliers = function(input,cb){
+        client.findSuppliers({search:input},function(err,suppliers){
+            cb(err,{options:suppliers.map(function(suppliers){return {value:suppliers._id,label:suppliers.name}})})
+        })
+    }
+    
+    exports.onRentalSupplierChanged = function(id,selection){
+        if(id.length){
+            this.props.createrental.supplier = id;
+            this.props.createrental.suppliername = selection[0].label;
+        }else{
+            delete this.props.createrental.supplier;
+            delete this.props.createrental.suppliername;
+        }
+    }
+    
+    exports.cancelCreateRental = function(){
+        delete this.props.createrental;
+        this.update();
+    }
+    
+    exports.confirmCreateRental = function(){
+        if(!this.props.createrental.supplier) return;
+        var self = this;
+        client.createRental(this.props.params.id,this.props.createrental.supplier,function(err,id){
+            if(err) return;
+            delete self.props.createrental;
+            self.update();
+            visit("/projects/"+self.props.params.id+"/rentals/"+id);
+        })
+    }
+    
+    exports.openRental = function(rental){
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/projects/"+this.props.params.id+"/rentals/"+rental._id);
+        }.bind(this)
+    }
+    
+    exports.deleteRental = function(rental){
+        return function(){
+            client.deleteRental(this.props.params.id,rental._id,function(err){
+                this.props.rentals.splice(this.props.rentals.indexOf(rental),1);
+                this.update();
+            }.bind(this))
+        }.bind(this);
     }
     
     exports.createCheckout = function(){
