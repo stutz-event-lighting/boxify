@@ -1,0 +1,57 @@
+extends ./base.jade
+
+append body
+    .container
+        h2 Zumieten
+        
+        .row
+            .col-xs-12
+                h4 
+                    | Anfragen
+                    button.btn.btn-primary.pull-right(onClick=this.createRequest) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Zulieferer
+                            th Projekte
+                            th Erhalt
+                            th Rückgabe
+                            th Objekte
+        .row
+            .col-xs-12
+                h4 
+                    | Buchungen
+                    button.btn.btn-primary.pull-right(onClick=this.createBooking) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Zulieferer
+                            th Projekte
+                            th Erhalt
+                            th Rückgabe
+                            th Objekte
+        .row
+            .col-xs-12
+                h4 
+                    | Mieten
+                    button.btn.btn-primary.pull-right(onClick=this.createRental) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Zulieferer
+                            th Projekte
+                            th Erhalt
+                            th Rückgabe
+                            th Objekte
+script.
+    exports.createRequest = function(){
+        visit("/rentals/newrequest");
+    }
+    
+    exports.createBooking = function(){
+        visit("/rentals/newbooking");
+    }
+    
+    exports.createRental = function(){
+        visit("/rentals/newrental");
+    }

@@ -25,17 +25,6 @@ projects
     start:      Number,
     end:        Number,
     status:     String //can be draft, offered, rejected,
-    balance:{
-        TYPE:{
-            count: Number, //must not be <= 0
-            suupliers:{ //optional
-                SUPPLIER:{
-                    count: Number,
-                    ids:[String] //optional
-                }
-            }
-        }
-    },
     reserved:{
         TYPE: Number
     },
@@ -45,6 +34,23 @@ projects
             SUPPLIER:{
                 count: Number,
                 ids: [String] //optional
+            }
+        }
+    },
+    rented:{
+        TYPE:{
+            count: Number,
+            ids: [String] //only present if the status is received or returned & each item has its own id
+        }
+    },
+    checkedout:{
+        TYPE:{
+            count: Number, //must not be <= 0
+            suupliers:{ //optional
+                SUPPLIER:{
+                    count: Number,
+                    ids:[String] //optional
+                }
             }
         }
     }
@@ -64,16 +70,21 @@ equiptmentrentals
     _id:        ObjectID,
     project:    ObjectID,
     supplier:   ObjectID,
-    status:     String, //booked, received, returned
+    type:       String, //booking, checkin, checkout
+    time:       Number,
     items:{
-        TYPE:   Number
+        TYPE:{
+            count: Number,
+            ids: [String] //only present if the status is received or returned & each item has its own id
+        }
     }
 }
 
-equipmentcheckouts
+equipmentio
 {
     _id:        ObjectID,
     project:    ObjectID,
+    type:       String, //checkout, checkin
     time:       Number,
     items:{
         TYPE:{
@@ -88,23 +99,6 @@ equipmentcheckouts
     }
 }
 
-equipmentcheckins
-{
-    _id:        ObjectID,
-    project:    ObjectID,
-    time:       Number,
-    items:{
-        TYPE:{
-            count:  Number,
-            suppliers:{
-                SUPPLIER:{
-                    count: Number,
-                    ids:[String] //optional
-                }
-            }
-        }
-    }
-}
 
 equipmenttypes
 {
@@ -152,43 +146,20 @@ equipmentlogs
     job:        Number
 }
 
-rentalrequests{
+equipmentrentals {
     _id:        ObjectID,
     supplier:   ObjectID,
-    start:      Number,
-    end:        Number,
-    status:     String, //can be "draft", "requested", "offered", "finished"
-    request:{
-        TYPE:   Number
-    }
-}
-
-rentaloffers{
-    _id:        ObjectID,
-    supplier:   ObjectID,
-    request:    ObjectID,
-    price:      Number,
-    items:{
-        TYPE:   Number
-    }
-}
-
-rentals {
-    _id:        ObjectID,
-    supplier:   ObjectID,
-    offer:      ObjectID,   //optional
-    start:      Number,
-    end:        Number,
+    delivery:      Number,
+    return:        Number,
     status:     String, //can be: confirmed, received, returned
     items:{
-        TYPE:   Number
-    },
-    returns:{
-
+        TYPE:{
+            count: Number,
+            ids:[String]
+        }
     }
 }
 
 rentalreturns{
     _id:        ObjectID,
-
 }

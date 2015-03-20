@@ -44,10 +44,8 @@ append body
                             each log in this.props.log
                                 tr
                                     td= this.props.data.types[log.type].name
-                                    td= log.count
-                                    
-                                        
-main.
+                                    td= log.count                        
+script.
     var client = require("../client.js");
     
     exports.checkData = function(){

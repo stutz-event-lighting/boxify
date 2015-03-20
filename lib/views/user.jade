@@ -28,9 +28,8 @@ if this.props.user
             .col-xs-12
                 label
                     input(type="checkbox" value=this.props.user.permissions.users)
-                    | Benutzer
-                
-main.
+                    | Benutzer                
+script.
     var client = require("../client.js");
     exports.checkData = function(){
         var self = this;
