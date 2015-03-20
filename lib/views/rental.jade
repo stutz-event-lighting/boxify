@@ -11,7 +11,7 @@ append body
                         |  Zurück
                     button.btn.btn-primary(onClick=this.save)
                         i.glyphicon.glyphicon-ok
-                        |  Speichern
+                        = " "+(this.props.params.rental.indexOf("new") == 0?"Erstellen":"Speichern")
             .row
                 .col-xs-12
                     h3 Daten
@@ -23,11 +23,14 @@ append body
                         .form-group
                             label.col-lg-2.control-label Lieferant
                             .col-lg-10
-                                Select(value=this.props.data.rental.supplier asyncOptions=this.findSuppliers onChange=this.onSupplierChange)
+                                if this.props.params.rental.indexOf("new") != 0
+                                    input.form-control(disabled=true value=this.props.data.rental.supplier.label)
+                                else
+                                    Select(value=this.props.data.rental.supplier asyncOptions=this.findSuppliers onChange=this.onSupplierChange)
                         .form-group
                             label.col-lg-2.control-label Erhalt
                             .col-lg-10
-                                DatePicker(value=this.props.data.rental.delivery?new Date(this.props.data.rental.delivery):undefined onChange=this.onDeliveryChanged)
+                                DatePicker(disabled=(this.props.data.rental.status=="received") value=this.props.data.rental.delivery?new Date(this.props.data.rental.delivery):undefined onChange=this.onDeliveryChanged)
                         .form-group
                             label.col-lg-2.control-label Rückgabe
                             .col-lg-10
@@ -36,7 +39,14 @@ append body
                 .col-xs-12                    
                     h3
                         | Equipment
-                        .btn.btn-primary.pull-right(onClick=this.add) Hinzufügen
+                        if this.props.params.rental.indexOf("new") == 0
+                            .btn.btn-primary.pull-right(onClick=this.add) Hinzufügen
+                        else if this.props.data.rental.status == "requested"
+                            .btn.btn-primary.pull-right(onClick=this.book) Buchen
+                        else if this.props.data.rental.status == "booked"
+                            .btn.btn-primary.pull-right(onClick=this.receive) Ware erhalten
+                        else
+                            .btn.btn-primary.pull-right(onClick=this.return) Ware zurückgeben
                     table.table.table-striped.table-hover
                         thead
                             tr
@@ -51,7 +61,10 @@ append body
                                         td= type._id
                                         td= this.props.data.types[type._id].name
                                         td(style="paddingTop:2px;paddingBottom:2px")
-                                            input.form-control.input-sm(value=(this.props.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
+                                            if this.props.params.rental.indexOf("new") == 0
+                                                input.form-control.input-sm(value=(this.props.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
+                                            else
+                                                = this.props.data.types[type._id].count||0
                                         td
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
                                                 i.glyphicon.glyphicon-trash
@@ -82,17 +95,25 @@ script.
         var self = this;
         if(this.props.data === undefined){
             client.getRental(this.props.params.rental,{},function(err,data){
+                console.log("result",err,data)
                 if(err) return;
                 self.props.data = data;
                 if(!self.props.data.rental){
-                    self.props.data.rental = {name:"",supplier:null}
+                    self.props.data.rental = {
+                        name:"",
+                        supplier:null,
+                        status:self.props.params.rental=="newrequest"?"requested":(self.props.params.rental=="newbooking"?"booked":"received")
+                    }                    
                 }
+                if(!self.props.data.rental.delivery) self.props.data.rental.delivery = new Date().getTime();
+                if(!self.props.data.rental.return) self.props.data.rental.return = new Date().getTime()+24*60*60*1000;
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
                     var category = data.categories[data.types[type].category];
                     if(!category.types) category.types = [];
                     category.types.push(type);                    
                 }
+                console.log(self.props)
                 self.update();
             });
         }
@@ -163,6 +184,22 @@ script.
             this.update();
         }.bind(this);
     }
+    
+    exports.book = function(){
+        client.updateRentalStatus(this.props.params.rental,"booked",function(err){
+            back(true);
+        })
+    }
+    exports.receive = function(){
+        client.updateRentalStatus(this.props.params.rental,"received",function(err){
+            back(true);
+        })
+    }
+    exports.return = function(){
+        client.updateRentalStatus(this.props.params.rental,"returned",function(err){
+            back(true);
+        })
+    }
 
     exports.cancel = function(){
         history.back();
@@ -170,8 +207,20 @@ script.
 
     exports.save = function(){
         var items = {};
-        for(var type in this.props.data.types) items[type] = this.props.data.types[type].count;
-        client.updateRental(this.props.params.project,this.props.params.rental,{status:this.props.data.rental.status,items:items},function(err){
+        for(var type in this.props.data.types){
+            if(this.props.data.types[type].count) items[type] = {count:this.props.data.types[type].count,ids:this.props.data.types[type].ids};
+        }
+    
+        var rental = {
+            name:this.props.data.rental.name,
+            supplier:this.props.data.rental.supplier.value,
+            delivery:this.props.data.rental.delivery,
+            return:this.props.data.rental.return,
+            status:this.props.data.rental.status,
+            items:items
+        };
+               
+        client.updateRental(this.props.params.rental,rental,function(err){
             if(err) return true;
             back(true);
         });

@@ -28,22 +28,7 @@ projects
     reserved:{
         TYPE: Number
     },
-    booked:{
-        TYPE:{
-            count: Number,
-            SUPPLIER:{
-                count: Number,
-                ids: [String] //optional
-            }
-        }
-    },
-    rented:{
-        TYPE:{
-            count: Number,
-            ids: [String] //only present if the status is received or returned & each item has its own id
-        }
-    },
-    checkedout:{
+    balance:{
         TYPE:{
             count: Number, //must not be <= 0
             suupliers:{ //optional
