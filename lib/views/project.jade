@@ -21,7 +21,7 @@ append body
                             .col-lg-10
                                 input.form-control(placeholder="Kommentar" value=this.props.item.name onChange=this.onNameChange)
             .row
-                .col-xs-12.col-md-6
+                .col-xs-12
                     h3
                         | Reservationen
                         .btn.btn-primary.pull-right(onClick=this.createReservation) Neu
@@ -44,32 +44,11 @@ append body
                                                 i.glyphicon.glyphicon-trash
                                             button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
                                                 i.glyphicon.glyphicon-log-out
+                    if this.props.needsRental
+                        .alert.alert-warning Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
+            .row
                 .col-xs-12.col-md-6
                     h3
-                        | Zumietungen
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th Zulieferer
-                                th Status
-                                th Objektarten
-                                th Objekte
-                        tbody
-                            each rental in this.props.rentals
-                                tr(onClick=this.openRental(rental))
-                                    td= this.props.suppliers[rental.supplier].name
-                                    td= states[rental.status]
-                                    td= rental.count
-                                    td
-                                        = rental.total
-                                        .btn-toolbar.pull-right
-                                            button.btn.btn-default.btn-xs(onClick=this.deleteRental(rental))
-                                                i.glyphicon.glyphicon-trash
-                    if this.props.needsRental
-                        .alert.alert-warning(onClick=this.createRental) Es sind weitere Zumietungen nötig!
-            .row            
-                .col-xs-12.col-md-6
-                    h3 
                         | Ausgänge
                         .btn.btn-primary.pull-right(onClick=this.createCheckout) Neu
                     table.table.table-striped
@@ -88,33 +67,10 @@ append body
                                 th Mitarbeiter
                                 th Objekte
                         tbody
-    if this.props.createrental
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Zumietung erfassen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Lieferant
-                                .col-lg-10
-                                    Select(value=this.props.createrental.supplier asyncOptions=this.findSuppliers onChange=this.onRentalSupplierChanged)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelCreateRental) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmCreateRental) Erfassen
 script.
     var client = require("../client.js");
     var moment = require("moment");
-    var Select = require("react-select");
-    
-    var states = {
-        "booked":"Gebucht",
-        "received":"Erhalten",
-        "returned":"Zurückgegeben"
-    }
-    
+
     exports.checkData = function(){
         var self = this;
         if(this.props.item === undefined){
@@ -122,27 +78,25 @@ script.
                 if(err) return;
                 self.props.item = data.project;
                 self.props.reservations = data.reservations;
-                self.props.rentals = data.rentals;
-                self.props.suppliers = data.suppliers;
                 self.props.needsRental = data.needsRental;
                 self.update();
             });
         }
     }
-    
+
     exports.onNameChange = function(e){
         this.props.item.name = e.target.value;
         this.update();
     }
-    
+
     exports.createReservation = function(){
         client.createReservation(this.props.params.id,function(err,id){
             if(err) return;
             visit("/projects/"+this.props.params.id+"/reservations/"+id);
         }.bind(this));
     }
-    
-    
+
+
     exports.openReservation = function(reservation){
         var self = this;
         return function(e){
@@ -150,14 +104,14 @@ script.
             visit("/projects/"+self.props.params.id+"/reservations/"+reservation._id)
         }
     }
-    
+
     exports.checkoutReservation = function(reservation){
         var self = this;
         return function(){
             visit("/projects/"+self.props.params.id+"/checkouts/new/"+reservation._id)
         }
     }
-    
+
     exports.deleteReservation = function(reservation){
         var self = this;
         return function(){
@@ -169,60 +123,7 @@ script.
             })
         }
     }
-    
-    exports.createRental = function(){
-        this.props.createrental = {supplier:null};
-        this.update();
-    }
-    
-    exports.findSuppliers = function(input,cb){
-        client.findSuppliers({search:input},function(err,suppliers){
-            cb(err,{options:suppliers.map(function(suppliers){return {value:suppliers._id,label:suppliers.name}})})
-        })
-    }
-    
-    exports.onRentalSupplierChanged = function(id,selection){
-        if(id.length){
-            this.props.createrental.supplier = id;
-            this.props.createrental.suppliername = selection[0].label;
-        }else{
-            delete this.props.createrental.supplier;
-            delete this.props.createrental.suppliername;
-        }
-    }
-    
-    exports.cancelCreateRental = function(){
-        delete this.props.createrental;
-        this.update();
-    }
-    
-    exports.confirmCreateRental = function(){
-        if(!this.props.createrental.supplier) return;
-        var self = this;
-        client.createRental(this.props.params.id,this.props.createrental.supplier,function(err,id){
-            if(err) return;
-            delete self.props.createrental;
-            self.update();
-            visit("/projects/"+self.props.params.id+"/rentals/"+id);
-        })
-    }
-    
-    exports.openRental = function(rental){
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/projects/"+this.props.params.id+"/rentals/"+rental._id);
-        }.bind(this)
-    }
-    
-    exports.deleteRental = function(rental){
-        return function(){
-            client.deleteRental(this.props.params.id,rental._id,function(err){
-                this.props.rentals.splice(this.props.rentals.indexOf(rental),1);
-                this.update();
-            }.bind(this))
-        }.bind(this);
-    }
-    
+
     exports.createCheckout = function(){
         visit("/projects/"+this.props.params.id+"/checkouts/new");
     }
