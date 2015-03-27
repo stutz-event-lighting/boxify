@@ -1,0 +1,212 @@
+extends ./base.jade
+
+append body
+    - this.checkData();
+    if this.props.data
+        .container
+            h2 Wareneingang
+                .btn-toolbar.pull-right
+                    button.btn.btn-default(onClick=this.cancel)
+                        i.glyphicon.glyphicon-chevron-left
+                        |  Abbrechen
+                    button.btn.btn-primary(onClick=this.save)
+                        i.glyphicon.glyphicon-ok
+                        |  Speichern
+            .row
+                .col-xs-12.col-md-8
+                    h3 Equipment
+                    table.table.table-striped.table-hover
+                        thead
+                            tr
+                                th ID
+                                th Name
+                                th Anzahl
+                                th Ausstehend
+                        tbody
+                            each type in this.props.data.types
+                                if type.available !== undefined || type.count !== undefined
+                                    tr
+                                        td= type._id
+                                        td= type.name
+                                        td
+                                            = (type.count||0)+" "
+                                            if this.hasFromSuppliers(type)
+                                                | (
+                                                each supplier,id in type.suppliers
+                                                    if supplier.count && id != "own"
+                                                        img(src="/api/suppliers/"+id+"/image" height="25px")
+                                                        = " "+supplier.count
+                                                | )
+                                        
+                                        td
+                                            = type.available+" "
+                                            if Object.keys(type.suppliers).length > 1
+                                                | (
+                                                each supplier,id in type.suppliers
+                                                    if id != "own"
+                                                        img(src="/api/suppliers/"+id+"/image" height="25px" style="cursor:pointer" onClick=this.addFromSupplier(type,id))
+                                                        = " "+supplier.available
+                                                | )
+                .col-md-4
+                    h3 
+                        | Verlauf
+                        .btn-group.pull-right
+                            div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode) -
+                            div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode) +
+                    table.table.table-striped.table-hover
+                        thead
+                            th
+                            th Name
+                            th Anzahl
+                        tbody
+                            each log in this.props.log
+                                tr
+                                    td
+                                        if log.supplier
+                                            img(src="/api/suppliers/"+log.supplier+"/image" height="25px")
+                                    td= this.props.data.types[log.type].name
+                                    td= log.count                        
+script.
+    var client = require("../client.js");
+    
+    exports.checkData = function(){
+        var self = this;
+        if(this.props.data === undefined){
+            client.getCheckin(this.props.params.project,this.props.params.checkin,function(err,data){
+                if(err) return;
+                self.props.data = data;
+                self.props.log = [];
+                data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+                for(var type in data.types){
+                    var category = data.categories[data.types[type].category];
+                    if(!category.types) category.types = [];
+                    category.types.push(type);                    
+                }
+                self.update();
+            });
+        }
+    }
+
+    exports.cancel = function(){
+        history.back();
+    }
+    exports.toggleMode = function(){
+        if(this.props.remove){
+            delete this.props.remove;
+        }else{
+            this.props.remove = true;
+        }
+        this.update();
+    }
+    
+    exports.handleScan = function(code){
+        if(code.kind != "EQ") return true;        
+        var type = this.props.data.types[code.type];
+        if(!code.count) code.count = 1;
+        
+        if(this.props.remove){
+
+            var missing = type.suppliers.own.count||0;
+            if(code.count > missing){
+                this.playErrorSound();
+                code.count = missing;
+            }
+            if(!code.count) return;
+            
+            if(code.item){
+                if((type.suppliers.own.ids||[]).indexOf(code.item) < 0){
+                    this.playErrorSound();
+                    return;
+                }else{
+                    type.suppliers.own.ids.splice(type.suppliers.own.ids.indexOf(code.item),1)
+                }
+            }
+                       
+            type.count = (type.count||0)-code.count;
+            type.suppliers.own.count = (type.suppliers.own.count||0) - code.count;
+            this.log(code.type,-code.count);
+        }else{
+            if(!type.available) return this.playErrorSound();
+            var missing = type.suppliers.own.available-(type.suppliers.own.count||0);
+
+            if((code.count) > missing){
+            this.playErrorSound();
+                code.count = missing;
+            }
+            if(!code.count) return;
+            
+            if(code.item){
+                if((type.suppliers.own.ids||[]).indexOf(code.item) >= 0){
+                    this.playErrorSound();
+                    return;
+                }else{
+                    if(!type.suppliers.own.ids) type.suppliers.own.ids = [];
+                    type.suppliers.own.ids.push(code.item);
+                }
+            }
+            
+            type.count = (type.count||0)+code.count;
+            type.suppliers.own.count = (type.suppliers.own.count||0) + code.count;
+            this.log(code.type,code.count);
+        }
+        this.update();
+    }
+    
+    exports.hasFromSuppliers = function(type){
+        for(var supplier in type.suppliers) if(supplier != "own" && type.suppliers[supplier].count > 0) return true;
+        return false;
+    }
+    
+    exports.addFromSupplier = function(type,supplier){
+        return function(){
+            if(this.props.remove){
+                if(type.suppliers[supplier].count > 0){
+                    type.suppliers[supplier].count --;
+                    if(!type.suppliers[supplier]) delete type.suppliers[supplier].count;
+                    type.count --;
+                    this.log(type._id,-1,supplier)
+                }
+            }else{
+                if((type.suppliers[supplier].count||0) < type.suppliers[supplier].available){
+                    type.suppliers[supplier].count = (type.suppliers[supplier].count ||0)+1;
+                    type.count ++;
+                    this.log(type._id,1,supplier)
+                }                
+            }
+
+            this.update();
+        }.bind(this)
+    }
+    
+    exports.log = function(type,count,supplier){
+        this.props.log.push({type:type,count:count,supplier:supplier});
+        while(this.props.log.length > 10) this.props.log.shift();
+    }
+    
+    exports.playErrorSound = function(){
+        new Audio("/public/audio/error.wav").play();
+    }
+
+    exports.save = function(){
+        var data = {};
+        for(var type in this.props.data.types){
+            var t = this.props.data.types[type];
+            if(!t.count) continue;
+            data[type] = {
+                count:t.count,
+                suppliers:{}
+            };
+            for(var supplier in t.suppliers){
+                if(!t.suppliers[supplier].count) continue;
+                data[type].suppliers[supplier] = {
+                    count:t.suppliers[supplier].count,
+                    ids:t.suppliers[supplier].ids
+                };
+            }
+        }
+    
+        client.updateCheckin(this.props.params.project,this.props.params.checkin,data,function(err){
+            if(err) return true;
+            back(true);
+        });
+    }

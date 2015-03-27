@@ -65,14 +65,22 @@ append body
                                             button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckout(io))
                                                 i.glyphicon.glyphicon-trash
                 .col-xs-12.col-md-6
-                    h3 Eingänge
+                    h3
+                        | Eingägnge
+                        .btn.btn-primary.pull-right(onClick=this.createCheckin) Neu
                     table.table.table-striped
                         thead
                             tr
                                 th Datum
-                                th Mitarbeiter
                                 th Objekte
                         tbody
+                            each io in this.props.io
+                                if io.type == "checkin"
+                                    tr(onClick=this.editCheckin(io))
+                                        td= moment(io.time).format("LLL")
+                                        td
+                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckin(io))
+                                                i.glyphicon.glyphicon-trash
 script.
     var client = require("../client.js");
     var moment = require("moment");
@@ -150,6 +158,27 @@ script.
         var self = this;
         return function(){
             client.deleteCheckout(self.props.params.id,checkout._id,function(){
+                delete self.props.item;
+                self.update();
+            });
+        }
+    }
+    
+    exports.createCheckin = function(){
+        visit("/projects/"+this.props.params.id+"/checkins/new");
+    }
+    
+    exports.editCheckin = function(checkin){
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/projects/"+this.props.params.id+"/checkins/"+checkin._id)
+        }.bind(this);
+    }
+    
+    exports.deleteCheckin = function(checkin){
+        var self = this;
+        return function(){
+            client.deleteCheckin(self.props.params.id,checkin._id,function(){
                 delete self.props.item;
                 self.update();
             });
