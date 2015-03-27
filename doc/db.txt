@@ -32,10 +32,7 @@ projects
         TYPE:{
             count: Number, //must not be <= 0
             suupliers:{ //optional
-                SUPPLIER:{
-                    count: Number,
-                    ids:[String] //optional
-                }
+                SUPPLIER: Number
             }
         }
     }
@@ -55,7 +52,7 @@ equiptmentrentals
     _id:        ObjectID,
     project:    ObjectID,
     supplier:   ObjectID,
-    type:       String, //booking, checkin, checkout
+    status:     String, //requested, booked, received, returned
     time:       Number,
     items:{
         TYPE:{
@@ -129,22 +126,4 @@ equipmentlogs
     count:      Number
     event:      String, //can be: added, broke, repaired, lost, found, maintenance, removed
     job:        Number
-}
-
-equipmentrentals {
-    _id:        ObjectID,
-    supplier:   ObjectID,
-    delivery:      Number,
-    return:        Number,
-    status:     String, //can be: confirmed, received, returned
-    items:{
-        TYPE:{
-            count: Number,
-            ids:[String]
-        }
-    }
-}
-
-rentalreturns{
-    _id:        ObjectID,
 }

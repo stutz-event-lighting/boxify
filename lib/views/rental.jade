@@ -94,7 +94,9 @@ script.
     exports.checkData = function(){
         var self = this;
         if(this.props.data === undefined){
-            client.getRental(this.props.params.rental,{},function(err,data){
+            var opts = {};
+            if(this.props.project) opts.project = this.props.project;
+            client.getRental(this.props.params.rental,opts,function(err,data){
                 console.log("result",err,data)
                 if(err) return;
                 self.props.data = data;
