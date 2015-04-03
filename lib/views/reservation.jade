@@ -100,7 +100,7 @@ script.
     }
     
     exports.selectCount = function(e){
-        e.target.select();
+        setTimeout(e.target.select.bind(e.target))
     }
     
     exports.removeItem = function(type){
