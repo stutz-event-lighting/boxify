@@ -16,12 +16,16 @@ append body
                 tr
                     th Name
                     th Kunde
+                    th Beginn
+                    th Ende
             tbody
                 each item in this.props.items
                     tr(onClick=this.edit(item))
                         td= item.name
+                        td= item.customer
+                        td= moment(item.start).format("LLL")
                         td
-                            = item.customer
+                            = moment(item.end).format("LLL")
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
     if this.props.create
@@ -67,6 +71,7 @@ script.
     var client = require("../client.js");
     var Select = require("react-select");
     var DatePicker = require("react-widgets").DateTimePicker;
+    var moment = require("moment");
     
     
     exports.checkData = function(){
