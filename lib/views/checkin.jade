@@ -65,7 +65,36 @@ append body
                                         if log.supplier
                                             img(src="/api/suppliers/"+log.supplier+"/image" height="25px")
                                     td= this.props.data.types[log.type].name
-                                    td= log.count                        
+                                    td= log.count
+    if this.props.stack
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Inhalt kontrollieren
+                    .modal-body(style="maxHeight:500px;overflowY:auto")
+                        table.table.table-striped
+                            thead
+                                tr
+                                    th Name
+                                    th Vorher
+                                    th Nachher
+                            tbody
+                                each item,type in this.props.stack.contents
+                                    tr
+                                        td= this.props.data.types[type].name
+                                        td= item.count
+                                        td
+                                            = item.newcount || (item.ids?0:item.count)
+                                            if !item.ids
+                                                .btn-toolbar
+                                                    button.btn.btn-danger.btn-xs
+                                                        i.glyphicon.glyphicon-minus
+                                                    button.btn.btn-success.btn-xs
+                                                        i.glyphicon.glyphicon-plus
+                    .modal-footer
+                        button.btn.btn-primary(onClick=this.closeStack) Fertig
 script.
     var client = require("../client.js");
     
@@ -100,7 +129,9 @@ script.
     }
     
     exports.handleScan = function(code){
-        if(code.kind != "EQ") return true;        
+        if(code.kind != "EQ") return true;
+        if(this.props.stack) return this.handleStackScan(code);        
+        
         var type = this.props.data.types[code.type];
         if(!code.count) code.count = 1;
         
@@ -150,6 +181,116 @@ script.
             this.log(code.type,code.count);
         }
         this.update();
+        if(code.item){
+            this.handleStackScan(code);
+        }
+    }
+    
+    exports.startStack = function(code){
+        var self = this;
+        client.getEquipment(code.type,code.item,function(err,data){
+            var parent = self.props.stack;            
+            var newStack = {type:code.type,item:code.item,contents:{},parent:parent};
+            for(var type in data.item.contents){
+                newStack.contents[type] = {count:data.item.contents[type].count}
+                if(data.item.contents[type].ids){
+                    newStack.contents[type].newcount = 0;
+                    newStack.contents[type].ids = data.item.contents[type].ids;
+                    newStack.contents[type].newids = {};
+                }else{
+                    newStack.contents[type].newcount = data.item.contents[type].count;
+                }
+            }
+            this.props.stack = newStack;
+            if(parent){
+                parent.contents[code.type].newids[code.item] = newStack;
+                parent.contents[code.type].newcount++;
+            }
+            this.update();
+        }.bind(this))
+    }
+    
+    exports.handleStackScan = function(code){
+        if(code.item){
+            var stack = this.props.stack;
+            if(!stack){
+                this.startStack(code);
+            }else{
+                if(!stack.contents[code.type]) stack.contents[code.type] = {count:0,newcount:0,ids:[],newids:{}};
+                if(stack.contents[code.type].newids[code.item]){
+                    this.props.stack = stack.contents[code.type].newids[code.item];
+                    this.update();
+                }else{
+                    this.startStack(code);
+                }
+            }            
+        }
+    }
+    
+    exports.closeStack = function(){
+        var stack = this.props.stack;
+        var contents = {};
+        for(var type in stack.contents){
+            contents[type] = {count:stack.contents[type].newcount};
+            var ids = Object.keys(stack.contents[type].newids||{}).map(function(id){return parseFloat(id)});
+            if(ids.length){
+                contents[type].ids = ids;
+            }
+        }        
+        client.saveEquipment(stack.type,stack.item,{contents:contents},function(err){
+            if(err) return;
+            if(!stack.parent){
+                var total = {};
+                this.calcStackTotal(total,stack);
+                var error = false;
+                loop: for(var type in total){
+                    var t = this.props.data.types[type];
+                    if(total[type].count > t.available - t.count){
+                        error = true;
+                        break;
+                    }
+                    if(total[type].ids){
+                        for(var i = 0; i < total[type].ids.length; i++){
+                            if(this.props.data.types[type].ids && this.props.data.types[type].ids.indexOf(total[type].ids[i]) >= 0){
+                                error = true;
+                                break loop;
+                            }
+                        }
+                    }                    
+                }
+                
+                if(error){
+                    this.playErrorSound();
+                }else{
+                    for(var type in total){
+                        if(this.props.data.types[type].count === undefined) this.props.data.types[type].count = 0;
+                        this.props.data.types[type].count += total[type].count;
+                        this.log(parseFloat(type),total[type].count);
+                        if(total[type].ids){
+                            if(!this.props.data.types[type].ids) this.props.data.types[type].ids = [];
+                            for(var i = 0; i < total[type].ids.length; i++){
+                                this.props.data.types[type].ids.push(total[type].ids[i])
+                            }
+                        }
+                    }
+                }
+            }
+            
+            this.props.stack = stack.parent;
+            this.update();
+        }.bind(this))
+    }
+    
+    exports.calcStackTotal = function(total,item){
+        for(var type in item.contents){
+            if(!total[type]) total[type] = {count:0};
+            total[type].count += item.contents[type].newcount;
+            for(var id in item.contents[type].newids){
+                if(!total[type].ids) total[type].ids = [];
+                total[type].ids.push(parseFloat(id));
+                this.calcStackTotal(total,item.contents[type].newids[id]);
+            }
+        }
     }
     
     exports.hasFromSuppliers = function(type){

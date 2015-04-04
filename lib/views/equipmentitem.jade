@@ -143,6 +143,7 @@ script.
     
     exports.handleScan = function(code){
         console.log("SCAN",code);
+        if(!code.count) code.count = 1;
         if(this.props.remove){
             if(!this.props.item.contents[code.type]){
                 this.playErrorSound();
@@ -155,7 +156,6 @@ script.
                     return;
                 }else{
                     this.props.item.contents[code.type].newids.splice(index,1);
-                    code.count = 1;
                 }
             }
             this.props.item.contents[code.type].newcount -= code.count;
@@ -173,7 +173,6 @@ script.
                     if(err) return this.playErrorSound();
                     if(this.props.item.contents[code.type] && this.props.item.contents[code.type].newids && this.props.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
                     if(container && container != this.props.params.id) return this.playErrorSound();                    
-                    code.count = 1;
                     this.continueAddingItems(code);
                 }.bind(this))
             }else{

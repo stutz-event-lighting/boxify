@@ -70,6 +70,7 @@ append body
                                     td= log.count                        
 script.
     var client = require("../client.js");
+    var async = require("async");
     
     exports.checkData = function(){
         var self = this;
@@ -103,13 +104,14 @@ script.
         this.update();
     }
     
-    exports.handleScan = function(code){
+    exports.handleScan = function(code,cb){
+        var self = this;
+        cb = cb||function(){}
         if(code.kind != "EQ") return true;        
         var type = this.props.data.types[code.type];
         if(!code.count) code.count = 1;
         
         if(this.props.remove){
-
             var missing = type.suppliers.own.count||0;
             if(code.count > missing){
                 this.playErrorSound();
@@ -133,11 +135,10 @@ script.
             var missing = type.suppliers.own.available-(type.suppliers.own.count||0);
 
             if((code.count) > missing){
-            this.playErrorSound();
+                this.playErrorSound();
                 code.count = missing;
             }
             if(!code.count) return;
-            
             if(code.item){
                 if((type.suppliers.own.ids||[]).indexOf(code.item) >= 0){
                     this.playErrorSound();
@@ -153,6 +154,24 @@ script.
             this.log(code.type,code.count);
         }
         this.update();
+        if(code.item){
+            client.getEquipment(code.type,code.item,function(err,data){
+                var item = data.item;
+                async.eachSeries(Object.keys(item.contents),function(type,cb){
+                    type = parseFloat(type);
+                    var it = item.contents[type];
+                    if(it.ids){
+                        async.eachSeries(it.ids,function(id,cb){
+                            self.handleScan({kind:"EQ",type:type,item:id},cb)
+                        },cb);
+                    }else{
+                        self.handleScan({kind:"EQ",type:type,count:it.count},cb);
+                    }
+                },cb)
+            }.bind(this))
+        }else{
+            if(cb) cb();
+        }
     }
     
     exports.hasFromSuppliers = function(type){
