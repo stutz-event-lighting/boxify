@@ -17,6 +17,10 @@ append body
                     h3 Daten
                     .form-horizontal
                         .form-group
+                            label.col-lg-2.control-label Seriennummer
+                            .col-lg-10
+                                input.form-control(placeholder="Seriennummer" value=this.props.item.serialnumber||"" onChange=this.onSerialNumberChange)
+                        .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
                                 TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.onCommentChange)
@@ -28,7 +32,10 @@ append body
                     .badge OK
                 .col-md-3.col-xs-6
                     h4 Aktueller Standort
-                    | Lager
+                    if this.props.location
+                        a(href="/customers/"+this.props.location._id)= this.props.location.name
+                    else
+                        | Lager
                 .col-md-3.col-xs-6
                     h4 Letzte Wartung
                     | 12.12.2014
@@ -60,24 +67,32 @@ append body
                                                 | Objekt entfernt
             .row
                 .col-xs-12
-                    h3
+                    h3 
                         | Inhalt
-                        button.btn.btn-primary.pull-right
-                            i.glyphicon.glyphicon-pencil
-                            |  Inhalt bearbeiten
-
+                        .btn-group.pull-right(onClick=this.toggleMode)
+                            button(className="btn btn-"+(this.props.remove?"primary":"default"))
+                                i.glyphicon.glyphicon-minus
+                            button(className="btn btn-"+(this.props.remove?"default":"primary"))
+                                i.glyphicon.glyphicon-plus                                                            
                     table.table.table-striped.table-hover
                         thead
                             tr
                                 th ID
                                 th Name
                                 th Menge
+                                th Einzel IDs
                         tbody
-                            each item in this.props.item.content
-                                tr
-                                    td= item.type
-                                    td= item.name
-                                    td= item.count||item.ids.length
+                            each item, id in this.props.item.contents
+                                if item.newcount > 0
+                                    tr
+                                        td= id
+                                        td= item.name
+                                        td= item.newcount
+                                        td
+                                            each iid, i in item.newids
+                                                if i > 0
+                                                    = ", "
+                                                a(href="/equipment/"+id+"/"+iid)= iid
 script.
     var client = require("../client.js");
     var TextArea = require("react-textarea-autosize");
@@ -95,9 +110,21 @@ script.
                 if(err) return;
                 self.props.item = data.item;
                 self.props.logs = data.logs;
+                self.props.location = data.location;
+                for(var type in self.props.item.contents){
+                    self.props.item.contents[type].newcount = self.props.item.contents[type].count;
+                    if(self.props.item.contents[type].ids){
+                        self.props.item.contents[type].newids = JSON.parse(JSON.stringify(self.props.item.contents[type].ids));
+                    }
+                }
                 self.update();
             });
         }
+    }
+    
+    exports.onSerialNumberChange = function(e){
+        this.props.item.serialnumber = e.target.value;
+        this.update();
     }
     
     exports.onCommentChange = function(e){
@@ -105,12 +132,104 @@ script.
         this.update();
     }
 
+    exports.toggleMode = function(){
+        if(this.props.remove){
+            delete this.props.remove;
+        }else{
+            this.props.remove = true;
+        }
+        this.update();
+    }
+    
+    exports.handleScan = function(code){
+        console.log("SCAN",code);
+        if(this.props.remove){
+            if(!this.props.item.contents[code.type]){
+                this.playErrorSound();
+                return;
+            }
+            if(code.item){
+                var index = (this.props.item.contents[code.type].newids||[]).indexOf(code.item);
+                if(index < 0){
+                    this.playErrorSound();
+                    return;
+                }else{
+                    this.props.item.contents[code.type].newids.splice(index,1);
+                    code.count = 1;
+                }
+            }
+            this.props.item.contents[code.type].newcount -= code.count;
+            if(this.props.item.contents[code.type].newcount < 0){
+                delete this.props.item.contents[code.type].newcount;
+                delete this.props.item.contents[code.type].newids;
+            }
+            console.log(this.props.item.contents);
+            this.update();
+        }else{
+            if(code.item){
+                console.log("getting container");
+                client.getEquipmentContainer(code.type,code.item,function(err,container){
+                    console.log("container:",container);
+                    if(err) return this.playErrorSound();
+                    if(this.props.item.contents[code.type] && this.props.item.contents[code.type].newids && this.props.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
+                    if(container && container != this.props.params.id) return this.playErrorSound();                    
+                    code.count = 1;
+                    this.continueAddingItems(code);
+                }.bind(this))
+            }else{
+                client.getEquipmentTypeStock(code.type,function(err,count){
+                    if(err) return this.playErrorSound();
+                    count += this.props.item.contents[code.type]?(this.props.item.contents[code.type].count||0):0;
+                    if(code.count > count) code.count = count;
+                    this.continueAddingItems(code);
+                }.bind(this))
+            }
+        }
+    }
+    
+    exports.continueAddingItems = function(code){   
+        if(!this.props.item.contents[code.type]){
+            client.getEquipmentTypeName(code.type,function(err,name){
+                if(err) return this.playErrorSound();
+                this.props.item.contents[code.type] = {name:name};
+                next.call(this);
+            }.bind(this))
+        }else{
+            next.call(this);
+        }
+        function next(){
+            this.props.item.contents[code.type].newcount = (this.props.item.contents[code.type].newcount||0)+code.count;
+            if(code.item){
+                if(!this.props.item.contents[code.type].newids) this.props.item.contents[code.type].newids = [];
+                this.props.item.contents[code.type].newids.push(code.item);
+            }
+            console.log(this.props.item.contents)
+            this.update();
+        };    
+    }
+    
+    exports.playErrorSound = function(){
+        new Audio("/public/audio/error.wav").play();
+    }
+    
     exports.cancel = function(){
         history.back();
     }
 
     exports.save = function(){
-        client.saveEquipment(this.props.item.type,this.props.item.id,{comment:this.props.item.comment},function(err){
+    
+        var contents = {};
+        for(var type in this.props.item.contents){
+            var t = this.props.item.contents[type];
+            if(t.newcount){
+                contents[type] = {count:t.newcount};
+                if(t.newids && t.newids.length){
+                    contents[type].ids = t.newids;
+                }
+            }
+        }
+    
+        client.saveEquipment(this.props.item.type,this.props.item.id,{comment:this.props.item.comment,serialnumber:this.props.item.serialnumber||"",contents:contents},function(err){
             if(err) return true;
             back(true);
         });
