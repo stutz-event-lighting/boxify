@@ -21,7 +21,7 @@
     "express": "~4.10.4",
     "express-ws": "^0.2.4",
     "jade": "~1.8.2",
-    "jade2react": "^0.2.1",
+    "jade2react": "^0.2.2",
     "moment": "~2.9.0",
     "mongodb": "~1.4.26",
     "path-to-regexp": "~1.0.2",
