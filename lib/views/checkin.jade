@@ -245,13 +245,14 @@ script.
                 var error = false;
                 loop: for(var type in total){
                     var t = this.props.data.types[type];
-                    if(total[type].count > t.available - t.count){
+                    var own = t.suppliers.own;
+                    if(!own || total[type].count > own.available - own.count){
                         error = true;
                         break;
                     }
                     if(total[type].ids){
                         for(var i = 0; i < total[type].ids.length; i++){
-                            if(this.props.data.types[type].ids && this.props.data.types[type].ids.indexOf(total[type].ids[i]) >= 0){
+                            if(own.ids && own.ids.indexOf(total[type].ids[i]) >= 0){
                                 error = true;
                                 break loop;
                             }
@@ -265,11 +266,12 @@ script.
                     for(var type in total){
                         if(this.props.data.types[type].count === undefined) this.props.data.types[type].count = 0;
                         this.props.data.types[type].count += total[type].count;
+                        this.props.data.types[type].suppliers.own.count += total[type].count;
                         this.log(parseFloat(type),total[type].count);
                         if(total[type].ids){
-                            if(!this.props.data.types[type].ids) this.props.data.types[type].ids = [];
+                            if(!this.props.data.types[type].suppliers.own.ids) this.props.data.types[type].suppliers.own.ids = [];
                             for(var i = 0; i < total[type].ids.length; i++){
-                                this.props.data.types[type].ids.push(total[type].ids[i])
+                                this.props.data.types[type].suppliers.own.ids.push(total[type].ids[i])
                             }
                         }
                     }
