@@ -24,6 +24,10 @@
     margin-top:-12px;
 }
 
+.container{
+    position:relative;
+}
+
 .bs-navbar-collapse{
     background-color:#F8F8F8;
 }

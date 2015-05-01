@@ -1,12 +1,9 @@
 users
 {
-    username:       String,
-    password:       String,
-    pin:            String,
-    permissions: {
-        users:      Bool,
-        equipment:  Bool
-    }
+    firstname:      String,
+    lastname:       String,
+    email:          String,
+    password:       String
 }
 
 contacts

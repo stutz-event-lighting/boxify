@@ -1,16 +1,39 @@
 Navbar(componentClass="header" brand=this.brand() className="bs-docs-nav" staticTop role="banner" toggleNavKey=0)
     = this.create()
+    if client.session
+        OverlayTrigger(trigger="click" placement="bottom" overlay=this.profile()[0])
+            Button(style="position:absolute;right:0px;top:13px")
+                .glyphicon.glyphicon-user
+    else
+        a.btn.btn-default(style="position:absolute;right:0px;top:13px" href="/login")
+            i.glyphicon.glyphicon-log-in
+            |  Einloggen
+mixin profile()
+    Popover
+        div Eingeloggt als 
+        b= client.session.user.firstname+" "+client.session.user.lastname
+        br
+        br
+        .btn.btn-default.pull-right(onClick=this.logout)
+            .glyphicon.glyphicon-log-out
+            |  Ausloggen
+        br
+        br
 script.
     var Navbar = require("react-bootstrap/Navbar");
-    var Nav = require("react-bootstrap/Nav")
+    var Nav = require("react-bootstrap/Nav");
+    var Popover = require("react-bootstrap/Popover");
+    var OverlayTrigger = require("react-bootstrap/OverlayTrigger");
+    var Button = require("react-bootstrap/Button");
+    var client = require("../client.js");
     var menu = {
         "/equipment":"Equipment",
         "/projects":"Projekte",
         "/rentals":"Zumieten",
         "/customers":"Kunden",
         "/suppliers":"Zulieferer",
-        "/electronic":"Elektronik"
-        //"/users":"Benutzer"
+        "/electronic":"Elektronik",
+        "/users":"Benutzer"
     };
     
     exports.brand = function(){
@@ -28,6 +51,12 @@ script.
                 React.DOM.a({href:link},menu[link])
             )
         }))
+    }
+    
+    exports.logout = function(){
+        client.deleteSession(function(){
+            location.reload();
+        })
     }
     
     function isActive(path){

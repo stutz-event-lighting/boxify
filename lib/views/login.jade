@@ -1,0 +1,35 @@
+extends ./base.jade
+
+append body
+    .container
+        h1 Einloggen
+        .form-horizontal
+            .form-group
+                label.col-lg-2.control-label E-Mail
+                .col-lg-10
+                    input.form-control(type="text" value=this.props.email||"" onChange=this.onMailChanged)
+            .form-group
+                label.col-lg-2.control-label Passwort
+                .col-lg-10
+                    input.form-control(type="password" value=this.props.password||"" onChange=this.onPasswordChanged)
+        .btn.btn-primary.pull-right(onClick=this.login) Anmelden
+script.
+    var client = require("../client.js");
+        
+    exports.onMailChanged = function(e){
+        this.props.email = e.target.value;
+        this.update();
+    }
+    
+    exports.onPasswordChanged = function(e){
+        this.props.password = e.target.value;
+        this.update();
+    }
+    
+    exports.login = function(){
+        if(!this.props.email || !this.props.password) return;
+        client.createSession({email:this.props.email,password:this.props.password},function(err,sessionid){
+            if(err) return alert("Login fehlgeschlagen!");
+            location.href = document.referrer;
+        });
+    }

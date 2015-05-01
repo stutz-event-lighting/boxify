@@ -1,10 +1,8 @@
-#sel                
+#sel
     = require("./menu.jade")()
     block body
 script.
     exports.update = function(){
-        console.log("replacing state",this.props);
         history.replaceState(this.props,undefined,location.pathname);
         this.forceUpdate();
     }
-    

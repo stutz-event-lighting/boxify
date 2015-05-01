@@ -10,16 +10,16 @@ append body
             thead
                 tr
                     th Name
-                    th Rechte
+                    th E-Mail
                     th Letze Aktivität
             tbody
                 each user in this.props.users
-                    tr
-                        td= user.username
-                        td
+                    tr(onClick=this.edit(user))
+                        td= user.firstname+" "+user.lastname
+                        td= user.email
                         td
                             | 12.12.2014 12:34:12
-                            button.btn.btn-default.btn-xs.pull-right
+                            button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(user))
                                 i.glyphicon.glyphicon-trash
     if this.props.create
         .modal(style="display:block").fade.in
@@ -31,9 +31,21 @@ append body
                     .modal-body
                         .form-horizontal
                             .form-group
-                                label.col-lg-2.control-label Benutzername
+                                label.col-lg-2.control-label Vor- und Nachname
                                 .col-lg-10
-                                    input.form-control(type="text" value=this.props.create.username onChange=this.validateCreateName.bind(this))
+                                    .row
+                                        .col-xs-6
+                                            input.form-control(type="text" value=this.props.create.firstname onChange=this.validateCreateFirstname.bind(this))
+                                        .col-xs-6
+                                            input.form-control(type="text" value=this.props.create.lastname onChange=this.validateCreateLastname.bind(this))
+                            .form-group
+                                label.col-lg-2.control-label E-Mail
+                                .col-lg-10
+                                    input.form-control(type="text" value=this.props.create.email onChange=this.validateCreateMail.bind(this))
+                            .form-group
+                                label.col-lg-2.control-label Passwort
+                                .col-lg-10
+                                    input.form-control(type="password" value=this.props.create.password onChange=this.validateCreatePassword.bind(this))
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
@@ -51,12 +63,27 @@ script.
     }
     
     exports.create = function(){
-        this.props.create = {username:""};
+        this.props.create = {firstname:"",lastname:"",email:"",password:""};
         this.update();
     }
     
-    exports.validateCreateName = function(e){
-        this.props.create.username = e.target.value;
+    exports.validateCreateFirstname = function(e){
+        this.props.create.firstname = e.target.value;
+        this.update();
+    }
+    
+    exports.validateCreateLastname = function(e){
+        this.props.create.lastname = e.target.value;
+        this.update();
+    }
+    
+    exports.validateCreateMail = function(e){
+        this.props.create.email = e.target.value;
+        this.update();
+    }
+    
+    exports.validateCreatePassword = function(e){
+        this.props.create.password = e.target.value;
         this.update();
     }
     
@@ -67,12 +94,34 @@ script.
     
     exports.confirmCreate = function(){
         var self = this;
-        client.createUser(this.props.create.username,function(err,id){
+        client.createUser({
+            firstname:this.props.create.firstname,
+            lastname:this.props.create.lastname,
+            email:this.props.create.email,
+            password:this.props.create.password            
+        },function(err,id){
             if(err) return;
             delete self.props.create;
             self.update();
             visit("/users/"+id);            
         });
+    }
+    
+    exports.edit = function(user){    
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/users/"+user._id)
+        }        
+    }
+    
+    exports.delete = function(user){
+        var self = this;
+        return function(){
+            client.deleteUser(user._id,function(err){
+                delete self.props.users;
+                self.update();
+            });
+        }
     }
     
     
