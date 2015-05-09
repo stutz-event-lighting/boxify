@@ -58,6 +58,23 @@ append body
                                     .input-group
                                         input.form-control(type="text" placeholder="Höhe" value=this.props.height onChange=this.onHeightChange onBlur=this.onHeightBlur)
                                         span.input-group-addon cm
+                    h4 Erlauber Inhalt
+                    table.table.table-striped.table-hover
+                        thead
+                            tr
+                                th ID
+                                th Name
+                                th
+                                    button.btn.btn-primary.btn-xs.pull-right(onClick=this.addContents)
+                                        i.glyphicon.glyphicon-plus
+                        tbody
+                            each type in this.props.item.contents
+                                tr
+                                    td= type._id
+                                    td= type.name
+                                    td
+                                        button.btn.btn-default.btn-xs.pull-right
+                                            i.glyphicon.glyphicon-trash
             br
             br
             .row
@@ -90,31 +107,6 @@ append body
                                                 button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem(item))
                                                     i.glyphicon.glyphicon-trash
                                         - }).bind(this)(item)
-
-
-            .row
-                .col-xs-12
-                    h3 Zubehör
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th ID
-                                th Name
-                                th Menge
-                                th Standard
-                                th
-                                    button.btn.btn-primary.btn-xs.pull-right
-                                        i.glyphicon.glyphicon-plus
-                        tbody
-                            each accessory in this.props.item.accessories
-                                tr
-                                    td= accessory._id
-                                    td= accessory.name
-                                    td= accessory.count
-                                    td= accessory.default?"Ja":"Nein"
-                                    td
-                                        button.btn.btn-default.btn-xs.pull-right
-                                            i.glyphicon.glyphicon-trash
     if this.props.increase
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
@@ -133,11 +125,28 @@ append body
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmIncrease)= this.props.increase.type=="add"?"Hinzufügen":"Entfernen"
+    if this.props.addcontents
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Inhaltstyp hinzufügen
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Equipmenttyp
+                                .col-lg-10
+                                    Select(value=this.props.addcontents.type asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelAddContents) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmAddContents) Hinzufügen
 script.
     var client = require("../client.js");
     var DropdownButton = require("react-bootstrap/DropdownButton");
     var MenuItem = require("react-bootstrap/MenuItem");
     var async = require("async");
+    var Select = require("react-select");
 
     function isInt(str){
         return /^[0-9]*$/.test(str)
@@ -344,6 +353,38 @@ script.
             })
         }
     }
+    
+    exports.addContents = function(){
+        this.props.addcontents = {type:null};
+        this.update();
+    }
+    
+    exports.findTypes = function(input,cb){
+        client.findEquipmentTypes({search:input},function(err,types){
+            cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
+        });
+    }
+    
+    exports.onEquipmenttypeChanged = function(id,selection){
+        if(id.length){
+            this.props.addcontents.type = selection[0];
+        }else{
+            this.props.addcontents.type = null;
+        }
+        this.update();
+    }
+    
+    exports.confirmAddContents = function(){
+        this.props.item.contents.push({_id:this.props.addcontents.type.value,name:this.props.addcontents.type.label});
+        delete this.props.addcontents;
+        this.update();
+    }
+    
+    exports.cancelAddContents = function(){
+        delete this.props.addcontents;
+        this.update();
+    }
+    
     exports.cancel = function(){
         history.back();
     }
@@ -356,7 +397,8 @@ script.
             width:this.props.item.width,
             height:this.props.item.height,
             image:this.props.item.image?this.props.item.image.url:undefined,
-            category:this.props.item.category
+            category:this.props.item.category,
+            contents:this.props.item.contents.map(function(type){return type._id})
         },function(err){
             if(err) return true;
             back(true);

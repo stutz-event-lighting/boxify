@@ -94,6 +94,9 @@ equipmenttypes
             count:  Number,
             default:Boolean
         }
+    ],
+    contents:[
+        TYPE
     ]
 }
 
