@@ -14,7 +14,12 @@ append body
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
-                .col-xs-12
+                .col-lg-3.col-md-4.col-sm-6.col-xs-12
+                    div.text-center
+                        img.img-responsive(src="/api/equipment/"+this.props.item.type+"/image")
+                        br
+                        img(src="/api/barcode/EQ-"+this.props.item.type+"-"+this.props.item.id+"/"+this.props.item.name width="100%")
+                .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h3 Daten
                     .form-horizontal
                         .form-group
@@ -25,27 +30,30 @@ append body
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
                                 TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.onCommentChange)
-            .row
-                .col-xs-12
-                    h3 Informationen
-                .col-md-3.col-xs-6
-                    h4 Aktueller Standort
-                    if this.props.location
-                        a(href="/customers/"+this.props.location._id)= this.props.location.name
-                    else
-                        | Lager
-                    if this.props.container
-                        = " in "
-                        a(href="/equipment/"+this.props.container.type+"/"+this.props.container.id)= this.props.container.name
-                .col-md-3.col-xs-6
-                    h4 Status
-                    .badge OK                        
-                .col-md-3.col-xs-6
-                    h4 Letzte Wartung
-                    | 12.12.2014
-                .col-md-3.col-xs-6
-                    h4 Nächste Wartung
-                    | 12.12.2015
+                    .row
+                        .col-md-4.col-xs-6
+                            h4 Aktueller Standort
+                            if this.props.location
+                                a(href="/customers/"+this.props.location._id)= this.props.location.name
+                            else
+                                | Lager
+                        .col-md-4.col-xs-6
+                            h4 Case
+                            if this.props.container
+                                a(href="/equipment/"+this.props.container.type+"/"+this.props.container.id)= this.props.container.name
+                            else
+                                | Keines
+                        .col-md-4.col-xs-6
+                            h4 Status
+                            .badge OK
+                    br
+                    .row
+                        .col-md-4.col-xs-6
+                            h4 Letzte Wartung
+                            | 12.12.2014
+                        .col-md-4.col-xs-6
+                            h4 Nächste Wartung
+                            | 12.12.2015
             .row
                 .col-xs-12
                     h3
