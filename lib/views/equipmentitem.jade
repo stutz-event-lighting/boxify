@@ -4,7 +4,8 @@ append body
     - this.checkData();
     if this.props.item
         .container
-            h2 Equipment bearbeiten
+            h2
+                = this.props.item.name+" "+this.props.item.id
                 .btn-toolbar.pull-right
                     button.btn.btn-default(onClick=function(){this.cancel()}.bind(this))
                         i.glyphicon.glyphicon-chevron-left
@@ -28,14 +29,17 @@ append body
                 .col-xs-12
                     h3 Informationen
                 .col-md-3.col-xs-6
-                    h4 Status
-                    .badge OK
-                .col-md-3.col-xs-6
                     h4 Aktueller Standort
                     if this.props.location
                         a(href="/customers/"+this.props.location._id)= this.props.location.name
                     else
                         | Lager
+                    if this.props.container
+                        = " in "
+                        a(href="/equipment/"+this.props.container.type+"/"+this.props.container.id)= this.props.container.name
+                .col-md-3.col-xs-6
+                    h4 Status
+                    .badge OK                        
                 .col-md-3.col-xs-6
                     h4 Letzte Wartung
                     | 12.12.2014
@@ -111,6 +115,7 @@ script.
                 self.props.item = data.item;
                 self.props.logs = data.logs;
                 self.props.location = data.location;
+                self.props.container = data.container;
                 for(var type in self.props.item.contents){
                     self.props.item.contents[type].newcount = self.props.item.contents[type].count;
                     if(self.props.item.contents[type].ids){
