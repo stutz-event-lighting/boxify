@@ -81,6 +81,8 @@ append body
                                         td
                                             button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckin(io))
                                                 i.glyphicon.glyphicon-trash
+                    if Object.keys(this.props.item.balance).length
+                        .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles vom Kunden Material zurückgekommen!
 script.
     var client = require("../client.js");
     var moment = require("moment");
