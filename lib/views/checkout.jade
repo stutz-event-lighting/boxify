@@ -50,9 +50,11 @@ append body
                                                         = " "+supplier.available
                                                 | )
                 .col-md-4
-                    h3 
-                        | Verlauf
-                        .btn-group.pull-right
+                    .pull-left
+                        h3 Verlauf
+                    .btn-toolbar.pull-right(style="margin-top:18px")
+                        ScanButton.pull-left(onScan=this.handleScan)
+                        .btn-group.pull-left(style="margin-left:10px")
                             div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode) -
                             div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode) +
                     table.table.table-striped.table-hover
@@ -71,6 +73,7 @@ append body
 script.
     var client = require("../client.js");
     var async = require("async");
+    var ScanButton = require("./ScanButton.jade");
     
     exports.checkData = function(){
         var self = this;
