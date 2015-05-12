@@ -1,6 +1,6 @@
 {
   "name": "boxify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "lib/index.js",
   "directories": {
@@ -29,6 +29,7 @@
     "react-bootstrap": "~0.13.0",
     "react-select": "^0.3.2",
     "react-textarea-autosize": "~1.1.0",
-    "react-widgets": "^2.2.6"
+    "react-widgets": "^2.2.6",
+    "semver": "^4.3.4"
   }
 }

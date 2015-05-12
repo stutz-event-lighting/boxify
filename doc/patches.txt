@@ -1,3 +1,0 @@
-0.1.1
------------
-db.equipment.update({},{$set:{serialnumber:"",contents:{}},$unset:{content:true}},{multi:true})

@@ -70,7 +70,7 @@ script.
     }
     
     exports.onValueChanged = function(e){
-        this.state.type.value = e.value;
+        this.state.type.value = parseFloat(e.target.value);
         this.forceUpdate();
     }
     
@@ -81,10 +81,10 @@ script.
     
     exports.confirmScan = function(){
         var scan = {kind:"EQ",type:this.state.type._id};
-        if(typeof this.state.type.value == "string"){
+        if(!this.state.type.stock.length){
             scan.count = parseFloat(this.state.type.value);
         }else{
-            scan.id = this.state.type.value;
+            scan.item = this.state.type.value;
         }
         this.props.onScan(scan);
         delete this.state.type;
