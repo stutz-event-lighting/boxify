@@ -51,6 +51,11 @@ append body
                         button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
 script.
     var client = require("../client.js");
+    
+    exports.getNeededPermissions = function(){
+        return ["users_read"];
+    }
+    
     exports.checkData = function(){
         var self = this;
         if(!this.props.users){

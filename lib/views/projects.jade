@@ -73,7 +73,10 @@ script.
     var DatePicker = require("react-widgets").DateTimePicker;
     var moment = require("moment");
     
-    
+    exports.getNeededPermissions = function(){
+        return ["projects_read"];
+    }
+        
     exports.checkData = function(){
         var self = this;
         if(!this.props.items){

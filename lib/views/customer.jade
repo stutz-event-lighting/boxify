@@ -44,6 +44,10 @@ script.
     var client = require("../client.js");
     var moment = require("moment");
     
+    exports.getNeededPermissions = function(){
+        return ["customers_read"];
+    }
+    
     exports.checkData = function(){
         var self = this;
         if(this.props.item === undefined){

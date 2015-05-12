@@ -101,6 +101,10 @@ script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
     
+    exports.getNeededPermissions = function(){
+        return ["projects_read"];
+    }
+    
     exports.checkData = function(){
         var self = this;
         if(this.props.data === undefined){

@@ -84,6 +84,11 @@ append body
                             button.btn.btn-primary(onClick=this.confirmChangePin) Erstellen
 script.
     var client = require("../client.js");
+    
+    exports.getNeededPermissions = function(){
+        return ["users_read"];
+    }
+    
     exports.checkData = function(){
         console.log("checking data");
         var self = this;

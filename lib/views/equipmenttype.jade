@@ -154,7 +154,11 @@ script.
     function isFloat(str){
         return /^[0-9]*[.]*[0-9]*$/.test(str)
     }
-
+    
+    exports.getNeededPermissions = function(){
+        return ["equipment_read"];
+    }
+    
     exports.stockMode = function(){
         return !this.props.item.count || this.props.item.stock.length
     }

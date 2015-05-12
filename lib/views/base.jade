@@ -1,8 +1,26 @@
 #sel
-    = require("./menu.jade")()
-    block body
+    if this.needsLogin()
+        LoginPage(onLogin=this.update)
+    else
+        = require("./menu.jade")()
+        block body
 script.
+    var client = require("../client.js");
+    var LoginPage = require("./loginpage.jade");
+    
     exports.update = function(){
         history.replaceState(this.props,undefined,location.pathname);
         this.forceUpdate();
+    }
+    
+    exports.needsLogin = function(){
+        var needed = this.getNeededPermissions();
+        for(var i = 0; i < needed.length; i++){
+            if(!client.hasPermission(needed[i])) return true;
+        }
+        return false;
+    }
+    
+    exports.getNeededPermissions = function(){
+        return [];
     }

@@ -65,6 +65,11 @@ append body
                         button.btn.btn-primary(onClick=this.dismiss) Ich verstehe
 script.
     var client = require("../client.js");
+    
+    exports.getNeededPermissions = function(){
+        return ["suppliers_read"];
+    }
+    
     exports.checkData = function(){
         var self = this;
         if(!this.props.items){

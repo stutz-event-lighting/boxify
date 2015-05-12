@@ -56,6 +56,10 @@ append body
 script.
     var client = require("../client.js");
     
+    exports.getNeededPermissions = function(){
+        return ["equipment_read"];
+    }
+    
     exports.checkData = function(){
         var self = this;
         if(!this.props.categories){

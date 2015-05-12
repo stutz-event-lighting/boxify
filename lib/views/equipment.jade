@@ -94,6 +94,10 @@ script.
         })      
     }
     
+    exports.getNeededPermissions = function(){
+        return ["equipment_read"];
+    }
+    
     exports.search = function(e){
         this.props.search = e.target.value;
         delete this.props.items;

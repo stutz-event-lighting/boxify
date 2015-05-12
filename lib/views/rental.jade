@@ -91,6 +91,10 @@ script.
     var Select = require("react-select");
     var DatePicker = require("react-widgets").DateTimePicker;
     
+    exports.getNeededPermissions = function(){
+        return ["rentals_read"];
+    }
+    
     exports.checkData = function(){
         var self = this;
         if(this.props.data === undefined){

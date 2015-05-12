@@ -1,0 +1,57 @@
+.container(style="width:400px" onKeyDown=this.checkEnter)
+    img(src="/public/logo.png" width="100%" style="margin-top:100px;margin-bottom:50px")
+    if this.state.failed
+        .alert.alert-danger Login fehlgeschlagen
+    h2.form-signin-heading Bitte loggen Sie sich ein
+    label.sr-only(for='inputEmail') E-Mail
+    input#inputEmail.form-control(type='email' placeholder='E-Mail' value=this.state.email onChange=this.onMailChanged required='' autofocus='' style="border-bottom-left-radius:0px;border-bottom-left-radius:0px;margin-bottom:-1px")
+    label.sr-only(for='inputPassword') Password
+    input#inputPassword.form-control(type='password' placeholder='Passwort' value=this.state.password onChange=this.onPasswordChanged required='' style="border-top-left-radius:0px;border-top-left-radius:0px")
+    .checkbox
+      label
+        input(type='checkbox', value='remember-me' onChange=this.onRememberChanged checked=!localStorage.dontRememberEmail)
+        |  E-Mail merken
+    button.btn.btn-lg.btn-primary.btn-block(onClick=this.login) Einloggen
+script.
+    var client = require("../client.js");
+    
+    exports.getInitialState = function(){
+        return {email:localStorage.email||"",password:""};
+    }
+        
+    exports.onMailChanged = function(e){
+        this.state.email = e.target.value;
+        this.forceUpdate();
+    }
+    
+    exports.onPasswordChanged = function(e){
+        this.state.password = e.target.value;
+        this.forceUpdate();
+    }
+    
+    exports.onRememberChanged = function(e){
+        if(!e.target.checked){
+            delete localStorage.email;
+            localStorage.dontRememberEmail = 1;
+        }else{
+            delete localStorage.dontRememberEmail;        
+        } 
+        this.forceUpdate();
+    }
+    
+    exports.login = function(){
+        if(!localStorage.dontRememberEmail) localStorage.email = this.state.email;
+        if(!this.state.email || !this.state.password) return;
+        client.createSession({email:this.state.email,password:this.state.password},function(err,sessionid){
+            if(err){
+                this.state.failed = true;
+                this.forceUpdate();
+            }else{
+                this.props.onLogin();
+            }            
+        }.bind(this));
+    }
+    
+    exports.checkEnter = function(e){
+        if(e.keyCode == 13) this.login();
+    }
