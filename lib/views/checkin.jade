@@ -91,15 +91,16 @@ append body
                                             = item.newcount || (item.ids?0:item.count)
                                             if !item.ids
                                                 .btn-toolbar
-                                                    button.btn.btn-danger.btn-xs
+                                                    button.btn.btn-danger.btn-xs(onClick=this.decreaseStack(type))
                                                         i.glyphicon.glyphicon-minus
-                                                    button.btn.btn-success.btn-xs
+                                                    button.btn.btn-success.btn-xs(onClick=this.increaseStack(type))
                                                         i.glyphicon.glyphicon-plus
                     .modal-footer
                         button.btn.btn-primary(onClick=this.closeStack) Fertig
 script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
+    var async = require("async");
     
     exports.checkData = function(){
         var self = this;
@@ -108,12 +109,6 @@ script.
                 if(err) return;
                 self.props.data = data;
                 self.props.log = [];
-                data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-                for(var type in data.types){
-                    var category = data.categories[data.types[type].category];
-                    if(!category.types) category.types = [];
-                    category.types.push(type);                    
-                }
                 self.update();
             });
         }
@@ -133,7 +128,7 @@ script.
     
     exports.handleScan = function(code){
         if(code.kind != "EQ") return true;
-        if(this.props.stack) return this.handleStackScan(code);        
+        if(this.props.stack) return this.handleStackScan(code);
         
         var type = this.props.data.types[code.type];
         if(!code.count) code.count = 1;
@@ -191,26 +186,39 @@ script.
     
     exports.startStack = function(code){
         var self = this;
-        client.getEquipment(code.type,code.item,function(err,data){
-            var parent = self.props.stack;            
+        async.parallel([
+            function(cb){
+                client.getEquipment(code.type,code.item,cb);
+            },
+            function(cb){
+                client.getEquipmentType(code.type,cb);
+            }
+        ],function(err,results){
+            var data = results[0];
+            var type = results[1];
+            type.contents = type.contents.map(function(type){return type._id});
+        
+            var parent = self.props.stack;
             var newStack = {type:code.type,item:code.item,contents:{},parent:parent};
+            if(type.contents.length) this.props.stack = newStack;
+            for(var i = 0; i < type.contents.length; i++) newStack.contents[type.contents[i]] = {count:0,newcount:0};
             for(var type in data.item.contents){
-                newStack.contents[type] = {count:data.item.contents[type].count}
-                if(data.item.contents[type].ids){
+                newStack.contents[type].count = data.item.contents[type].count||0;
+                if(this.props.data.types[type].hasItems){
                     newStack.contents[type].newcount = 0;
-                    newStack.contents[type].ids = data.item.contents[type].ids;
+                    newStack.contents[type].ids = data.item.contents[type].ids||[];
                     newStack.contents[type].newids = {};
                 }else{
-                    newStack.contents[type].newcount = data.item.contents[type].count;
+                    newStack.contents[type].newcount = data.item.contents[type].count||0;
                 }
             }
-            this.props.stack = newStack;
+
             if(parent){
                 parent.contents[code.type].newids[code.item] = newStack;
                 parent.contents[code.type].newcount++;
             }
             this.update();
-        }.bind(this))
+        }.bind(this));        
     }
     
     exports.handleStackScan = function(code){
@@ -219,8 +227,13 @@ script.
             if(!stack){
                 this.startStack(code);
             }else{
-                if(!stack.contents[code.type]) stack.contents[code.type] = {count:0,newcount:0,ids:[],newids:{}};
-                if(stack.contents[code.type].newids[code.item]){
+                if(!stack.contents[code.type]){
+                    this.closeStack(function(){
+                        this.handleScan(code);
+                    }.bind(this));
+                    return;
+                }
+                if(stack.contents[code.type].newids && stack.contents[code.type].newids[code.item]){
                     this.props.stack = stack.contents[code.type].newids[code.item];
                     this.update();
                 }else{
@@ -230,7 +243,7 @@ script.
         }
     }
     
-    exports.closeStack = function(){
+    exports.closeStack = function(cb){
         var stack = this.props.stack;
         var contents = {};
         for(var type in stack.contents){
@@ -283,7 +296,26 @@ script.
             
             this.props.stack = stack.parent;
             this.update();
+            
+            if(typeof cb == "function") cb();
         }.bind(this))
+    }
+    
+    exports.increaseStack = function(type){
+        console.log("TYPE",type);
+        return function(){
+            console.log("STACK",this.props.stack)
+            console.log("NEWCOUNT",this.props.stack.contents[type].newcount);
+            this.props.stack.contents[type].newcount += 1;
+            this.update();
+        }.bind(this)
+    }
+    
+    exports.decreaseStack = function(type){
+        return function(){
+            this.props.stack.contents[type].newcount -= 1;
+            this.update();
+        }.bind(this)
     }
     
     exports.calcStackTotal = function(total,item){

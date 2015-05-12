@@ -108,6 +108,7 @@ script.
     }
     
     exports.handleScan = function(code,cb){
+        console.log("CODE",code);
         var self = this;
         cb = cb||function(){}
         if(code.kind != "EQ") return true;        
