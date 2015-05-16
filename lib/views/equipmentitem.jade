@@ -40,7 +40,7 @@ append body
                         .col-md-4.col-xs-6
                             h4 Case
                             if this.props.container
-                                a(href="/equipment/"+this.props.container.type+"/"+this.props.container.id)= this.props.container.name
+                                a(href="/equipment/"+this.props.container.type+"/"+this.props.container.id)= this.props.container.name+" "+this.props.container.id
                             else
                                 | Keines
                         .col-md-4.col-xs-6
