@@ -73,7 +73,7 @@ append body
                                     td= type._id
                                     td= type.name
                                     td
-                                        button.btn.btn-default.btn-xs.pull-right
+                                        button.btn.btn-default.btn-xs.pull-right(onClick=this.removeContents(type._id))
                                             i.glyphicon.glyphicon-trash
             br
             br
@@ -383,10 +383,18 @@ script.
         delete this.props.addcontents;
         this.update();
     }
-    
+        
     exports.cancelAddContents = function(){
         delete this.props.addcontents;
         this.update();
+    }
+    
+    exports.removeContents = function(type){
+        return function(){
+            console.log("OMG",type);
+            this.props.item.contents.splice(this.props.item.contents.map(function(type){return type._id}).indexOf(type),1);
+            this.update();
+        }.bind(this);
     }
     
     exports.cancel = function(){

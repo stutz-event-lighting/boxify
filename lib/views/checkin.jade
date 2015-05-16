@@ -205,7 +205,13 @@ script.
             var parent = self.props.stack;
             var newStack = {type:code.type,item:code.item,contents:{},parent:parent};
             if(type.contents.length) this.props.stack = newStack;
-            for(var i = 0; i < type.contents.length; i++) newStack.contents[type.contents[i]] = {count:0,newcount:0};
+            for(var i = 0; i < type.contents.length; i++) {
+                newStack.contents[type.contents[i]] = {count:0,newcount:0};
+                if(this.props.data.types[type.contents[i]].hasItems){
+                    newStack.contents[type.contents[i]].ids = [];
+                    newStack.contents[type.contents[i]].newids = {};
+                }
+            }
             for(var type in data.item.contents){
                 newStack.contents[type].count = data.item.contents[type].count||0;
                 if(this.props.data.types[type].hasItems){
