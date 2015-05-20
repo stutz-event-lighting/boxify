@@ -55,12 +55,14 @@ append body
                         thead
                             tr
                                 th Datum
+                                th Benutzer
                                 th Objekte
                         tbody
                             each io in this.props.io
                                 if io.type == "checkout"
                                     tr(onClick=this.editCheckout(io))
                                         td= moment(io.time).format("LLL")
+                                        td= this.props.users[io.user].firstname+" "+this.props.users[io.user].lastname
                                         td
                                             = io.count+" / "+io.total
                                             button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckout(io))
@@ -73,12 +75,14 @@ append body
                         thead
                             tr
                                 th Datum
+                                th Benutzer
                                 th Objekte
                         tbody
                             each io in this.props.io
                                 if io.type == "checkin"
                                     tr(onClick=this.editCheckin(io))
                                         td= moment(io.time).format("LLL")
+                                        td= this.props.users[io.user].firstname+" "+this.props.users[io.user].lastname
                                         td
                                             = io.count+" / "+io.total
                                             button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckin(io))
@@ -102,6 +106,7 @@ script.
                 self.props.reservations = data.reservations;
                 self.props.needsRental = data.needsRental;
                 self.props.io = data.io;
+                self.props.users = data.users;
                 self.update();
             });
         }
