@@ -1,7 +1,7 @@
 Navbar(componentClass="header" brand=this.brand() className="bs-docs-nav" staticTop role="banner" toggleNavKey=0)
     = this.create()
     if client.session
-        div(style="position:absolute;right:10px;top:0px")
+        .session
             | Eingeloggt als
             b= " "+client.session.user.firstname+" "+client.session.user.lastname
             br

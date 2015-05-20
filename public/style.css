@@ -24,6 +24,18 @@
     margin-top:-12px;
 }
 
+.session{
+    position:absolute;
+    right:10px;
+    top:0px;
+}
+
+@media (max-width:768px){
+    .session{
+        right:75px;
+    }
+}
+
 .container{
     position:relative;
 }
