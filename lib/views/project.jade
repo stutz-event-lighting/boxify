@@ -20,6 +20,10 @@ append body
                             label.col-lg-2.control-label Name
                             .col-lg-10
                                 input.form-control(placeholder="Kommentar" value=this.props.item.name onChange=this.onNameChange)
+                        .form-group
+                            label.col-lg-2.control-label Kommentar
+                            .col-lg-10
+                                TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.onCommentChange)
             .row
                 .col-xs-12
                     h3
@@ -92,6 +96,7 @@ append body
 script.
     var client = require("../client.js");
     var moment = require("moment");
+    var TextArea = require("react-textarea-autosize");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -114,6 +119,12 @@ script.
 
     exports.onNameChange = function(e){
         this.props.item.name = e.target.value;
+        this.update();
+    }
+    
+    
+    exports.onCommentChange = function(e){
+        this.props.item.comment = e.target.value;
         this.update();
     }
 
@@ -204,7 +215,7 @@ script.
     }
 
     exports.save = function(){
-        client.updateProject(this.props.item._id,{name:this.props.item.name},function(err){
+        client.updateProject(this.props.item._id,{name:this.props.item.name,comment:this.props.item.comment||""},function(err){
             if(err) return true;
             back(true);
         });
