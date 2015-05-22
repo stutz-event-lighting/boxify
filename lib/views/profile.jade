@@ -12,7 +12,7 @@ append body
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        img.img-responsive(src="/api/users/"+this.props.user._id+"/image" onClick=this.choseImage)
+                        img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
                         input(type="file" style="display:none" ref="image" onChange=this.applyImage)
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h4 Benutzerinformationen
@@ -98,12 +98,34 @@ script.
         this.props.user.lastname = e.target.value;
         this.update();
     }
+    
+    exports.getImagePath = function(){
+        return this.props.user.image?this.props.user.image.url:"/api/users/"+this.props.user._id+"/image";
+    }
 
-    exports.save = function(){        
+    exports.choseImage = function(e){
+        this.refs.image.getDOMNode().click();
+    }
+    
+    exports.applyImage = function(e){
+        var self = this;
+        var files = e.target.files;
+        if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                self.props.user.image = {file:files[0],url:e.target.result}
+                self.update();
+            }
+            reader.readAsDataURL(files[0]);
+        }
+    }
+
+    exports.save = function(){
         client.saveUser(this.props.user._id,{
             firstname:this.props.user.firstname,
             lastname:this.props.user.lastname,
-            email:this.props.user.email
+            email:this.props.user.email,
+            image:this.props.user.image?this.props.user.image.url:undefined
         },function(err){
             if(err) return true;
             back(true);
@@ -160,12 +182,4 @@ script.
             delete this.props.changepin;
             this.update();
         }.bind(this))
-    }
-    
-    exports.choseImage = function(){
-    
-    }
-    
-    exports.applyImage = function(){
-    
     }
