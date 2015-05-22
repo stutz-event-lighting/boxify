@@ -93,6 +93,12 @@ append body
                                                 i.glyphicon.glyphicon-trash
                     if Object.keys(this.props.item.balance).length
                         .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles vom Kunden Material zurückgekommen!
+            .row
+                .col-xs-12
+                    h3 Aktionen
+                        .btn-toolbar.pull-right
+                            if this.props.item.status == "ongoing"
+                                .btn.btn-primary(onClick=this.finish disabled=Object.keys(this.props.item.balance).length>0) Projekt abschliessen
 script.
     var client = require("../client.js");
     var moment = require("moment");
@@ -207,6 +213,14 @@ script.
                 self.update();
             });
         }
+    }
+    
+    exports.finish = function(){
+        client.finishProject(this.props.item._id,function(err){
+            if(err) return;
+            this.props.item.status = "finished";
+            this.update();
+        }.bind(this));
     }
 
 

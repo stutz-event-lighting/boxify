@@ -11,6 +11,9 @@ append body
                     button.btn.btn-default Suchen
             .btn-group(style="margin-left:10px")
                 button.btn.btn-primary(onClick=this.create) Erfassen
+        label
+            input(type="checkbox" checked=this.props.finished onChange=this.changeFinishedFilter)
+            |  Abgeschlossene Projekte anzeigen
         table.table.table-striped.table-hover
             thead
                 tr
@@ -80,7 +83,7 @@ script.
     exports.checkData = function(){
         var self = this;
         if(!this.props.items){
-            client.findProjects({search:this.props.search},function(err,items){
+            client.findProjects({search:this.props.search,finished:this.props.finished},function(err,items){
                 if(err) return;
                 self.props.items = items;
                 self.update();
@@ -90,6 +93,16 @@ script.
 
     exports.search = function(e){
         this.props.search = e.target.value;
+        delete this.props.items;
+        this.update();
+    }
+    
+    exports.changeFinishedFilter = function(e){
+        if(e.target.checked){
+            this.props.finished = true;
+        }else{
+            delete this.props.finished;
+        }
         delete this.props.items;
         this.update();
     }
@@ -126,7 +139,8 @@ script.
     }
     
     exports.findCustomers = function(input,cb){
-        client.findCustomers({search:input},function(err,customers){
+        console.log(this.props);
+        client.findCustomers({search:input,finished:false},function(err,customers){
             cb(err,{options:customers.map(function(customer){return {value:customer._id,label:customer.name}})})
         })
     }
