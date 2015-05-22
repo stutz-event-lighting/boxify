@@ -275,8 +275,7 @@ script.
                     return;
                 }
                 if(stack.contents[code.type].newids && stack.contents[code.type].newids[code.item]){
-                    this.props.stack = stack.contents[code.type].newids[code.item];
-                    this.update();
+                    this.playErrorSound();
                 }else{
                     this.startStack(code);
                 }
