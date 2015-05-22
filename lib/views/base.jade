@@ -15,6 +15,7 @@ script.
     
     exports.needsLogin = function(){
         var needed = this.getNeededPermissions();
+        if(needed && !client.session) return true;
         for(var i = 0; i < needed.length; i++){
             if(!client.hasPermission(needed[i])) return true;
         }
