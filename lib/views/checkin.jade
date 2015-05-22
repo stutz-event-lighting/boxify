@@ -58,16 +58,13 @@ append body
                     table.table.table-striped.table-hover
                         thead
                             th
+                            th
                             th Name
-                            th Anzahl
                         tbody
+                            - console.log("COMPLETE LOG",this.props.log)
                             each log in this.props.log
-                                tr
-                                    td
-                                        if log.supplier
-                                            img(src="/api/suppliers/"+log.supplier+"/image" height="25px")
-                                    td= this.props.data.types[log.type].name
-                                    td= log.count
+                                - console.log("LOG ITEM",log)
+                                +renderLogEntry(log,0)
     if this.props.stack
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
@@ -88,7 +85,7 @@ append body
                                         td= this.props.data.types[type].name
                                         td= item.count
                                         td
-                                            = item.newcount || (item.ids?0:item.count)
+                                            = item.newcount!==undefined?item.newcount:(item.ids?0:item.count)
                                             if !item.ids
                                                 .btn-toolbar
                                                     button.btn.btn-danger.btn-xs(onClick=this.decreaseStack(type))
@@ -96,7 +93,32 @@ append body
                                                     button.btn.btn-success.btn-xs(onClick=this.increaseStack(type))
                                                         i.glyphicon.glyphicon-plus
                     .modal-footer
+                        button.btn.btn-default(onClick=this.cancelStack) Abbrechen
                         button.btn.btn-primary(onClick=this.closeStack) Fertig
+mixin renderLogEntry(log,level)
+    - console.log("renderLogEntry",log,level);
+    tr
+        td(style=("color:"+(log.remove?"red":"green")))= level== 0?(log.remove?"-":"+"):""
+        td
+            if log.supplier && !level
+                img(src="/api/suppliers/"+log.supplier+"/image" height="25px")
+        td(style="paddingLeft:"+(level*20+8)+"px")
+            if !log.item
+                b= log.count+" "
+            = this.props.data.types[log.type].name
+            if log.item
+                b= " #"+log.item
+    each sub,type in log.contents
+        if sub.newids
+            each sublog in sub.newids
+                +renderLogEntry(sublog,level+1)
+        else
+            tr 
+                td
+                td
+                td(style="paddingLeft:"+((level+1)*20+8)+"px")
+                    b= sub.newcount+" "
+                    = this.props.data.types[type].name
 script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
@@ -132,14 +154,13 @@ script.
     
     exports.handleScan = function(code){
         if(code.kind != "EQ") return true;
-        if(this.props.stack) return this.handleStackScan(code);
         
         var type = this.props.data.types[code.type];
         if(!code.count) code.count = 1;
         
         if(this.props.remove){
-
             var missing = type.suppliers.own.count||0;
+            console.log("missing",missing,type);
             if(code.count > missing){
                 this.playErrorSound();
                 code.count = missing;
@@ -157,8 +178,12 @@ script.
                        
             type.count = (type.count||0)-code.count;
             type.suppliers.own.count = (type.suppliers.own.count||0) - code.count;
-            this.log(code.type,-code.count);
+            
+            code.count = -code.count;
+            code.remove = true;
+            this.log(code);
         }else{
+            if(this.props.stack) return this.handleStackScan(code);
             if(!type.available) return this.playErrorSound();
             var missing = type.suppliers.own.available-(type.suppliers.own.count||0);
 
@@ -173,19 +198,17 @@ script.
                     this.playErrorSound();
                     return;
                 }else{
-                    if(!type.suppliers.own.ids) type.suppliers.own.ids = [];
-                    type.suppliers.own.ids.push(code.item);
+                    this.startStack(code);
+                    return;
                 }
-            }
-            
+            }            
             type.count = (type.count||0)+code.count;
             type.suppliers.own.count = (type.suppliers.own.count||0) + code.count;
-            this.log(code.type,code.count);
+            
+            code.count = -code.count;
+            this.log(code);
         }
         this.update();
-        if(code.item){
-            this.handleStackScan(code);
-        }
     }
     
     exports.startStack = function(code){
@@ -204,14 +227,20 @@ script.
         
             var parent = self.props.stack;
             var newStack = {type:code.type,item:code.item,contents:{},parent:parent};
-            if(type.contents.length) this.props.stack = newStack;
+            
+            if(type.contents.length){
+                this.props.stack = newStack;
+            }
+            
             for(var i = 0; i < type.contents.length; i++) {
+                if(!this.props.data.types[type.contents[i]].suppliers) continue;
                 newStack.contents[type.contents[i]] = {count:0,newcount:0};
                 if(this.props.data.types[type.contents[i]].hasItems){
                     newStack.contents[type.contents[i]].ids = [];
                     newStack.contents[type.contents[i]].newids = {};
                 }
             }
+            
             for(var type in data.item.contents){
                 newStack.contents[type].count = data.item.contents[type].count||0;
                 if(this.props.data.types[type].hasItems){
@@ -222,11 +251,13 @@ script.
                     newStack.contents[type].newcount = data.item.contents[type].count||0;
                 }
             }
-
+            
             if(parent){
                 parent.contents[code.type].newids[code.item] = newStack;
                 parent.contents[code.type].newcount++;
             }
+                   
+
             this.update();
         }.bind(this));        
     }
@@ -265,50 +296,27 @@ script.
         }        
         client.saveEquipment(stack.type,stack.item,{contents:contents},function(err){
             if(err) return;
-            if(!stack.parent){
-                var total = {};
-                this.calcStackTotal(total,stack);
-                var error = false;
-                loop: for(var type in total){
-                    var t = this.props.data.types[type];
-                    var own = t.suppliers.own;
-                    if(!own || total[type].count > own.available - own.count){
-                        error = true;
-                        break;
-                    }
-                    if(total[type].ids){
-                        for(var i = 0; i < total[type].ids.length; i++){
-                            if(own.ids && own.ids.indexOf(total[type].ids[i]) >= 0){
-                                error = true;
-                                break loop;
-                            }
-                        }
-                    }                    
-                }
-                
-                if(error){
-                    this.playErrorSound();
-                }else{
-                    for(var type in total){
-                        if(this.props.data.types[type].count === undefined) this.props.data.types[type].count = 0;
-                        this.props.data.types[type].count += total[type].count;
-                        this.props.data.types[type].suppliers.own.count += total[type].count;
-                        this.log(parseFloat(type),total[type].count);
-                        if(total[type].ids){
-                            if(!this.props.data.types[type].suppliers.own.ids) this.props.data.types[type].suppliers.own.ids = [];
-                            for(var i = 0; i < total[type].ids.length; i++){
-                                this.props.data.types[type].suppliers.own.ids.push(total[type].ids[i])
-                            }
-                        }
-                    }
-                }
-            }
-            
             this.props.stack = stack.parent;
-            this.update();
-            
+            if(!stack.parent){
+                this.addItem(stack);
+            }else{
+                this.update();
+            }           
             if(typeof cb == "function") cb();
         }.bind(this))
+    }
+    
+    exports.cancelStack = function(){
+        var stack = this.props.stack;
+        var parent = stack.parent;
+        if(parent){
+            delete parent.contents[stack.type].newids[stack.item];
+            parent.contents[stack.type].newcount--;
+            this.props.stack = parent;
+        }else{
+            delete this.props.stack;
+        }
+        this.update();        
     }
     
     exports.increaseStack = function(type){
@@ -340,6 +348,54 @@ script.
         }
     }
     
+    exports.addItem = function(stack){
+        var total = {};
+        total[stack.type] = {count:1,ids:stack.item};
+        if(stack.contents){
+            this.calcStackTotal(total,stack);
+        }
+        
+        console.log("TOTAL",total);
+        
+        var error = false;
+        loop: for(var type in total){
+            var t = this.props.data.types[type];
+            var own = t.suppliers.own;
+            if(!own || total[type].count > own.available - own.count){
+                error = true;
+                break;
+            }
+            if(total[type].ids){
+                for(var i = 0; i < total[type].ids.length; i++){
+                    if(own.ids && own.ids.indexOf(total[type].ids[i]) >= 0){
+                        error = true;
+                        break loop;
+                    }
+                }
+            }
+        }
+        
+        if(error){
+            this.playErrorSound();
+        }else{
+            this.log(stack);
+            for(var type in total){
+                if(this.props.data.types[type].count === undefined) this.props.data.types[type].count = 0;
+                this.props.data.types[type].count = this.props.data.types[type].count||0 + total[type].count;
+                this.props.data.types[type].suppliers.own.count = this.props.data.types[type].suppliers.own.count||0 + total[type].count;
+                if(total[type].ids){
+                    if(!this.props.data.types[type].suppliers.own.ids) this.props.data.types[type].suppliers.own.ids = [];
+                    for(var i = 0; i < total[type].ids.length; i++){
+                        this.props.data.types[type].suppliers.own.ids.push(total[type].ids[i])
+                    }
+                }
+            }
+        }
+        
+        this.update();
+    }
+    
+    
     exports.hasFromSuppliers = function(type){
         for(var supplier in type.suppliers) if(supplier != "own" && type.suppliers[supplier].count > 0) return true;
         return false;
@@ -352,13 +408,13 @@ script.
                     type.suppliers[supplier].count --;
                     if(!type.suppliers[supplier]) delete type.suppliers[supplier].count;
                     type.count --;
-                    this.log(type._id,-1,supplier)
+                    this.log({type:type._id,count:1,supplier:supplier,remove:true})
                 }
             }else{
                 if((type.suppliers[supplier].count||0) < type.suppliers[supplier].available){
                     type.suppliers[supplier].count = (type.suppliers[supplier].count ||0)+1;
                     type.count ++;
-                    this.log(type._id,1,supplier)
+                    this.log({type:type._id,count:1,supplier:supplier})
                 }                
             }
 
@@ -366,8 +422,8 @@ script.
         }.bind(this)
     }
     
-    exports.log = function(type,count,supplier){
-        this.props.log.push({type:type,count:count,supplier:supplier});
+    exports.log = function(stack){
+        this.props.log.push(stack);
         while(this.props.log.length > 10) this.props.log.shift();
     }
     
