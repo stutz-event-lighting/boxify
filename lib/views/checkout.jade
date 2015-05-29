@@ -23,9 +23,8 @@ append body
                                 each supplier in this.props.suppliers
                                     th
                                         img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
-                                th Total                               
+                                th Total
                         tbody
-                            - console.log(this.props.data.types)
                             each type in this.props.data.types
                                 if type.needed !== undefined || type.count > 0
                                     tr(onClick=this.startScan(type._id))
@@ -107,9 +106,10 @@ script.
                 self.props.supplier = "own";
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
+                    type = parseInt(type,10);
                     var category = data.categories[data.types[type].category];
                     if(!category.types) category.types = [];
-                    category.types.push(type);                    
+                    category.types.push(type);
                 }
 
                 self.update();
@@ -139,7 +139,6 @@ script.
     }
     
     exports.handleScan = function(code){
-        console.log("SCAN",code);
         if(code.kind == "EQ" && this.props.data.types[code.type]){
             if(!code.supplier) code.supplier = this.props.supplier;
             var entry = {
@@ -195,6 +194,7 @@ script.
         if(!total[entry.type]) total[entry.type] = {count:0};
         total[entry.type].count += entry.count;
         for(var item in entry.items){
+            item = parseInt(item,10);
             if(!total[entry.type].ids) total[entry.type].ids = [];
             if(total[entry.type].ids.indexOf(item) < 0) total[entry.type].ids.push(item);
             for(var i = 0; i < entry.items[item].length; i++){

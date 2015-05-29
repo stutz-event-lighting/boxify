@@ -20,112 +20,101 @@ append body
                             tr
                                 th ID
                                 th Name
-                                th Anzahl
-                                th Ausstehend
+                                each supplier in this.props.suppliers
+                                    th
+                                        img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+                                th Total
                         tbody
                             each type in this.props.data.types
                                 if type.available !== undefined || type.count !== undefined
-                                    tr
+                                    tr(onClick=this.startScan(type._id))
                                         td= type._id
                                         td= type.name
-                                        td
-                                            = (type.count||0)+" "
-                                            if this.hasFromSuppliers(type)
-                                                | (
-                                                each supplier,id in type.suppliers
-                                                    if supplier.count && id != "own"
-                                                        img(src="/api/suppliers/"+id+"/image" height="25px")
-                                                        = " "+supplier.count
-                                                | )
-                                        
-                                        td
-                                            = type.available+" "
-                                            if Object.keys(type.suppliers).length > 1
-                                                | (
-                                                each supplier,id in type.suppliers
-                                                    if id != "own"
-                                                        img(src="/api/suppliers/"+id+"/image" height="25px" style="cursor:pointer" onClick=this.addFromSupplier(type,id))
-                                                        = " "+supplier.available
-                                                | )
+                                        each supplier in this.props.suppliers
+                                            td
+                                                = ((this.props.data.types[type._id].suppliers && this.props.data.types[type._id].suppliers[supplier])?(this.props.data.types[type._id].suppliers[supplier].count||"0"):"0")
+                                                | /
+                                                = ((this.props.data.types[type._id].suppliers && this.props.data.types[type._id].suppliers[supplier])?this.props.data.types[type._id].suppliers[supplier].available:0)
+                                        td= (this.props.data.types[type._id].count||"0") + "/"+this.props.data.types[type._id].available
                 .col-md-4
                     .pull-left
                         h3 Verlauf
                     .btn-toolbar.pull-right(style="margin-top:18px")
-                        ScanButton.pull-left(onScan=this.handleScan supplier="own")
-                        .btn-group.pull-left(style="margin-left:10px")
-                            div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode) -
-                            div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode) +
+                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.props.supplier||"own")[0] onSelect=this.setSupplier)        
+                            each supplier in this.props.allsuppliers
+                                MenuItem(eventKey=supplier)
+                                    img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+                        ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.props.supplier||"own")
                     table.table.table-striped.table-hover
                         thead
                             th
-                            th
                             th Name
+                            th
                         tbody
-                            - console.log("COMPLETE LOG",this.props.log)
-                            each log in this.props.log
-                                - console.log("LOG ITEM",log)
-                                +renderLogEntry(log,0)
-    if this.props.stack
+                            each entry,i in this.props.data.history
+                                tr
+                                    td
+                                        img(src="/api/suppliers/"+entry.supplier+"/image" style="height:20px")
+                                    td
+                                        +renderLogEntry(entry,0)
+                                    td
+                                        .btn.btn-xs.btn-default(onClick=this.remove(i))
+                                            .glyphicon.glyphicon-trash
+    - this.scanreceiver = null;
+    if this.props.entry
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
-                        h2 Inhalt kontrollieren
+                        h2 Case-Inhalt scannen
                     .modal-body(style="maxHeight:500px;overflowY:auto")
-                        table.table.table-striped
-                            thead
-                                tr
-                                    th Name
-                                    th Vorher
-                                    th Nachher
-                            tbody
-                                each item,type in this.props.stack.contents
-                                    tr
-                                        td= this.props.data.types[type].name
-                                        td= item.count
-                                        td
-                                            = item.newcount!==undefined?item.newcount:(item.ids?0:item.count)
-                                            if !item.ids
-                                                .btn-toolbar
-                                                    button.btn.btn-danger.btn-xs(onClick=this.decreaseStack(type))
-                                                        i.glyphicon.glyphicon-minus
-                                                    button.btn.btn-success.btn-xs(onClick=this.increaseStack(type))
-                                                        i.glyphicon.glyphicon-plus
+                        +renderCaseEntry(this.props.entry,0)
                     .modal-footer
-                        button.btn.btn-default(onClick=this.cancelStack) Abbrechen
-                        button.btn.btn-primary(onClick=this.closeStack) Fertig
-mixin renderLogEntry(log,level)
-    - console.log("renderLogEntry",log,level);
-    tr
-        td(style=("color:"+(log.remove?"red":"green")))= level== 0?(log.remove?"-":"+"):""
-        td
-            if log.supplier && !level
-                img(src="/api/suppliers/"+log.supplier+"/image" height="25px")
-        td(style="paddingLeft:"+(level*20+8)+"px")
-            if !log.item
-                b= log.count+" "
-            = this.props.data.types[log.type].name
-            if log.item
-                b= " #"+log.item
-    each sub,type in log.contents
-        if sub.newids
-            each sublog in sub.newids
-                +renderLogEntry(sublog,level+1)
-        else
-            tr 
-                td
-                td
-                td(style="paddingLeft:"+((level+1)*20+8)+"px")
-                    b= sub.newcount+" "
-                    = this.props.data.types[type].name
+                        button.btn.btn-default(onClick=this.cancelEntry) Abbrechen
+                        button.btn.btn-primary(onClick=this.finishEntry) Fertig
+mixin renderLogEntry(entry,level)
+    if entry.items
+        each contents,item in entry.items
+            div(style="paddingLeft:"+(level*20)+"px")
+                = this.props.data.types[entry.type].name
+                b= " #"+item
+            each subentry in contents
+                +renderLogEntry(subentry,level+1)
+    else
+        div(style="paddingLeft:"+(level*20)+"px")
+            b= entry.count+" "
+            = this.props.data.types[entry.type].name
+mixin renderSupplierButtonTitle(supplier)
+    img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+mixin renderCaseEntry(entry,level)
+    -var parentscanreceiver = this.scanreceiver;
+    if entry.items
+        each contents,item in entry.items
+            - this.scanreceiver = {parent:parentscanreceiver,contents:contents}
+            div(style="paddingLeft:"+(level*20)+"px")
+                = this.props.data.types[entry.type].name
+                b= " #"+item
+            each subentry in contents
+                +renderCaseEntry(subentry,level+1)
+    else
+        div(style="paddingLeft:"+(level*20)+"px")
+            input.form-control(type="text" value=entry.count style="width:50px;display:inline-block")
+            = " "+this.props.data.types[entry.type].name                
 script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
     var async = require("async");
+    var DropdownButton = require("react-bootstrap/DropdownButton");
+    var MenuItem = require("react-bootstrap/MenuItem");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
+    }
+    
+    exports.getInitialState = function(){
+        this.props.supplier = "own";
+        return {};
     }
     
     exports.checkData = function(){
@@ -134,300 +123,230 @@ script.
             client.getCheckin(this.props.params.project,this.props.params.checkin,function(err,data){
                 if(err) return;
                 self.props.data = data;
-                self.props.log = [];
+                var suppliers = {};
+                for(var type in self.props.data.types){
+                    for(var supplier in self.props.data.types[type].suppliers) suppliers[supplier] = true;
+                }
+                self.props.suppliers = self.props.allsuppliers = Object.keys(suppliers);
                 self.update();
             });
         }
     }
-
-    exports.cancel = function(){
-        history.back();
-    }
-    exports.toggleMode = function(){
-        if(this.props.remove){
-            delete this.props.remove;
-        }else{
-            this.props.remove = true;
-        }
+    
+    exports.setSupplier = function(supplier){
+        this.props.supplier = supplier;
         this.update();
+    }
+    
+    exports.startScan = function(type){
+        return function(){
+            console.log("should start scanning now");
+            this.refs.scanbutton.scan();
+            this.refs.scanbutton.onEquipmenttypeChanged(type);
+        }.bind(this)
     }
     
     exports.handleScan = function(code){
-        if(code.kind != "EQ") return true;
-        
-        var type = this.props.data.types[code.type];
-        if(!code.count) code.count = 1;
-        
-        if(this.props.remove){
-            var missing = type.suppliers.own.count||0;
-            console.log("missing",missing,type);
-            if(code.count > missing){
-                this.playErrorSound();
-                code.count = missing;
+        if(code.kind == "EQ" && this.props.data.types[code.type]){
+            if(!code.supplier) code.supplier = this.props.supplier;
+            var entry = {
+                supplier:code.supplier||"own",
+                type:parseInt(code.type,10),
+                count:code.count||1
+            };
+            
+            if(code.item){                
+                this.getEntryContents(entry,[code.item],function(err){
+                    if(err) return this.playErrorSound();
+                    this.insertOrClose(entry,this.scanreceiver);
+                }.bind(this));
+            }else if(entry.supplier == "own" && this.props.data.types[entry.type].hasItems){
+                return this.playErrorSound();
+            }else if(!this.scanreceiver){
+                this.add(entry);
             }
-            if(!code.count) return;
-            
-            if(code.item){
-                if((type.suppliers.own.ids||[]).indexOf(code.item) < 0){
-                    this.playErrorSound();
-                    return;
-                }else{
-                    type.suppliers.own.ids.splice(type.suppliers.own.ids.indexOf(code.item),1)
-                }
-            }
-                       
-            type.count = (type.count||0)-code.count;
-            type.suppliers.own.count = (type.suppliers.own.count||0) - code.count;
-            
-            code.count = -code.count;
-            code.remove = true;
-            this.log(code);
-        }else{
-            if(this.props.stack) return this.handleStackScan(code);
-            if(!type.available) return this.playErrorSound();
-            var missing = type.suppliers.own.available-(type.suppliers.own.count||0);
-
-            if((code.count) > missing){
-            this.playErrorSound();
-                code.count = missing;
-            }
-            if(!code.count) return;
-            
-            if(code.item){
-                if((type.suppliers.own.ids||[]).indexOf(code.item) >= 0){
-                    this.playErrorSound();
-                    return;
-                }else{
-                    this.startStack(code);
-                    return;
-                }
-            }            
-            type.count = (type.count||0)+code.count;
-            type.suppliers.own.count = (type.suppliers.own.count||0) + code.count;
-            
-            code.count = -code.count;
-            this.log(code);
         }
+    }
+    
+    exports.insertOrClose = function(entry,receiver){
+        while(receiver != null){
+            for(var i = 0; i < receiver.contents.length; i++){
+                if(receiver.contents[i].type == entry.type){
+                    receiver.contents[i].count ++;
+                    receiver.contents[i].items[Object.keys(entry.items)[0]] = entry.items[Object.keys(entry.items)[0]];
+                    receiver.contents.push(receiver.contents.splice(i,1)[0]);
+                    this.update();
+                    return;
+                }
+            }
+            receiver = receiver.parent;
+        }
+        if(this.props.entry) this.finishEntry();
+        this.props.entry = entry;
+        console.log("LENGTH",entry.items[Object.keys(entry.items)[0]].length)
+        if(!entry.items[Object.keys(entry.items)[0]].length){
+            this.finishEntry();
+        }else{
+            this.update();
+        }
+    }
+    
+    exports.finishEntry = function(){
+        var entry = this.props.entry;
+        delete this.props.entry;
+        this.add(entry);
+    }
+    
+    exports.cancelEntry = function(){
+        delete this.props.entry;
         this.update();
     }
     
-    exports.startStack = function(code){
-        var self = this;
+    exports.getEntryContents = function(entry,item,cb){
         async.parallel([
             function(cb){
-                client.getEquipment(code.type,code.item,cb);
+                client.getEquipment(entry.type,item,cb)
             },
             function(cb){
-                client.getEquipmentType(code.type,cb);
+                client.getEquipmentType(entry.type,cb)
             }
         ],function(err,results){
-            var data = results[0];
+            if(err) return cb(err);
+            var item = results[0].item;
             var type = results[1];
-            type.contents = type.contents.map(function(type){return type._id});
-        
-            var parent = self.props.stack;
-            var newStack = {type:code.type,item:code.item,contents:{},parent:parent};
             
-            if(type.contents.length){
-                this.props.stack = newStack;
-            }
-            
-            for(var i = 0; i < type.contents.length; i++) {
-                if(!this.props.data.types[type.contents[i]].suppliers) continue;
-                newStack.contents[type.contents[i]] = {count:0,newcount:0};
-                if(this.props.data.types[type.contents[i]].hasItems){
-                    newStack.contents[type.contents[i]].ids = [];
-                    newStack.contents[type.contents[i]].newids = {};
+            var entries = [];
+            for(var i = 0; i < type.contents.length; i++){
+                var t = type.contents[i]._id;
+                var subentry = {
+                    supplier:entry.supplier,
+                    type:t,
+                    count:item.contents[t]?item.contents[t].count:0
+                };
+                if(this.props.data.types[t].hasItems){
+                    subentry.items = {};
+                    subentry.count = 0;
                 }
+                entries.push(subentry);
             }
-            
-            for(var type in data.item.contents){
-                newStack.contents[type].count = data.item.contents[type].count||0;
-                if(this.props.data.types[type].hasItems){
-                    newStack.contents[type].newcount = 0;
-                    newStack.contents[type].ids = data.item.contents[type].ids||[];
-                    newStack.contents[type].newids = {};
-                }else{
-                    newStack.contents[type].newcount = data.item.contents[type].count||0;
-                }
-            }
-            
-            if(parent){
-                parent.contents[code.type].newids[code.item] = newStack;
-                parent.contents[code.type].newcount++;
-            }
-                   
-
-            this.update();
-        }.bind(this));        
+            if(!entry.items) entry.items = {};
+            entry.items[item.id] = entries;
+            cb();
+        }.bind(this))        
     }
     
-    exports.handleStackScan = function(code){
-        if(code.item){
-            var stack = this.props.stack;
-            if(!stack){
-                this.startStack(code);
-            }else{
-                if(!stack.contents[code.type]){
-                    this.closeStack(function(){
-                        this.handleScan(code);
-                    }.bind(this));
-                    return;
-                }
-                if(stack.contents[code.type].newids && stack.contents[code.type].newids[code.item]){
-                    this.playErrorSound();
-                }else{
-                    this.startStack(code);
-                }
-            }            
-        }
-    }
-    
-    exports.closeStack = function(cb){
-        var stack = this.props.stack;
-        var contents = {};
-        for(var type in stack.contents){
-            contents[type] = {count:stack.contents[type].newcount};
-            var ids = Object.keys(stack.contents[type].newids||{}).map(function(id){return parseFloat(id)});
-            if(ids.length){
-                contents[type].ids = ids;
-            }
-        }        
-        client.saveEquipment(stack.type,stack.item,{contents:contents},function(err){
-            if(err) return;
-            this.props.stack = stack.parent;
-            if(!stack.parent){
-                this.addItem(stack);
-            }else{
-                this.update();
-            }           
-            if(typeof cb == "function") cb();
-        }.bind(this))
-    }
-    
-    exports.cancelStack = function(){
-        var stack = this.props.stack;
-        var parent = stack.parent;
-        if(parent){
-            delete parent.contents[stack.type].newids[stack.item];
-            parent.contents[stack.type].newcount--;
-            this.props.stack = parent;
-        }else{
-            delete this.props.stack;
-        }
-        this.update();        
-    }
-    
-    exports.increaseStack = function(type){
-        console.log("TYPE",type);
-        return function(){
-            console.log("STACK",this.props.stack)
-            console.log("NEWCOUNT",this.props.stack.contents[type].newcount);
-            this.props.stack.contents[type].newcount += 1;
-            this.update();
-        }.bind(this)
-    }
-    
-    exports.decreaseStack = function(type){
-        return function(){
-            this.props.stack.contents[type].newcount -= 1;
-            this.update();
-        }.bind(this)
-    }
-    
-    exports.calcStackTotal = function(total,item){
-        for(var type in item.contents){
-            if(!total[type]) total[type] = {count:0};
-            total[type].count += item.contents[type].newcount;
-            for(var id in item.contents[type].newids){
-                if(!total[type].ids) total[type].ids = [];
-                total[type].ids.push(parseFloat(id));
-                this.calcStackTotal(total,item.contents[type].newids[id]);
+    exports.calculateEntryTotal = function(entry,total){
+        total = total||{};
+        if(!total[entry.type]) total[entry.type] = {count:0};
+        total[entry.type].count += entry.count;
+        for(var item in entry.items){
+            item = parseInt(item,10)
+            if(!total[entry.type].ids) total[entry.type].ids = [];
+            if(total[entry.type].ids.indexOf(item) < 0) total[entry.type].ids.push(item);
+            for(var i = 0; i < entry.items[item].length; i++){
+                if(!entry.items[item][i].count){
+                    entry.items[item].splice(i--,1);
+                    continue;
+                };
+                this.calculateEntryTotal(entry.items[item][i],total);
             }
         }
+        return total;
     }
     
-    exports.addItem = function(stack){
-        var total = {};
-        total[stack.type] = {count:1,ids:stack.item};
-        if(stack.contents){
-            this.calcStackTotal(total,stack);
-        }
-        
-        console.log("TOTAL",total);
-        
-        var error = false;
-        loop: for(var type in total){
-            var t = this.props.data.types[type];
-            var own = t.suppliers.own;
-            if(!own || total[type].count > own.available - own.count){
-                error = true;
-                break;
+    exports.checkAvailability = function(supplier,total){
+        for(var type in total){
+            if(
+                !this.props.data.types[type].suppliers ||
+                !this.props.data.types[type].suppliers[supplier] ||
+                (this.props.data.types[type].suppliers[supplier].available - this.props.data.types[type].suppliers[supplier].count) < total[type].count
+            ){
+                return false;
             }
             if(total[type].ids){
                 for(var i = 0; i < total[type].ids.length; i++){
-                    if(own.ids && own.ids.indexOf(total[type].ids[i]) >= 0){
-                        error = true;
-                        break loop;
+                    if(
+                        this.props.data.types[type].suppliers[supplier].ids &&
+                        this.props.data.types[type].suppliers[supplier].ids.indexOf(total[type].ids[i]) >= 0
+                    ){
+                        return false;
                     }
                 }
             }
         }
+        return true;
+    }
         
-        if(error){
-            this.playErrorSound();
-        }else{
-            this.log(stack);
+    exports.add = function(entry){
+        var total = this.calculateEntryTotal(entry);
+        if(this.checkAvailability(entry.supplier,total)){
             for(var type in total){
-                if(this.props.data.types[type].count === undefined) this.props.data.types[type].count = 0;
-                this.props.data.types[type].count = this.props.data.types[type].count||0 + total[type].count;
-                this.props.data.types[type].suppliers.own.count = this.props.data.types[type].suppliers.own.count||0 + total[type].count;
-                if(total[type].ids){
-                    if(!this.props.data.types[type].suppliers.own.ids) this.props.data.types[type].suppliers.own.ids = [];
-                    for(var i = 0; i < total[type].ids.length; i++){
-                        this.props.data.types[type].suppliers.own.ids.push(total[type].ids[i])
-                    }
+                if(!this.props.data.types[type].count) this.props.data.types[type].count = 0;
+                this.props.data.types[type].count += total[type].count;
+                if(!this.props.data.types[type].suppliers[entry.supplier]) this.props.data.types[type].suppliers[entry.supplier] = {count:0,available:0}
+                if(!this.props.data.types[type].suppliers[entry.supplier].count) this.props.data.types[type].suppliers[entry.supplier].count = 0;
+                this.props.data.types[type].suppliers[entry.supplier].count += total[type].count;
+                if(total[type].ids) {
+                    if(!this.props.data.types[type].suppliers[entry.supplier].ids) this.props.data.types[type].suppliers[entry.supplier].ids = [];
+                    Array.prototype.splice.apply(this.props.data.types[type].suppliers[entry.supplier].ids,[0,0].concat(total[type].ids));
                 }
             }
+            this.props.data.history.push(entry);
+            this.applyContents(entry);
+        }else{
+            this.playErrorSound();
         }
-        
         this.update();
     }
     
-    
-    exports.hasFromSuppliers = function(type){
-        for(var supplier in type.suppliers) if(supplier != "own" && type.suppliers[supplier].count > 0) return true;
-        return false;
-    }
-    
-    exports.addFromSupplier = function(type,supplier){
+    exports.remove = function(index){
         return function(){
-            if(this.props.remove){
-                if(type.suppliers[supplier].count > 0){
-                    type.suppliers[supplier].count --;
-                    if(!type.suppliers[supplier]) delete type.suppliers[supplier].count;
-                    type.count --;
-                    this.log({type:type._id,count:1,supplier:supplier,remove:true})
+            var entry = this.props.data.history.splice(index,1)[0];
+            var total = this.calculateEntryTotal(entry);
+            for(var type in total){
+                if(total[type].ids) {
+                    for(var i = 0; i < total[type].ids.length; i++){
+                        this.props.data.types[type].suppliers[entry.supplier].ids.splice(this.props.data.types[type].suppliers[entry.supplier].ids.indexOf(total[type].ids[i]),1);
+                    }
+                    if(!this.props.data.types[type].suppliers[entry.supplier].ids.length) delete this.props.data.types[type].suppliers[entry.supplier].ids;
                 }
-            }else{
-                if((type.suppliers[supplier].count||0) < type.suppliers[supplier].available){
-                    type.suppliers[supplier].count = (type.suppliers[supplier].count ||0)+1;
-                    type.count ++;
-                    this.log({type:type._id,count:1,supplier:supplier})
-                }                
+                this.props.data.types[type].suppliers[entry.supplier].count -= total[type].count;
+                if(!this.props.data.types[type].suppliers[entry.supplier].count){
+                    delete this.props.data.types[type].suppliers[entry.supplier].count;
+                    if(!this.props.data.types[type].suppliers[entry.supplier].available && !this.props.data.types[type].suppliers[entry.supplier].needed) delete this.props.data.types[type].suppliers[entry.supplier];
+                }
+            
+                this.props.data.types[type].count -= total[type].count;
+                if(!this.props.data.types[type].count) delete this.props.data.types[type].count
             }
-
-            this.update();
-        }.bind(this)
+            this.update();            
+        }.bind(this);
     }
     
-    exports.log = function(stack){
-        this.props.log.push(stack);
-        while(this.props.log.length > 10) this.props.log.shift();
+    exports.applyContents = function(entry){
+        for(var item in entry.items){
+            item = parseInt(item,10);
+            var contents = {};
+            for(var i = 0; i <  entry.items[item].length; i++){
+                var subitem = entry.items[item][i];
+                contents[subitem.type] = {count:subitem.count}
+                if(subitem.items){
+                    contents[subitem.type].ids = Object.keys(subitem.items);
+                    this.applyContents(subitem);
+                }
+            }
+            client.saveEquipment(entry.type,item,{contents:contents},function(){})
+        }
     }
+    
+    
     
     exports.playErrorSound = function(){
         new Audio("/public/audio/error.wav").play();
+    }
+    
+    exports.cancel = function(){
+        history.back();
     }
 
     exports.save = function(){
@@ -448,7 +367,7 @@ script.
             }
         }
     
-        client.updateCheckin(this.props.params.project,this.props.params.checkin,data,function(err){
+        client.updateCheckin(this.props.params.project,this.props.params.checkin,{items:data,history:this.props.data.history},function(err){
             if(err) return true;
             back(true);
         });
