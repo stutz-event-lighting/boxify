@@ -52,50 +52,37 @@ append body
                     if this.props.needsRental
                         .alert.alert-warning(onClick=this.createRental) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
             .row
-                .col-xs-12.col-md-6
+                .col-xs-12
                     h3
-                        | Ausgänge
+                        | Aus- und Eingänge
                         if this.props.item.status == "ongoing"
-                            .btn.btn-primary.pull-right(onClick=this.createCheckout) Neu
+                            .btn-toolbar.pull-right
+                                .btn.btn-primary(onClick=this.createCheckout) 
+                                    .glyphicon.glyphicon-log-out
+                                    |  Neuer Ausgang
+                                .btn.btn-primary(onClick=this.createCheckin)
+                                    .glyphicon.glyphicon-log-in
+                                    |  Neuer Eingang
                     table.table.table-striped
                         thead
                             tr
+                                th Typ
                                 th Datum
                                 th Benutzer
                                 th Objekte
                         tbody
                             each io in this.props.io
-                                if io.type == "checkout"
-                                    tr(onClick=this.editCheckout(io))
-                                        td= moment(io.time).format("LLL")
-                                        td= this.props.users[io.user].firstname+" "+this.props.users[io.user].lastname
-                                        td
-                                            = io.count+" / "+io.total
-                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckout(io))
-                                                i.glyphicon.glyphicon-trash
-                .col-xs-12.col-md-6
-                    h3
-                        | Eingänge
-                        if this.props.item.status == "ongoing"
-                            .btn.btn-primary.pull-right(onClick=this.createCheckin) Neu
-                    table.table.table-striped
-                        thead
-                            tr
-                                th Datum
-                                th Benutzer
-                                th Objekte
-                        tbody
-                            each io in this.props.io
-                                if io.type == "checkin"
-                                    tr(onClick=this.editCheckin(io))
-                                        td= moment(io.time).format("LLL")
-                                        td= this.props.users[io.user].firstname+" "+this.props.users[io.user].lastname
-                                        td
-                                            = io.count+" / "+io.total
-                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteCheckin(io))
-                                                i.glyphicon.glyphicon-trash
+                                tr(onClick=io.type=="checkout"?this.editCheckout(io):this.editCheckin(io))
+                                    td
+                                        div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
+                                    td= moment(io.time).format("LLL")
+                                    td= this.props.users[io.user].firstname+" "+this.props.users[io.user].lastname
+                                    td
+                                        = io.count+" / "+io.total
+                                        button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteCheckout(io):this.deleteCheckin(io)))
+                                            i.glyphicon.glyphicon-trash
                     if Object.keys(this.props.item.balance).length
-                        .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles vom Kunden Material zurückgekommen!
+                        .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles Material vom Kunden zurückgekommen!
             .row
                 .col-xs-12
                     h3 Aktionen

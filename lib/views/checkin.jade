@@ -51,7 +51,7 @@ append body
                     .pull-left
                         h3 Verlauf
                     .btn-toolbar.pull-right(style="margin-top:18px")
-                        ScanButton.pull-left(onScan=this.handleScan)
+                        ScanButton.pull-left(onScan=this.handleScan supplier="own")
                         .btn-group.pull-left(style="margin-left:10px")
                             div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode) -
                             div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode) +

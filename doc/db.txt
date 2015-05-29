@@ -75,7 +75,19 @@ equipmentio
                 }
             }
         }
-    }
+    },
+    history:[
+        {//ENTRY
+            supplier: "SUPPLIER", //required
+            type: TYPE, //required
+            count: //required
+            items: { //required for types with hasItems:true and supplier:'own'
+                ITEM: [
+                    ENTRY
+                ]
+            }
+        }
+    ]
 }
 
 

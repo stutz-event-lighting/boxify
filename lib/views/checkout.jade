@@ -20,60 +20,71 @@ append body
                             tr
                                 th ID
                                 th Name
-                                th Anzahl
-                                th Benötigt
-                                th Verfügbar
+                                each supplier in this.props.suppliers
+                                    th
+                                        img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+                                th Total                               
                         tbody
+                            - console.log(this.props.data.types)
                             each type in this.props.data.types
                                 if type.needed !== undefined || type.count > 0
-                                    tr
+                                    tr(onClick=this.startScan(type._id))
                                         td= type._id
                                         td= type.name
+                                        each supplier in this.props.suppliers
+                                            td
+                                                = ((this.props.data.types[type._id].suppliers && this.props.data.types[type._id].suppliers[supplier])?(this.props.data.types[type._id].suppliers[supplier].count||"0"):"0")
+                                                | /
+                                                = ((this.props.data.types[type._id].suppliers && this.props.data.types[type._id].suppliers[supplier])?this.props.data.types[type._id].suppliers[supplier].available:0)
                                         td
-                                            = (type.count||0)+" "
-                                            if this.hasFromSuppliers(type)
-                                                | (
-                                                each supplier,id in type.suppliers
-                                                    if supplier.count && id != "own"
-                                                        img(src="/api/suppliers/"+id+"/image" height="25px")
-                                                        = " "+supplier.count
-                                                | )
-                                        
-                                        td= (type.needed||0)
-                                        td
-                                            = type.available+" "
-                                            if Object.keys(type.suppliers).length > 1
-                                                | (
-                                                each supplier,id in type.suppliers
-                                                    if id != "own"
-                                                        img(src="/api/suppliers/"+id+"/image" height="25px" style="cursor:pointer" onClick=this.addFromSupplier(type,id))
-                                                        = " "+supplier.available
-                                                | )
+                                            = this.props.data.types[type._id].count||"0"
+                                            if this.props.data.types[type._id].needed
+                                                = "/"+this.props.data.types[type._id].needed
                 .col-md-4
                     .pull-left
                         h3 Verlauf
                     .btn-toolbar.pull-right(style="margin-top:18px")
-                        ScanButton.pull-left(onScan=this.handleScan)
-                        .btn-group.pull-left(style="margin-left:10px")
-                            div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode) -
-                            div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode) +
+                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.props.supplier||"own")[0] onSelect=this.setSupplier)        
+                            each supplier in this.props.allsuppliers
+                                MenuItem(eventKey=supplier)
+                                    img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+                        ScanButton.pull-left(onScan=this.handleScan supplier=this.props.supplier ref="scanbutton")
                     table.table.table-striped.table-hover
                         thead
                             th
                             th Name
-                            th Anzahl
+                            th
                         tbody
-                            each log in this.props.log
+                            each entry,i in this.props.data.history
                                 tr
                                     td
-                                        if log.supplier
-                                            img(src="/api/suppliers/"+log.supplier+"/image" height="25px")
-                                    td= this.props.data.types[log.type].name
-                                    td= log.count                        
+                                        img(src="/api/suppliers/"+entry.supplier+"/image" style="height:20px")
+                                    td
+                                        +renderLogEntry(entry,0)
+                                    td
+                                        .btn.btn-xs.btn-default(onClick=this.remove(i))
+                                            .glyphicon.glyphicon-trash
+mixin renderLogEntry(entry,level)
+    if entry.items
+        each contents,item in entry.items
+            div(style="paddingLeft:"+(level*20)+"px")
+                = this.props.data.types[entry.type].name
+                b= " #"+item
+            each subentry in contents
+                +renderLogEntry(subentry,level+1)
+    else
+        div(style="paddingLeft:"+(level*20)+"px")
+            b= entry.count+" "
+            = this.props.data.types[entry.type].name
+mixin renderSupplierButtonTitle(supplier)
+    img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
 script.
     var client = require("../client.js");
     var async = require("async");
     var ScanButton = require("./ScanButton.jade");
+    var async = require("async");
+    var DropdownButton = require("react-bootstrap/DropdownButton");
+    var MenuItem = require("react-bootstrap/MenuItem");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -87,135 +98,193 @@ script.
             client.getCheckout(this.props.params.project,this.props.params.checkout,opts,function(err,data){
                 if(err) return;
                 self.props.data = data;
-                self.props.log = [];
+                self.calculateSuppliers();
+                var suppliers = {};
+                for(var type in self.props.data.types){
+                    for(var supplier in self.props.data.types[type].suppliers) suppliers[supplier] = true;
+                }
+                self.props.allsuppliers = Object.keys(suppliers);
+                self.props.supplier = "own";
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
                     var category = data.categories[data.types[type].category];
                     if(!category.types) category.types = [];
                     category.types.push(type);                    
                 }
+
                 self.update();
             });
         }
+    }
+    
+    exports.calculateSuppliers = function(){
+        var suppliers = {};
+        for(var type in this.props.data.types){
+            if(this.props.data.types[type].count || this.props.data.types[type].needed)
+            for(var supplier in this.props.data.types[type].suppliers) suppliers[supplier] = true;
+        }
+        this.props.suppliers = Object.keys(suppliers);
+    }
+    
+    exports.setSupplier = function(supplier){
+        this.props.supplier = supplier;
+        this.update();
+    }
+    
+    exports.startScan = function(type){
+        return function(){
+            this.refs.scanbutton.scan();
+            this.refs.scanbutton.onEquipmenttypeChanged(type);
+        }.bind(this)
+    }
+    
+    exports.handleScan = function(code){
+        console.log("SCAN",code);
+        if(code.kind == "EQ" && this.props.data.types[code.type]){
+            if(!code.supplier) code.supplier = this.props.supplier;
+            var entry = {
+                supplier:code.supplier||"own",
+                type:code.type,
+                count:code.count||1
+            };
+            
+            if(code.item){                
+                this.getEntryContents(entry,[code.item],function(err){
+                    if(err) return this.playErrorSound();
+                    this.add(entry);
+                }.bind(this));
+            }else if(entry.supplier == "own" && this.props.data.types[entry.type].hasItems){
+                return this.playErrorSound();
+            }else{
+                this.add(entry);
+            }           
+        }
+    }
+    
+    exports.getEntryContents = function(entry,items,cb){
+        async.each(items,function(item,cb){
+            client.getEquipment(entry.type,item,function(err,item){
+                if(err) return cb(err);
+                item = item.item;
+                if(!entry.items) entry.items = {};
+                async.map(Object.keys(item.contents),function(type,cb){
+                    var subentry = {
+                        supplier:entry.supplier,
+                        type:type,
+                        count:item.contents[type].count
+                    };
+                    if(item.contents[type].ids){
+                        this.getEntryContents(subentry,item.contents[type].ids,function(err){
+                            if(err) return cb(err);
+                            cb(null,subentry);
+                        }.bind(this));
+                    }else{
+                        cb(null,subentry);
+                    }
+                }.bind(this),function(err,items){
+                    if(err) return cb(err);
+                    entry.items[item.id] = items;
+                    cb();
+                }.bind(this))
+            }.bind(this))
+        }.bind(this),cb);
+    }
+    
+    exports.calculateEntryTotal = function(entry,total){
+        total = total||{};
+        if(!total[entry.type]) total[entry.type] = {count:0};
+        total[entry.type].count += entry.count;
+        for(var item in entry.items){
+            if(!total[entry.type].ids) total[entry.type].ids = [];
+            if(total[entry.type].ids.indexOf(item) < 0) total[entry.type].ids.push(item);
+            for(var i = 0; i < entry.items[item].length; i++){
+                this.calculateEntryTotal(entry.items[item][i],total);
+            }
+        }
+        return total;
+    }
+    
+    exports.checkAvailability = function(supplier,total){
+        for(var type in total){
+            if(
+                !this.props.data.types[type].suppliers ||
+                !this.props.data.types[type].suppliers[supplier] ||
+                (this.props.data.types[type].suppliers[supplier].available - this.props.data.types[type].suppliers[supplier].count) < total[type].count
+            ){
+                return false;
+            }
+            if(total[type].ids){
+                for(var i = 0; i < total[type].ids.length; i++){
+                    if(
+                        this.props.data.types[type].suppliers[supplier].ids &&
+                        this.props.data.types[type].suppliers[supplier].ids.indexOf(total[type].ids[i]) >= 0
+                    ){
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+        
+    exports.add = function(entry){
+        var total = this.calculateEntryTotal(entry);
+        if(this.checkAvailability(entry.supplier,total)){
+            for(var type in total){
+                if(!this.props.data.types[type].count) this.props.data.types[type].count = 0;
+                this.props.data.types[type].count += total[type].count;
+                if(!this.props.data.types[type].suppliers[entry.supplier]) this.props.data.types[type].suppliers[entry.supplier] = {count:0,available:0}
+                if(!this.props.data.types[type].suppliers[entry.supplier].count) this.props.data.types[type].suppliers[entry.supplier].count = 0;
+                this.props.data.types[type].suppliers[entry.supplier].count += total[type].count;
+                if(total[type].ids) {
+                    if(!this.props.data.types[type].suppliers[entry.supplier].ids) this.props.data.types[type].suppliers[entry.supplier].ids = [];
+                    Array.prototype.splice.apply(this.props.data.types[type].suppliers[entry.supplier].ids,[0,0].concat(total[type].ids));
+                }
+            }
+            this.props.data.history.push(entry);
+            this.calculateSuppliers();
+            this.update();
+        }else{
+            this.playErrorSound();
+        }
+    }
+    
+    exports.remove = function(index){
+        return function(){
+            var entry = this.props.data.history.splice(index,1)[0];
+            var total = this.calculateEntryTotal(entry);
+            for(var type in total){
+                if(total[type].ids) {
+                    for(var i = 0; i < total[type].ids.length; i++){
+                        this.props.data.types[type].suppliers[entry.supplier].ids.splice(this.props.data.types[type].suppliers[entry.supplier].ids.indexOf(total[type].ids[i]),1);
+                    }
+                    if(!this.props.data.types[type].suppliers[entry.supplier].ids.length) delete this.props.data.types[type].suppliers[entry.supplier].ids;
+                }
+                this.props.data.types[type].suppliers[entry.supplier].count -= total[type].count;
+                if(!this.props.data.types[type].suppliers[entry.supplier].count){
+                    delete this.props.data.types[type].suppliers[entry.supplier].count;
+                    if(!this.props.data.types[type].suppliers[entry.supplier].available && !this.props.data.types[type].suppliers[entry.supplier].needed) delete this.props.data.types[type].suppliers[entry.supplier];
+                }
+            
+                this.props.data.types[type].count -= total[type].count;
+                if(!this.props.data.types[type].count) delete this.props.data.types[type].count
+            }
+            this.calculateSuppliers();
+            this.update();            
+        }.bind(this);
+    }
+    
+    
+
+        
+    exports.playErrorSound = function(){
+        new Audio("/public/audio/error.wav").play();
     }
 
     exports.cancel = function(){
         history.back();
     }
-    exports.toggleMode = function(){
-        if(this.props.remove){
-            delete this.props.remove;
-        }else{
-            this.props.remove = true;
-        }
-        this.update();
-    }
-    
-    exports.handleScan = function(code,cb){
-        console.log("CODE",code);
-        var self = this;
-        cb = cb||function(){}
-        if(code.kind != "EQ") return true;        
-        var type = this.props.data.types[code.type];
-        if(!code.count) code.count = 1;
-        
-        if(this.props.remove){
-            var missing = type.suppliers.own.count||0;
-            if(code.count > missing){
-                this.playErrorSound();
-                code.count = missing;
-            }
-            if(!code.count) return;
-            
-            if(code.item){
-                if((type.suppliers.own.ids||[]).indexOf(code.item) < 0){
-                    this.playErrorSound();
-                    return;
-                }else{
-                    type.suppliers.own.ids.splice(type.suppliers.own.ids.indexOf(code.item),1)
-                }
-            }
-                       
-            type.count = (type.count||0)-code.count;
-            type.suppliers.own.count = (type.suppliers.own.count||0) - code.count;
-            this.log(code.type,-code.count);
-        }else{
-            var missing = type.suppliers.own.available-(type.suppliers.own.count||0);
 
-            if((code.count) > missing){
-                this.playErrorSound();
-                code.count = missing;
-            }
-            if(!code.count) return;
-            if(code.item){
-                if((type.suppliers.own.ids||[]).indexOf(code.item) >= 0){
-                    this.playErrorSound();
-                    return;
-                }else{
-                    if(!type.suppliers.own.ids) type.suppliers.own.ids = [];
-                    type.suppliers.own.ids.push(code.item);
-                }
-            }
-            
-            type.count = (type.count||0)+code.count;
-            type.suppliers.own.count = (type.suppliers.own.count||0) + code.count;
-            this.log(code.type,code.count);
-        }
-        this.update();
-        if(code.item){
-            client.getEquipment(code.type,code.item,function(err,data){
-                var item = data.item;
-                async.eachSeries(Object.keys(item.contents),function(type,cb){
-                    type = parseFloat(type);
-                    var it = item.contents[type];
-                    if(it.ids){
-                        async.eachSeries(it.ids,function(id,cb){
-                            self.handleScan({kind:"EQ",type:type,item:id},cb)
-                        },cb);
-                    }else{
-                        self.handleScan({kind:"EQ",type:type,count:it.count},cb);
-                    }
-                },cb)
-            }.bind(this))
-        }else{
-            if(cb) cb();
-        }
-    }
-    
-    exports.hasFromSuppliers = function(type){
-        for(var supplier in type.suppliers) if(supplier != "own" && type.suppliers[supplier].count > 0) return true;
-        return false;
-    }
-    
-    exports.addFromSupplier = function(type,supplier){
-        return function(){
-            if(this.props.remove){
-                if(type.suppliers[supplier].count > 0){
-                    type.suppliers[supplier].count --;
-                    if(!type.suppliers[supplier]) delete type.suppliers[supplier].count;
-                    type.count --;
-                    this.log(type._id,-1,supplier)
-                }
-            }else{
-                if((type.suppliers[supplier].count||0) < type.suppliers[supplier].available){
-                    type.suppliers[supplier].count = (type.suppliers[supplier].count ||0)+1;
-                    type.count ++;
-                    this.log(type._id,1,supplier)
-                }                
-            }
-
-            this.update();
-        }.bind(this)
-    }
-    
-    exports.log = function(type,count,supplier){
-        this.props.log.push({type:type,count:count,supplier:supplier});
-        while(this.props.log.length > 10) this.props.log.shift();
-    }
-    
-    exports.playErrorSound = function(){
-        new Audio("/public/audio/error.wav").play();
-    }
 
     exports.save = function(){
         var data = {};
@@ -235,7 +304,7 @@ script.
             }
         }
     
-        client.updateCheckout(this.props.params.project,this.props.params.checkout,data,this.props.reservation,function(err){
+        client.updateCheckout(this.props.params.project,this.props.params.checkout,{items:data,history:this.props.data.history},this.props.reservation,function(err){
             if(err) return true;
             back(true);
         });

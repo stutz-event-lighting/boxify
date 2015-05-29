@@ -17,7 +17,7 @@ div(style="display:inline-block" className=this.props.className)
                                     Select(ref="typefield" value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
                             if this.state.type
                                 .form-group
-                                    if this.state.type.stock.length
+                                    if this.state.type.stock.length && this.props.supplier == "own"
                                         label.col-lg-2.control-label Objekt
                                         .col-lg-10
                                             select.form-control(value=this.state.type.value onChange=this.onValueChanged)
@@ -57,10 +57,9 @@ script.
     
     exports.onEquipmenttypeChanged = function(id,selection){
         if(this.state.type && this.state.type._id == id) return;
-        console.log("wtf");
         client.getEquipmentType(id,function(err,type){
             this.state.type = type;
-            if(type.stock.length){
+            if(type.stock.length && this.props.supplier == "own"){
                 type.value = type.stock[0].id;
             }else{
                 type.value = "1";
@@ -81,7 +80,7 @@ script.
     
     exports.confirmScan = function(){
         var scan = {kind:"EQ",type:this.state.type._id};
-        if(!this.state.type.stock.length){
+        if(!this.state.type.stock.length || this.props.supplier != "own"){
             scan.count = parseFloat(this.state.type.value);
         }else{
             scan.item = this.state.type.value;
