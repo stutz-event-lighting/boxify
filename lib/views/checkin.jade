@@ -99,7 +99,7 @@ mixin renderCaseEntry(entry,level)
                 +renderCaseEntry(subentry,level+1)
     else
         div(style="paddingLeft:"+(level*20)+"px")
-            input.form-control(type="text" value=entry.count style="width:50px;display:inline-block")
+            input.form-control(type="text" value=entry.count style="width:50px;display:inline-block" onChange=this.onCountChanged(entry) onFocus=this.select)
             = " "+this.props.data.types[entry.type].name                
 script.
     var client = require("../client.js");
@@ -133,6 +133,20 @@ script.
         }
     }
     
+    exports.select = function(e){
+        setTimeout(e.target.select.bind(e.target));;
+    }
+    
+    exports.onCountChanged = function(entry){
+        return function(e){
+            var count = parseInt(e.target.value,10);
+            if(!isNaN(count)){
+                entry.count = count;
+            }
+            this.update();
+        }.bind(this);
+    }
+    
     exports.setSupplier = function(supplier){
         this.props.supplier = supplier;
         this.update();
@@ -140,7 +154,6 @@ script.
     
     exports.startScan = function(type){
         return function(){
-            console.log("should start scanning now");
             this.refs.scanbutton.scan();
             this.refs.scanbutton.onEquipmenttypeChanged(type);
         }.bind(this)
@@ -183,7 +196,6 @@ script.
         }
         if(this.props.entry) this.finishEntry();
         this.props.entry = entry;
-        console.log("LENGTH",entry.items[Object.keys(entry.items)[0]].length)
         if(!entry.items[Object.keys(entry.items)[0]].length){
             this.finishEntry();
         }else{
