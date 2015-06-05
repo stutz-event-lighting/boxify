@@ -209,7 +209,7 @@ script.
             if(
                 !this.props.data.types[type].suppliers ||
                 !this.props.data.types[type].suppliers[supplier] ||
-                (this.props.data.types[type].suppliers[supplier].available - this.props.data.types[type].suppliers[supplier].count) < total[type].count
+                ((this.props.data.types[type].suppliers[supplier].available||0) - (this.props.data.types[type].suppliers[supplier].count||0)) < total[type].count
             ){
                 return false;
             }
