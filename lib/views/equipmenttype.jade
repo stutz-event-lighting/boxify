@@ -78,35 +78,59 @@ append body
             br
             br
             .row
-                    .col-xs-12
-                        h3
-                            = "Bestand: "+this.props.item.count
-                            .btn-toolbar.pull-right
-                                if this.props.item.count
-                                    if !this.props.item.stock.length
-                                        button.btn.btn-danger(onClick=this.decrease) Entfernen
-                                    button.btn.btn-primary(onClick=this.props.item.stock.length?this.createItem:this.increase) Hinzufügen
-                                else
-                                    DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick)
-                                        MenuItem(eventKey="1") Menge
-                                        MenuItem(eventKey="2") Einzelobjekt
-                        if this.props.item.stock.length
-                            table.table.table-striped.table-hover
-                                thead
+                .col-xs-12
+                    h3
+                        = "Bestand: "+this.props.item.count
+                        .btn-toolbar.pull-right
+                            if this.props.item.count
+                                if !this.props.item.stock.length
+                                    button.btn.btn-danger(onClick=this.decrease) Entfernen
+                                button.btn.btn-primary(onClick=this.props.item.stock.length?this.createItem:this.increase) Hinzufügen
+                            else
+                                DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick)
+                                    MenuItem(eventKey="1") Menge
+                                    MenuItem(eventKey="2") Einzelobjekt
+                    if this.props.item.stock.length
+                        table.table.table-striped.table-hover
+                            thead
+                                tr
+                                    th Name
+                                    th Letzte Wartung
+                                    th
+                            tbody
+                                each item in this.props.item.stock
+                                    - (function(item){
                                     tr
-                                        th Name
-                                        th Letzte Wartung
-                                        th
-                                tbody
-                                    each item in this.props.item.stock
-                                        - (function(item){
-                                        tr
-                                            td(onClick=this.editItem(item))= this.props.item.name+" "+item.id
-                                            td(onClick=this.editItem(item)) 12.12.2012
-                                            td
-                                                button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem(item))
-                                                    i.glyphicon.glyphicon-trash
-                                        - }).bind(this)(item)
+                                        td(onClick=this.editItem(item))= this.props.item.name+" "+item.id
+                                        td(onClick=this.editItem(item)) 12.12.2012
+                                        td
+                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem(item))
+                                                i.glyphicon.glyphicon-trash
+                                    - }).bind(this)(item)
+            .row
+                .col-xs-12
+                    h3
+                        = "Graph "+moment(this.props.start).format("MMMM YYYY")
+                        .btn-toolbar.pull-right
+                            .btn.btn-default(onClick=this.graphBackward)
+                                .glyphicon.glyphicon-chevron-left
+                            .btn.btn-default(onClick=this.graphForward)
+                                .glyphicon.glyphicon-chevron-right
+                    svg(style="width:100%;height:200px;")
+                        svg(viewBox="0 0 100 100" preserveAspectRatio="none")
+                            - var cap = this.cap([this.props.graph.supply,this.props.graph.ownsupply,this.props.graph.demand])
+                            - var days = this.days();
+                            path(style="fill: #ffc540;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.props.graph.supply,true))
+                            path(style="fill: #6B8E00;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.props.graph.ownsupply,true))
+                            each step in this.steps(cap)
+                                path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M0,"+(100-step/cap.range*100)+" L100,"+(100-step/cap.range*100))
+                                g.label(transform="translate(0,"+(100-step/cap.range*100)+")")
+                                    text(x="0" y="0" dy="5px")= step
+                            each day,i in days
+                                path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M"+(i/days.length*100)+",0L"+(i/days.length*100)+",100")
+                                g.label(transform="translate("+(i/days.length*100)+",0)")
+                                    text(x="0" y="0" dy="15px")= day
+                            path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.props.graph.demand))
     if this.props.increase
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
@@ -147,6 +171,7 @@ script.
     var MenuItem = require("react-bootstrap/MenuItem");
     var async = require("async");
     var Select = require("react-select");
+    var moment = require("moment");
 
     function isInt(str){
         return /^[0-9]*$/.test(str)
@@ -163,9 +188,31 @@ script.
         return !this.props.item.count || this.props.item.stock.length
     }
     
+    exports.componentDidMount = function(){
+        this.unscaleAll();
+        window.onresize = this.unscaleAll.bind(this);
+    }
+    
+    exports.unscaleAll = function(){
+        Array.prototype.slice.call(document.getElementsByTagName("text")).forEach(this.unscale)
+    }
+    
+    exports.unscale = function(el){
+        var svg = el.ownerSVGElement.ownerSVGElement;
+        var xf = el.scaleIndependentXForm;
+        if (!xf) {
+            // Keep a single transform matrix in the stack for fighting transformations
+            xf = el.scaleIndependentXForm = svg.createSVGTransform();
+            // Be sure to apply this transform after existing transforms (translate)
+            el.transform.baseVal.appendItem(xf);
+        }
+        var m = svg.getTransformToElement(el.parentNode);
+        m.e = m.f = 0; // Ignore (preserve) any translations done up to this point
+        xf.setMatrix(m);
+    }
+    
     exports.checkData = function(){
         var self = this;
-        
         if(!self.props.item || !self.props.categories && !self.props.loading){
             self.props.loading = true;
             async.parallel([
@@ -191,12 +238,28 @@ script.
                         self.props.categories = categories;
                         cb();
                     })
+                },
+                function(cb){
+                    if(self.props.graph) return cb();
+                    client.getEquipmentTypeGraph(self.props.params.type,0,0,function(err,graph){
+                        self.props.graph = graph;
+                        cb();
+                    })
                 }
             ],function(update){
                 self.props.loading = false;
                 self.update();
+                setTimeout(function(){
+                    self.unscaleAll();
+                })
             })
         }
+    }
+    
+    exports.getInitialState = function(){
+        this.props.start = moment().startOf("month").toDate().getTime();
+        this.props.end = moment().endOf("month").toDate().getTime();
+        return {};
     }
     
     exports.getImagePath = function(){
@@ -396,6 +459,89 @@ script.
             this.update();
         }.bind(this);
     }
+    
+    exports.createAreaPath = function(cap,timeline,fill){
+        var path = "";
+        
+        var start = 0;
+        var before = 0;
+        var end = 0;
+        var week = this.props.end-this.props.start;
+        
+        for(var time in timeline){
+            time = parseInt(time,10);
+            if(time < this.props.start){
+                before = start = end = timeline[time];
+            }else if(time <= this.props.end){
+                end = timeline[time];
+                path += 100*(time-this.props.start)/week+","+(100-before/cap.range*100)+" "+100*(time-this.props.start)/week+","+(100-end/cap.range*100)+" ";
+                before = end;
+            }
+        }        
+        return (fill?"M0,100L":"M")+"0,"+(100-start/cap.range*100)+" "+path+"100,"+(100-end/cap.range*100)+(fill?" 100,100Z":"");
+    }
+    
+    var caps = {
+        5:1,
+        10:2,
+        25:5,
+        50:10,
+        75:15,
+        100:20
+    }
+    
+    exports.steps = function(cap){
+        var steps = [];
+        for(var i = cap.step; i <= cap.max; i+=cap.step){
+            steps.push(i);
+        }
+        return steps;
+    }
+    
+    exports.days = function(){
+        var day = 1000*60*60*24;
+        var days = [];
+        for(var i = this.props.start; i <= this.props.end; i+=day){
+            days.push(new Date(i).getDate());
+        }
+        return days;
+    }
+    
+    exports.max = function(timeline){
+        var max = 0;
+        for(var time in timeline){
+            if(timeline[time] > max) max = timeline[time];
+        }
+        return max;
+    }
+    
+    exports.cap = function(graphs){
+        var max = 0;
+        for(var i = 0; i < graphs.length; i++){
+            var m = this.max(graphs[i]);
+            if(m > max) max = m;
+        }
+        
+        for(var cap in caps){
+            cap = parseInt(cap,10);
+            if(max < cap) return {max:cap,range:Math.floor(cap*1.2),step:caps[cap]};
+        }
+    }
+    
+    exports.graphForward = function(){
+        this.props.start = this.props.end+1;
+        this.props.end = moment(this.props.start).endOf("month").toDate().getTime();
+        this.update();
+        setTimeout(this.unscaleAll.bind(this));
+    }
+    exports.graphBackward = function(){
+        this.props.end = this.props.start-1;
+        this.props.start = moment(this.props.end).startOf("month").toDate().getTime();
+        this.update();
+        setTimeout(this.unscaleAll.bind(this));
+    }
+    
+    
     
     exports.cancel = function(){
         history.back();

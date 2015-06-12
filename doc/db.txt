@@ -50,7 +50,8 @@ equiptmentrentals
     project:    ObjectID,
     supplier:   ObjectID,
     status:     String, //requested, booked, received, returned
-    time:       Number,
+    delivery:   Number,
+    return:     Number,
     items:{
         TYPE:{
             count: Number,
