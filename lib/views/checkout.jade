@@ -27,7 +27,7 @@ append body
                         tbody
                             each type in this.props.data.types
                                 if type.needed !== undefined || type.count > 0
-                                    tr(onClick=this.startScan(type._id))
+                                    tr(onClick=this.startScan(type._id) className=((this.props.data.types[type._id].needed&&this.props.data.types[type._id].needed>(this.props.data.types[type._id].count||0))?"danger":""))
                                         td= type._id
                                         td= type.name
                                         each supplier in this.props.suppliers
