@@ -1,6 +1,5 @@
 div(style="display:inline-block" className=this.props.className)
     .btn.btn-default( onClick=this.scan)
-        - console.log(this.state);
         .glyphicon.glyphicon-barcode
     if this.state.type !== undefined
         .modal(style="display:block").fade.in
@@ -20,13 +19,13 @@ div(style="display:inline-block" className=this.props.className)
                                     if this.state.type.stock.length && this.props.supplier == "own"
                                         label.col-lg-2.control-label Objekt
                                         .col-lg-10
-                                            select.form-control(value=this.state.type.value onChange=this.onValueChanged)
+                                            select.form-control(value=this.state.type.value onChange=this.onValueChanged ref="countfield")
                                                 each item in this.state.type.stock
                                                     option(value=item.id)= this.state.type.name+" "+item.id
                                     else
                                         label.col-lg-2.control-label Menge
                                         .col-lg-10
-                                            input.form-control(type="text" value=this.state.type.value onChange=this.onValueChanged)
+                                            input.form-control(type="text" value=this.state.type.value ref="countfield" onChange=this.onValueChanged)
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelScan) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmScan disabled=(!this.state.type || (typeof this.state.type.value == "string" && isNaN(parseInt(this.state.type.value,10))))) Scannen
@@ -41,12 +40,20 @@ script.
         return {};
     }
     
+    exports.componentDidMount = function(){
+        document.addEventListener("keydown",this.onKeyDown = function(e){
+            if(this.state.type !== undefined && e.keyCode == 13) this.confirmScan();
+        }.bind(this))
+    }
+    
+    exports.componentWillUnmount = function(){
+        document.removeEventListener("keydown",this.onKeyDown);
+    }
+    
     exports.scan = function(){
         this.state.type = null;
         this.forceUpdate();
-        setTimeout(function(){
-            this.refs.typefield.getDOMNode().getElementsByClassName("Select-input")[0].childNodes[0].select();
-        }.bind(this),100)
+        this.focusTypeField();
     }
     
     exports.findTypes = function(input,cb){
@@ -65,11 +72,12 @@ script.
                 type.value = "1";
             }
             this.forceUpdate();
+            this.focusCountField();
         }.bind(this))
     }
     
     exports.onValueChanged = function(e){
-        this.state.type.value = parseFloat(e.target.value);
+        this.state.type.value = parseFloat(e.target.value)||0;
         this.forceUpdate();
     }
     
@@ -88,4 +96,16 @@ script.
         this.props.onScan(scan);
         delete this.state.type;
         this.forceUpdate(); 
+    }
+    
+    exports.focusTypeField = function(){
+        setTimeout(function(){
+            this.refs.typefield.getDOMNode().getElementsByClassName("Select-input")[0].childNodes[0].select();
+        }.bind(this),100)
+    }
+    
+    exports.focusCountField = function(){
+        setTimeout(function(){
+            this.refs.countfield.getDOMNode().select();
+        }.bind(this),100)
     }
