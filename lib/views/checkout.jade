@@ -42,7 +42,7 @@ append body
                 .col-md-4
                     .pull-left
                         h3 Verlauf
-                    .btn-toolbar.pull-right(style="margin-top:18px")
+                    .btn-toolbar.pull-right(style="marginTop:18px")
                         DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.props.supplier||"own")[0] onSelect=this.setSupplier)        
                             each supplier in this.props.allsuppliers
                                 MenuItem(eventKey=supplier)
