@@ -109,6 +109,38 @@ append body
                                     - }).bind(this)(item)
             .row
                 .col-xs-12
+                    h3 Ausgänge
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Projekt
+                                th Anzahl
+                                th Rückkehr
+                        tbody
+                            each project in this.props.item.locations
+                                tr
+                                    td= project.name
+                                    td= project.count
+                                    td= moment(project.to).format("LLL")
+            .row
+                .col-xs-12
+                    h3 Reservationen
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Projekt
+                                th Anzahl
+                                th Ausgang
+                                th Rückkehr
+                        tbody
+                            each project in this.props.item.reservations
+                                tr
+                                    td= project.name
+                                    td= project.count
+                                    td= moment(project.from).format("LLL")
+                                    td= moment(project.to).format("LLL")
+            .row
+                .col-xs-12
                     h3
                         = "Graph "+moment(this.props.start).format("MMMM YYYY")
                         .btn-toolbar.pull-right
