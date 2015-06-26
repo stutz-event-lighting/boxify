@@ -9,7 +9,7 @@ append body
                     button.btn.btn-default(onClick=function(){this.cancel()}.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Zurück
-                    button.btn.btn-primary(onClick=function(){this.save()}.bind(this))
+                    button.btn.btn-primary(onClick=function(){this.save()}.bind(this) disabled=this.props.user.ownedBy.indexOf(client.session.user._id) < 0)
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
@@ -33,11 +33,15 @@ append body
                             .col-lg-10
                                 input.form-control(type="text" placeholder="Name" value=this.props.user.email onChange=function(e){this.props.user.email = e.target.value; this.update()}.bind(this))
                     h4 Berechtigungen
-                    each permission in this.props.user.permissions
-                        div
-                            label
-                                input(type="checkbox" checked=permission.allowed onChange=this.togglePermission(permission))
-                                = " "+permission.name
+                    each permission,key in this.props.user.permissions
+                        if client.hasPermission(key)
+                            div
+                                label
+                                    input(type="checkbox" checked=permission.allowed onChange=this.togglePermission(permission))
+                                    = " "+permission.name
+                    h4 Verwaltete Benutzer
+                    Select(value=this.props.user.ownedUsers.map(function(user){return {value:user._id,label:user.name}}) asyncOptions=this.findUsers onChange=this.onUsersChanged multi=true)
+                        
             .row
                 .col-xs-12
                     h2 Passwort & PIN
@@ -82,6 +86,7 @@ append body
                             button.btn.btn-primary(onClick=this.confirmChangePin) Erstellen
 script.
     var client = require("../client.js");
+    var Select = require("react-select");
     
     exports.getNeededPermissions = function(){
         return ["users_read"];
@@ -143,9 +148,9 @@ script.
     }
 
     exports.save = function(){
-        var permissions = [];
+        var permissions = {};
         for(var permission in this.props.user.permissions){
-            if(this.props.user.permissions[permission].allowed) permissions.push(permission);
+            permissions[permission] = this.props.user.permissions[permission].allowed;
         }
         
         client.saveUser(this.props.user._id,{
@@ -153,7 +158,8 @@ script.
             lastname:this.props.user.lastname,
             email:this.props.user.email,
             permissions:permissions,
-            image:this.props.user.image?this.props.user.image.url:undefined
+            image:this.props.user.image?this.props.user.image.url:undefined,
+            ownedUsers:this.props.user.ownedUsers.map(function(user){return user._id})
         },function(err){
             if(err) return true;
             back(true);
@@ -210,4 +216,15 @@ script.
             delete this.props.changepin;
             this.update();
         }.bind(this))
+    }
+    
+    exports.findUsers = function(input,cb){
+        client.findUsers(input,function(err,users){
+            cb(err,{options:users.map(function(user){return {value:user._id,label:user.firstname+" "+user.lastname}})})
+        });
+    }
+    
+    exports.onUsersChanged = function(id,selection){
+        this.props.user.ownedUsers = selection.map(function(selection){return {_id:selection.value,name:selection.label}});
+        this.forceUpdate();
     }

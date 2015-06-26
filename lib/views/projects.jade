@@ -139,7 +139,6 @@ script.
     }
     
     exports.findCustomers = function(input,cb){
-        console.log(this.props);
         client.findCustomers({search:input,finished:false},function(err,customers){
             cb(err,{options:customers.map(function(customer){return {value:customer._id,label:customer.name}})})
         })

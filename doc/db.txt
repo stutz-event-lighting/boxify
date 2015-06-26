@@ -3,7 +3,10 @@ users
     firstname:      String,
     lastname:       String,
     email:          String,
-    password:       String
+    password:       String,
+    ownedBy:        [
+        ObjectID
+    ]
 }
 
 contacts
