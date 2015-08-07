@@ -50,6 +50,7 @@ equipmentreservations
 equiptmentrentals
 {
     _id:        ObjectID,
+    name:       String,
     project:    ObjectID,
     supplier:   ObjectID,
     status:     String, //requested, booked, received, returned

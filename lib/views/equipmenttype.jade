@@ -141,6 +141,23 @@ append body
                                     td= moment(project.to).format("LLL")
             .row
                 .col-xs-12
+                    h3 Zumieten
+                    table.table.table-striped
+                        thead
+                            tr
+                                th Name
+                                th Anzahl
+                                th Erhalt
+                                th Rückgabe
+                        tbody
+                            each rental in this.props.item.rentals
+                                tr
+                                    td= rental.name
+                                    td= rental.count
+                                    td= moment(rental.from).format("LLL")
+                                    td= moment(rental.to).format("LLL")
+            .row
+                .col-xs-12
                     h3
                         = "Graph "+moment(this.props.start).format("MMMM YYYY")
                         .btn-toolbar.pull-right
