@@ -14,9 +14,11 @@ append body
                         |  Speichern
             .row
                 .col-xs-12
-                    h3
-                        | Equipment
+                    .pull-left
+                        h3 Equipment
+                    .btn-toolbar.pull-right(style="margin-top:18px")
                         .btn.btn-primary.pull-right(onClick=this.add) Hinzufügen
+                        ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier="none")
                     table.table.table-striped.table-hover
                         thead
                             tr
@@ -55,6 +57,7 @@ append body
                         button.btn.btn-primary(onClick=this.done) Fertig
 script.
     var client = require("../client.js");
+    var ScanButton = require("./ScanButton.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -88,11 +91,15 @@ script.
         this.update();
     }
     
-    exports.addItem = function(type){
+    exports.addItem = function(type,count){
         return function(){
-            this.props.data.reservation.items[type] = 0;
+            this.props.data.reservation.items[type] = count||0;
             this.update();
         }.bind(this);
+    }
+    
+    exports.handleScan = function(code){
+        this.addItem(code.type,code.count)();        
     }
     
     exports.changeItem = function(type){
