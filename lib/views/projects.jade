@@ -60,21 +60,13 @@ append body
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
     if this.props.delete
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Projekt löschen
-                    .modal-body= "Sind sie sicher, dass sie \""+this.props.delete.name+"\" löschen möchten?"
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+        ConfirmDialog(title="Projekt löschen" action="Löschen" question=("\""+this.props.delete.name+"\" löschen möchten") onConfirm=this.confirmDelete onCancel=this.cancelDelete)
 script.
     var client = require("../client.js");
     var Select = require("react-select");
     var DatePicker = require("react-widgets").DateTimePicker;
     var moment = require("moment");
+    var ConfirmDialog = require("./ConfirmDialog.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];

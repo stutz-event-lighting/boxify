@@ -89,10 +89,13 @@ append body
                         .btn-toolbar.pull-right
                             if this.props.item.status == "ongoing"
                                 .btn.btn-primary(onClick=this.finish disabled=Object.keys(this.props.item.balance).length>0) Projekt abschliessen
+    if this.props.confirm
+        = this.createConfirmDialog(this.props.confirm)
 script.
     var client = require("../client.js");
     var moment = require("moment");
     var TextArea = require("react-textarea-autosize");
+    var ConfirmDialog = require("./ConfirmDialog.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -148,15 +151,16 @@ script.
     }
 
     exports.deleteReservation = function(reservation){
-        var self = this;
         return function(){
-            client.deleteReservation(self.props.params.id,reservation._id,function(err){
-                if(!err){
-                    delete self.props.item;
-                    self.update();
-                }
-            })
-        }
+            this.confirm("Reservation löschen","Löschen","diese Reservation löschen möchten","confirmDeleteReservation",reservation._id);
+        }.bind(this)        
+    }
+    
+    exports.confirmDeleteReservation = function(reservation){
+        client.deleteReservation(this.props.params.id,reservation,function(){
+            delete this.props.item;
+            this.update();
+        }.bind(this));
     }
     
     exports.createRental = function(){
@@ -175,13 +179,16 @@ script.
     }
     
     exports.deleteCheckout = function(checkout){
-        var self = this;
         return function(){
-            client.deleteCheckout(self.props.params.id,checkout._id,function(){
-                delete self.props.item;
-                self.update();
-            });
-        }
+            this.confirm("Warenausgang löschen","Löschen", "diesen Warenausgang löschen möchten", "confirmDeleteCheckout",checkout._id );
+        }.bind(this);
+    }
+    
+    exports.confirmDeleteCheckout = function(checkout){    
+        client.deleteCheckout(this.props.params.id,checkout,function(){
+            delete this.props.item;
+            this.update();
+        }.bind(this));
     }
     
     exports.createCheckin = function(){
@@ -196,13 +203,15 @@ script.
     }
     
     exports.deleteCheckin = function(checkin){
-        var self = this;
         return function(){
-            client.deleteCheckin(self.props.params.id,checkin._id,function(){
-                delete self.props.item;
-                self.update();
-            });
-        }
+            this.confirm("Wareneingang löschen","Löschen","diesen Wareneingang löschen wollen","confirmDeleteCheckin",checkin._id);
+        }.bind(this);
+    }
+    exports.confirmDeleteCheckin = function(checkin){
+        client.deleteCheckin(this.props.params.id,checkin,function(){
+            delete this.props.item;
+            this.update();
+        }.bind(this));
     }
     
     exports.finish = function(){
@@ -223,4 +232,28 @@ script.
             if(err) return true;
             back(true);
         });
+    }    
+    
+    exports.createConfirmDialog = function(opts){
+        return ConfirmDialog({
+            title:opts.title,
+            action:opts.action,
+            question:opts.question,
+            onAnswer:function(confirmed){
+                delete this.props.confirm;
+                this.update();
+                if(confirmed) this[opts.callback](opts.data);
+            }.bind(this)
+        });
+    }
+    
+    exports.confirm = function(title,action,question,cb,data){
+        this.props.confirm = {
+            title:title,
+            action:action,
+            question:question,
+            callback:cb,
+            data:data
+        };
+        this.update();
     }

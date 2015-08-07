@@ -36,13 +36,13 @@ append body
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
                                                 i.glyphicon.glyphicon-trash
     if this.props.add
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
+        .modal(style="display:block;overflowY:auto;position:fixed;height:100%").fade.in
+            .modal-backdrop(style="height:100%;top:0px;display:block;position:fixed").fade.in
             .modal-dialog
-                .modal-content
+                .modal-content(style="top:100px;bottom:100px;")
                     .modal-header
                         h2 Equipment hinzufügen
-                    .modal-body(style="maxHeight:500px;overflowY:auto")
+                    .modal-body(style="height:400px;overflowY:auto")
                         each category in this.props.data.categories
                             h4= category.name
                             table.table.table-striped
