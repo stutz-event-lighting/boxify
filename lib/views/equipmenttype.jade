@@ -18,7 +18,7 @@ append body
                         img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
                         input(type="file" style="display:none" ref="image" onChange=this.applyImage)
                         br
-                        img(src="/api/barcode/EQ-"+this.props.item._id+"/"+this.props.item.name width="100%")
+                        img(src="/api/barcode/EQ-"+this.props.item._id+"/"+(this.props.item.manufacturer?(this.props.item.manufacturer+" "):"")+this.props.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h4 Technische Daten
                     .form-horizontal

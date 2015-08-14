@@ -18,7 +18,7 @@ append body
                     div.text-center
                         img.img-responsive(src="/api/equipment/"+this.props.item.type+"/image")
                         br
-                        img(src="/api/barcode/EQ-"+this.props.item.type+"-"+this.props.item.id+"/"+this.props.item.name width="100%")
+                        img(src="/api/barcode/EQ-"+this.props.item.type+"-"+this.props.item.id+"/"+(this.props.manufacturer?(this.props.manufacturer+" "):"")+this.props.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h3 Daten
                     .form-horizontal
@@ -131,6 +131,7 @@ script.
                 self.props.logs = data.logs;
                 self.props.location = data.location;
                 self.props.container = data.container;
+                self.props.manufacturer = data.manufacturer;
                 for(var type in self.props.item.contents){
                     self.props.item.contents[type].newcount = self.props.item.contents[type].count;
                     if(self.props.item.contents[type].ids){
