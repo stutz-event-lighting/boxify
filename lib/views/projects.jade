@@ -22,7 +22,13 @@ append body
                     th Beginn
                     th Ende
             tbody
+                - var over;
                 each item in this.props.items
+                    - var isOver = item.end < new Date()
+                    if over!==undefined && over != isOver
+                        tr
+                            td(style="backgroundColor:white;height:70px" colSpan=4)
+                    - over = isOver
                     tr(onClick=this.edit(item))
                         td= item.name
                         td= item.customer
