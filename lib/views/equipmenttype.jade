@@ -38,6 +38,22 @@ append body
                                         button.btn.btn-default(onClick=this.startEditCategories)
                                             i.glyphicon.glyphicon-pencil
                         .form-group
+                            label.col-lg-2.control-label Hersteller
+                            .col-lg-10
+                                input.form-control(type="text" placeholder="Hersteller" value=this.props.item.manufacturer onChange=function(e){this.props.item.manufacturer = e.target.value;this.update();}.bind(this))
+                        .form-group
+                            label.col-lg-2.control-label Hersteller Artikelnummer
+                            .col-lg-10
+                                input.form-control(type="text" placeholder="Hersteller Artikelnummer" value=this.props.item.manufacturerArticlenumber onChange=function(e){this.props.item.manufacturerArticlenumber = e.target.value;this.update();}.bind(this))
+                        .form-group
+                            label.col-lg-2.control-label Hersteller EAN Code
+                            .col-lg-10
+                                input.form-control(type="text" placeholder="Hersteller EAN Code" value=this.props.item.manufacturerEAN onChange=function(e){this.props.item.manufacturerEAN = e.target.value;this.update();}.bind(this))
+                        .form-group
+                            label.col-lg-2.control-label Technische Beschreibung
+                            .col-lg-10
+                                TextArea.form-control(placeholder="Technische Beschreibung" value=this.props.item.technicalDescription onChange=this.onTechnicalDescriptionChanged)
+                        .form-group
                             label.col-lg-2.control-label Gewicht
                             div(className="col-lg-10 "+(!this.props.weightOk?"has-error":""))
                                 .input-group
@@ -58,6 +74,19 @@ append body
                                     .input-group
                                         input.form-control(type="text" placeholder="Höhe" value=this.props.height onChange=this.onHeightChange onBlur=this.onHeightBlur)
                                         span.input-group-addon cm
+                        .form-group
+                            label.col-lg-2.control-label Mietpreis
+                            div(className="col-lg-10 "+(!this.props.rentOk?"has-error":""))
+                                .input-group
+                                    span.input-group-addon CHF
+                                    input.form-control(type="text" placeholder="Mietpreis" value=this.props.rent onChange=this.onRentChange onBlur=this.onRentBlur)
+                                    span.input-group-addon /Tag
+                        .form-group
+                            label.col-lg-2.control-label Neupreis
+                            div(className="col-lg-10 "+(!this.props.factoryPriceOk?"has-error":""))
+                                .input-group
+                                    span.input-group-addon CHF
+                                    input.form-control(type="text" placeholder="Neupreis" value=this.props.factoryPrice onChange=this.onFactoryPriceChange onBlur=this.onFactoryPriceBlur)                                    
                     h4 Erlauber Inhalt
                     table.table.table-striped.table-hover
                         thead
@@ -227,6 +256,7 @@ script.
     var async = require("async");
     var Select = require("react-select");
     var moment = require("moment");
+    var TextArea = require("react-textarea-autosize");
 
     function isInt(str){
         return /^[0-9]*$/.test(str)
@@ -260,6 +290,10 @@ script.
                         self.props.widthOk = true;
                         self.props.height = (item.height||"")+"";
                         self.props.heightOk = true;
+                        self.props.rent = (item.rent||"")+"";
+                        self.props.rentOk = true;
+                        self.props.factoryPrice = (item.factoryPrice||"")+"";
+                        self.props.factoryPriceOk = true;
                         cb();
                     });
                 },
@@ -327,6 +361,11 @@ script.
         this.update();
     }
     
+    exports.onTechnicalDescriptionChanged = function(e){
+        this.props.item.technicalDescription = e.target.value;
+        this.update();
+    }
+    
     exports.onLengthChange = function(e){
         this.props.length = e.target.value;
         this.update();
@@ -341,6 +380,14 @@ script.
     }
     exports.onWeightChange = function(e){
         this.props.weight = e.target.value;
+        this.update();
+    }
+    exports.onRentChange = function(e){
+        this.props.rent = e.target.value;
+        this.update();
+    }
+    exports.onFactoryPriceChange = function(e){
+        this.props.factoryPrice = e.target.value;
         this.update();
     }
     exports.onLengthBlur = function(){
@@ -376,6 +423,21 @@ script.
         }else{
             this.props.weightOk = true;
             this.props.item.weight = parseFloat(this.props.weight);
+        }
+        this.update();
+    }
+    exports.onRentBlur = function(){
+        if(!isFloat(this.props.rent)){
+            this.props.rentOk = false;
+        }else{
+            this.props.rentOk = true;
+            this.props.item.rent = parseFloat(this.props.rent);
+        }
+        this.update();
+    }
+    exports.onFactoryPriceBlur = function(){
+        if(this.props.factoryPriceOk = isFloat(this.props.factoryPrice)){
+            this.props.item.factoryPrice = parseFloat(this.props.factoryPrice);
         }
         this.update();
     }
@@ -577,12 +639,18 @@ script.
     exports.save = function(){
         client.saveEquipmentType(this.props.item._id,{
             name:this.props.item.name,
+            category:this.props.item.category,
+            manufacturer:this.props.item.manufacturer,
+            manufacturerArticlenumber:this.props.item.manufacturerArticlenumber,
+            manufacturerEAN:this.props.item.manufacturerEAN,
+            technicalDescription:this.props.item.technicalDescription,
             weight:this.props.item.weight,
             length:this.props.item.length,
             width:this.props.item.width,
             height:this.props.item.height,
+            rent:this.props.item.rent,
+            factoryPrice:this.props.item.factoryPrice,
             image:this.props.item.image?this.props.item.image.url:undefined,
-            category:this.props.item.category,
             contents:this.props.item.contents.map(function(type){return type._id})
         },function(err){
             if(err) return true;

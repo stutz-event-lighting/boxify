@@ -16,8 +16,9 @@ append body
                 tr
                     th ID
                     th Name
-                    th Kategorie
-                    th Anzahl
+                    th Hersteller
+                    th.hidden-xs Kategorie
+                    th.hidden-xs Anzahl
                     th.hidden-xs Grösse
                     th.hidden-xs Gewicht
                     th
@@ -27,8 +28,9 @@ append body
                         tr(onClick=this.edit(item))
                             td= item._id
                             td= item.name
-                            td= item.category?this.props.categoriesbyid[item.category]:"Keine"
-                            td= item.count
+                            td= item.manufacturer
+                            td.hidden-xs= item.category?this.props.categoriesbyid[item.category]:"Keine"
+                            td.hidden-xs= item.count
                             td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
                             td.hidden-xs= item.weight
                             td
