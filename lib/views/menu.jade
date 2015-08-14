@@ -13,16 +13,17 @@ script.
     var Nav = require("react-bootstrap/Nav");
     var Button = require("react-bootstrap/Button");
     var client = require("../client.js");
+    
     var menu = {
-        "/equipment":"Equipment",
-        "/projects":"Projekte",
-        "/rentals":"Zumieten",
-        "/customers":"Kunden",
-        "/suppliers":"Zulieferer",
-        "/electronic":"Elektronik",
-        "/users":"Benutzer",
-        "/profile":"Profil"
-    };
+        "Equipment":{url:"/equipment",permissions:["equipment_read"]},
+        "Projekte":{url:"/projects",permissions:["projects_read"]},
+        "Zumieten":{url:"/rentals",permissions:["rentals_read"]},
+        "Kunden":{url:"/customers",permissions:["customers_read"]},
+        "Zulieferer":{url:"/suppliers",permissions:["suppliers_read"]},
+        "Elektronik":{url:"/electronic",loggedIn:true},
+        "Benutzer":{url:"/users",permissions:["users_read"]},
+        "Profil":{url:"/profile",loggedIn:true}
+    }
     
     exports.brand = function(){
         return React.DOM.a({href:"/"},React.DOM.img({src:"/public/logo.png"}))
@@ -34,9 +35,15 @@ script.
             role:"navigation",
             eventKey:0,
             id:"top"
-        },Object.keys(menu).map(function(link){
-            return React.DOM.li({className:isActive(link)?"active":""},
-                React.DOM.a({href:link},menu[link])
+        },Object.keys(menu).filter(function(name){
+            var entry = menu[name];
+            if(entry.loggedIn && !client.session) return false;
+            if(entry.permissions && !client.hasPermissions(entry.permissions)) return false;
+            return true;
+        }).map(function(name){
+            var entry = menu[name];
+            return React.DOM.li({className:isActive(entry.url)?"active":""},
+                React.DOM.a({href:entry.url},name)
             )
         }))
     }

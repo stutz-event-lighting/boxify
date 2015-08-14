@@ -1,7 +1,8 @@
 .container(style="max-width:400px" onKeyDown=this.checkEnter)
-    img(src="/public/logo.png" width="100%" style="margin-top:100px;margin-bottom:50px")
     if this.state.failed
         .alert.alert-danger Login fehlgeschlagen
+    else if client.session
+        alert.alert-danger Zugriff verweigert
     h2.form-signin-heading Bitte loggen Sie sich ein
     label.sr-only(for='inputEmail') E-Mail
     input#inputEmail.form-control(type='email' placeholder='E-Mail' value=this.state.email onChange=this.onMailChanged required='' autofocus='' style="border-bottom-left-radius:0px;border-bottom-left-radius:0px;margin-bottom:-1px")
