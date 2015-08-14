@@ -37,6 +37,10 @@ append body
                                         button.btn.btn-default(onClick=this.startEditCategories)
                                             i.glyphicon.glyphicon-pencil
                         .form-group
+                            label.col-lg-2.control-label Tags
+                            .col-lg-10
+                                Select(value=(this.props.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) asyncOptions=this.findTags onChange=this.onTagsChanged multi=true)
+                        .form-group
                             label.col-lg-2.control-label Hersteller
                             .col-lg-10
                                 input.form-control(type="text" placeholder="Hersteller" value=this.props.item.manufacturer onChange=function(e){this.props.item.manufacturer = e.target.value;this.update();}.bind(this))
@@ -537,6 +541,21 @@ script.
         this.update();
     }
     
+    exports.findTags = function(name,cb){
+        client.findEquipmentTags(name,function(err,tags){
+            var options = tags.map(function(tag){return {value:tag,label:tag}});
+            if(name.length && tags.indexOf(name) < 0) options.push({value:name,label:"Tag '"+name+"' erstellen"});
+            cb(err,{options:options});
+        });
+    }
+    
+    exports.onTagsChanged = function(id,tags){
+        this.props.item.tags = tags.map(function(tag){
+            return tag.value
+        });
+        this.update();
+    }
+    
     exports.confirmAddContents = function(){
         this.props.item.contents.push({_id:this.props.addcontents.type.value,name:this.props.addcontents.type.label});
         delete this.props.addcontents;
@@ -644,6 +663,7 @@ script.
         client.saveEquipmentType(this.props.item._id,{
             name:this.props.item.name,
             category:this.props.item.category,
+            tags:this.props.item.tags,
             manufacturer:this.props.item.manufacturer,
             manufacturerArticlenumber:this.props.item.manufacturerArticlenumber,
             manufacturerEAN:this.props.item.manufacturerEAN,
