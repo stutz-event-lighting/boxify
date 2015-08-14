@@ -64,8 +64,8 @@ script.
     
     exports.onEquipmenttypeChanged = function(id,selection){
         if(this.state.type && this.state.type._id == id) return;
-        client.getEquipmentType(id,function(err,type){
-            this.state.type = type;
+        client.getEquipmentTypeItems(id,function(err,stock){
+            var type = this.state.type = {_id:id,name:selection[0].label,stock:stock}
             if(type.stock.length && this.props.supplier == "own"){
                 type.value = type.stock[0].id;
             }else{

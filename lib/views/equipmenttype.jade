@@ -1,8 +1,7 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
-    if this.props.item
+    if this.props.item && this.props.stock !== undefined && this.props.items && this.props.graph && this.props.categories
         .container
             h2 Equipmenttyp bearbeiten
                 .btn-toolbar.pull-right
@@ -109,17 +108,17 @@ append body
             .row
                 .col-xs-12
                     h3
-                        = "Bestand: "+this.props.item.count
+                        = "Bestand: "+this.props.stock
                         .btn-toolbar.pull-right
-                            if this.props.item.count
-                                if !this.props.item.stock.length
+                            if this.props.stock
+                                if !this.props.item.hasItems
                                     button.btn.btn-danger(onClick=this.decrease) Entfernen
-                                button.btn.btn-primary(onClick=this.props.item.stock.length?this.createItem:this.increase) Hinzufügen
+                                button.btn.btn-primary(onClick=this.props.items.length?this.createItem:this.increase) Hinzufügen
                             else
                                 DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick)
                                     MenuItem(eventKey="1") Menge
                                     MenuItem(eventKey="2") Einzelobjekt
-                    if this.props.item.stock.length
+                    if this.props.items.length
                         table.table.table-striped.table-hover
                             thead
                                 tr
@@ -127,7 +126,7 @@ append body
                                     th Letzte Wartung
                                     th
                             tbody
-                                each item in this.props.item.stock
+                                each item in this.props.items
                                     - (function(item){
                                     tr
                                         td(onClick=this.editItem(item))= this.props.item.name+" "+item.id
@@ -269,54 +268,62 @@ script.
         return ["equipment_read"];
     }
     
-    exports.stockMode = function(){
-        return !this.props.item.count || this.props.item.stock.length
-    }    
+    exports.componentDidMount = function(){
+        if(!this.props.item) this.loadEquipmentType();
+        this.loadStock();
+        this.loadItems();
+        this.loadCategories();
+        this.loadGraph();
+    }
     
-    exports.checkData = function(){
-        var self = this;
-        if(!self.props.item || !self.props.categories && !self.props.loading){
-            self.props.loading = true;
-            async.parallel([
-                function(cb){
-                    if(self.props.item) return cb();
-                    client.getEquipmentType(self.props.params.type,function(err,item){
-                        self.props.item = item;
-                        self.props.weight = (item.weight||"")+"";
-                        self.props.weightOk = true;
-                        self.props.length = (item.length||"")+"";
-                        self.props.lengthOk = true;
-                        self.props.width = (item.width||"")+"";
-                        self.props.widthOk = true;
-                        self.props.height = (item.height||"")+"";
-                        self.props.heightOk = true;
-                        self.props.rent = (item.rent||"")+"";
-                        self.props.rentOk = true;
-                        self.props.factoryPrice = (item.factoryPrice||"")+"";
-                        self.props.factoryPriceOk = true;
-                        cb();
-                    });
-                },
-                function(cb){
-                    if(self.props.categories) return cb();
-                    client.getEquipmentCategories(function(err,categories){
-                        if(err) categories = [];
-                        self.props.categories = categories;
-                        cb();
-                    })
-                },
-                function(cb){
-                    if(self.props.graph) return cb();
-                    client.getEquipmentTypeGraph(self.props.params.type,0,0,function(err,graph){
-                        self.props.graph = graph;
-                        cb();
-                    })
-                }
-            ],function(update){
-                self.props.loading = false;
-                self.update();
-            })
-        }
+    exports.loadEquipmentType = function(){
+        client.getEquipmentType(this.props.params.type,function(err,item){
+            this.props.item = item;
+            this.props.weight = (item.weight||"")+"";
+            this.props.weightOk = true;
+            this.props.length = (item.length||"")+"";
+            this.props.lengthOk = true;
+            this.props.width = (item.width||"")+"";
+            this.props.widthOk = true;
+            this.props.height = (item.height||"")+"";
+            this.props.heightOk = true;
+            this.props.rent = (item.rent||"")+"";
+            this.props.rentOk = true;
+            this.props.factoryPrice = (item.factoryPrice||"")+"";
+            this.props.factoryPriceOk = true;
+            this.update();
+        }.bind(this));
+    }
+    
+    exports.loadItems = function(){
+        client.getEquipmentTypeItems(this.props.params.type,function(err,items){
+            if(err) return;
+            this.props.items = items;
+            this.update();
+        }.bind(this));
+    }
+    
+    exports.loadStock = function(){
+        client.getEquipmentTypeStock(this.props.params.type,function(err,stock){
+            if(err) return;
+            this.props.stock = stock;
+            this.update();
+        }.bind(this));
+    }
+    
+    exports.loadCategories = function(){
+        client.getEquipmentCategories(function(err,categories){
+            if(err) categories = [];
+            this.props.categories = categories;
+            this.update();
+        }.bind(this));
+    }
+    
+    exports.loadGraph = function(){
+        client.getEquipmentTypeGraph(this.props.params.type,0,0,function(err,graph){
+            this.props.graph = graph;
+            this.update();
+        }.bind(this))
     }
     
     exports.getInitialState = function(){
@@ -347,9 +354,8 @@ script.
     }
     
     exports.startEditCategories = function(){
-        visit("/equipment/categories",{},function(state){
-            delete state.categories;
-        });
+        this.update();
+        visit("/equipment/categories");
     }
 
     exports.onCategoryChanged = function(e){
@@ -469,11 +475,10 @@ script.
 
     exports.confirmIncrease = function(){
         var self = this;
-        if(/^[0-9]+$/.test(this.props.increase.count) && (this.props.increase.type=="add" || parseInt(this.props.increase.count,10) <= this.props.item.count)){
+        if(/^[0-9]+$/.test(this.props.increase.count) && (this.props.increase.type=="add" || parseInt(this.props.increase.count,10) <= this.props.stock)){
             client.increaseEquipmentCount(this.props.item._id,{type:this.props.increase.type,count:parseInt(this.props.increase.count,10)},function(err){
-                self.props.item.count += (self.props.increase.type=="add"?1:-1)*parseInt(self.props.increase.count,10);
                 delete self.props.increase;
-                self.update();
+                self.loadStock();
             });
         }else{
             this.props.increase.countOk = false;
@@ -501,11 +506,11 @@ script.
         return function(){
             client.deleteEquipment(self.props.item._id,item.id,function(err){
                 if(err) return;
-                for(var i = 0; i < self.props.item.stock.length; i++){
-                    if(self.props.item.stock[i].id == item.id){
-                        self.props.item.stock.splice(i,1);
-                        self.props.item.count--;
-                        self.update();
+                for(var i = 0; i < self.props.items.length; i++){
+                    if(self.props.items[i].id == item.id){
+                        self.loadStock();
+                        self.loadItems();
+                        break;
                     }
                 }
             })
@@ -545,7 +550,6 @@ script.
     
     exports.removeContents = function(type){
         return function(){
-            console.log("OMG",type);
             this.props.item.contents.splice(this.props.item.contents.map(function(type){return type._id}).indexOf(type),1);
             this.update();
         }.bind(this);

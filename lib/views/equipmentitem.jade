@@ -1,7 +1,6 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
     if this.props.item
         .container
             h2
@@ -117,30 +116,27 @@ script.
         return ["equipment_read"];
     }
     
-    exports.getInitialState = function(){
-        this.checkData();
-        return {};
+    exports.componentDidMount = function(){
+        if(!this.props.item) this.refresh();
     }
     
-    exports.checkData = function(){
+    exports.refresh = function(){
         var self = this;
-        if(this.props.item === undefined || !this.props.logs){
-            client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
-                if(err) return;
-                self.props.item = data.item;
-                self.props.logs = data.logs;
-                self.props.location = data.location;
-                self.props.container = data.container;
-                self.props.manufacturer = data.manufacturer;
-                for(var type in self.props.item.contents){
-                    self.props.item.contents[type].newcount = self.props.item.contents[type].count;
-                    if(self.props.item.contents[type].ids){
-                        self.props.item.contents[type].newids = JSON.parse(JSON.stringify(self.props.item.contents[type].ids));
-                    }
+        client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
+            if(err) return;
+            self.props.item = data.item;
+            self.props.logs = data.logs;
+            self.props.location = data.location;
+            self.props.container = data.container;
+            self.props.manufacturer = data.manufacturer;
+            for(var type in self.props.item.contents){
+                self.props.item.contents[type].newcount = self.props.item.contents[type].count;
+                if(self.props.item.contents[type].ids){
+                    self.props.item.contents[type].newids = JSON.parse(JSON.stringify(self.props.item.contents[type].ids));
                 }
-                self.update();
-            });
-        }
+            }
+            self.update();
+        });
     }
     
     exports.onSerialNumberChange = function(e){
@@ -236,8 +232,7 @@ script.
         history.back();
     }
 
-    exports.save = function(){
-    
+    exports.save = function(){    
         var contents = {};
         for(var type in this.props.item.contents){
             var t = this.props.item.contents[type];
@@ -251,6 +246,6 @@ script.
     
         client.saveEquipment(this.props.item.type,this.props.item.id,{comment:this.props.item.comment,serialnumber:this.props.item.serialnumber||"",contents:contents},function(err){
             if(err) return true;
-            back(true);
+            history.back();
         });
     }
