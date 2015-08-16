@@ -134,7 +134,7 @@ script.
     exports.startScan = function(type){
         return function(){
             this.refs.scanbutton.scan();
-            this.refs.scanbutton.onEquipmenttypeChanged(type);
+            this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.props.data.types[type].name}]);
         }.bind(this)
     }
     

@@ -91,7 +91,7 @@ mixin renderCaseEntry(entry,level)
     -var parentscanreceiver = this.scanreceiver;
     if entry.items
         each contents,item in entry.items
-            - this.scanreceiver = {parent:parentscanreceiver,contents:contents}
+            - this.scanreceiver = {parent:parentscanreceiver,contents:contents, entry:entry}
             div(style="paddingLeft:"+(level*20)+"px")
                 = this.props.data.types[entry.type].name
                 b= " #"+item
@@ -155,7 +155,7 @@ script.
     exports.startScan = function(type){
         return function(){
             this.refs.scanbutton.scan();
-            this.refs.scanbutton.onEquipmenttypeChanged(type);
+            this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.props.data.types[type].name}]);
         }.bind(this)
     }
     
@@ -182,21 +182,30 @@ script.
     }
     
     exports.insertOrClose = function(entry,receiver){
+        var itemId = Object.keys(entry.items)[0];
+        var item = entry.items[itemId];
         while(receiver != null){
             for(var i = 0; i < receiver.contents.length; i++){
                 if(receiver.contents[i].type == entry.type){
                     receiver.contents[i].count ++;
-                    receiver.contents[i].items[Object.keys(entry.items)[0]] = entry.items[Object.keys(entry.items)[0]];
+                    receiver.contents[i].items[itemId] = item;
+                    //reorder this item to the end
                     receiver.contents.push(receiver.contents.splice(i,1)[0]);
                     this.update();
                     return;
                 }
             }
+            var type = this.props.data.types[receiver.entry.type];
+            if(type.contents == "*"){
+                receiver.contents.push(entry);
+                this.update();
+                return;
+            }            
             receiver = receiver.parent;
         }
         if(this.props.entry) this.finishEntry();
         this.props.entry = entry;
-        if(!entry.items[Object.keys(entry.items)[0]].length){
+        if(!entry.items[itemId].length && this.props.data.types[entry.type].contents != "*"){
             this.finishEntry();
         }else{
             this.update();
@@ -215,31 +224,28 @@ script.
     }
     
     exports.getEntryContents = function(entry,item,cb){
-        async.parallel([
-            function(cb){
-                client.getEquipment(entry.type,item,cb)
-            },
-            function(cb){
-                client.getEquipmentType(entry.type,cb)
-            }
-        ],function(err,results){
+        client.getEquipment(entry.type,item,function(err,data){
+        
+            var item = data.item;
+        
             if(err) return cb(err);
-            var item = results[0].item;
-            var type = results[1];
-            
+            var type = this.props.data.types[entry.type];
+
             var entries = [];
-            for(var i = 0; i < type.contents.length; i++){
-                var t = type.contents[i]._id;
-                var subentry = {
-                    supplier:entry.supplier,
-                    type:t,
-                    count:item.contents[t]?item.contents[t].count:0
-                };
-                if(this.props.data.types[t].hasItems){
-                    subentry.items = {};
-                    subentry.count = 0;
+            if(type.contents instanceof Array){
+                for(var i = 0; i < type.contents.length; i++){
+                    var t = type.contents[i]._id;
+                    var subentry = {
+                        supplier:entry.supplier,
+                        type:t,
+                        count:item.contents[t]?item.contents[t].count:0
+                    };
+                    if(this.props.data.types[t].hasItems){
+                        subentry.items = {};
+                        subentry.count = 0;
+                    }
+                    entries.push(subentry);
                 }
-                entries.push(subentry);
             }
             if(!entry.items) entry.items = {};
             entry.items[item.id] = entries;

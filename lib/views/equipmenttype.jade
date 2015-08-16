@@ -89,24 +89,18 @@ append body
                             div(className="col-lg-10 "+(!this.props.factoryPriceOk?"has-error":""))
                                 .input-group
                                     span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Neupreis" value=this.props.factoryPrice onChange=this.onFactoryPriceChange onBlur=this.onFactoryPriceBlur)                                    
-                    h4 Erlauber Inhalt
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th ID
-                                th Name
-                                th
-                                    button.btn.btn-primary.btn-xs.pull-right(onClick=this.addContents)
-                                        i.glyphicon.glyphicon-plus
-                        tbody
-                            each type in this.props.item.contents
-                                tr
-                                    td= type._id
-                                    td= type.name
-                                    td
-                                        button.btn.btn-default.btn-xs.pull-right(onClick=this.removeContents(type._id))
-                                            i.glyphicon.glyphicon-trash
+                                    input.form-control(type="text" placeholder="Neupreis" value=this.props.factoryPrice onChange=this.onFactoryPriceChange onBlur=this.onFactoryPriceBlur)
+                        .form-group
+                            label.col-lg-2.control-label Inhalt
+                            .col-lg-10
+                                select.form-control(value=this.props.item.contents?(this.props.item.contents=="*"?"all":"specific"):"none" disabled=(this.props.item.contents instanceof Array && this.props.item.contents.length) onChange=this.onContentsChange)
+                                    option(value="none") Kein
+                                    option(value="specific") Spezifisch
+                                    option(value="all") Universal
+                        if this.props.item.contents instanceof Array
+                            .form-group
+                                .col-lg-10.col-lg-offset-2
+                                    Select(value=this.props.item.contents.map(function(type){return {value:type._id,label:type.name}}) asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged multi=true)
             br
             br
             .row
@@ -236,22 +230,6 @@ append body
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmIncrease)= this.props.increase.type=="add"?"Hinzufügen":"Entfernen"
-    if this.props.addcontents
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Inhaltstyp hinzufügen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Equipmenttyp
-                                .col-lg-10
-                                    Select(value=this.props.addcontents.type asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelAddContents) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmAddContents) Hinzufügen
 script.
     var client = require("../client.js");
     var DropdownButton = require("react-bootstrap/DropdownButton");
@@ -533,11 +511,7 @@ script.
     }
     
     exports.onEquipmenttypeChanged = function(id,selection){
-        if(id.length){
-            this.props.addcontents.type = selection[0];
-        }else{
-            this.props.addcontents.type = null;
-        }
+        this.props.item.contents = selection.map(function(sel){return {_id:sel.value,name:sel.label}});
         this.update();
     }
     
@@ -556,22 +530,19 @@ script.
         this.update();
     }
     
-    exports.confirmAddContents = function(){
-        this.props.item.contents.push({_id:this.props.addcontents.type.value,name:this.props.addcontents.type.label});
-        delete this.props.addcontents;
+    exports.onContentsChange = function(e){
+        switch(e.target.value){
+            case "none":
+                this.props.item.contents = null;
+                break;
+            case "specific":
+                this.props.item.contents = [];
+                break;
+            case "all":
+                this.props.item.contents = "*";
+                break;
+        }
         this.update();
-    }
-        
-    exports.cancelAddContents = function(){
-        delete this.props.addcontents;
-        this.update();
-    }
-    
-    exports.removeContents = function(type){
-        return function(){
-            this.props.item.contents.splice(this.props.item.contents.map(function(type){return type._id}).indexOf(type),1);
-            this.update();
-        }.bind(this);
     }
     
     exports.createAreaPath = function(cap,timeline,fill){
@@ -675,7 +646,7 @@ script.
             rent:this.props.item.rent,
             factoryPrice:this.props.item.factoryPrice,
             image:this.props.item.image?this.props.item.image.url:undefined,
-            contents:this.props.item.contents.map(function(type){return type._id})
+            contents:this.props.item.contents?(this.props.item.contents instanceof Array?this.props.item.contents.map(function(type){return type._id}):"*"):null
         },function(err){
             if(err) return true;
             back(true);

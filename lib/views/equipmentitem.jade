@@ -1,7 +1,7 @@
 extends ./base.jade
 
 append body
-    if this.props.item
+    if this.props.item && this.props.type
         .container
             h2
                 = this.props.item.name+" "+this.props.item.id
@@ -17,7 +17,7 @@ append body
                     div.text-center
                         img.img-responsive(src="/api/equipment/"+this.props.item.type+"/image")
                         br
-                        img(src="/api/barcode/EQ-"+this.props.item.type+"-"+this.props.item.id+"/"+(this.props.manufacturer?(this.props.manufacturer+" "):"")+this.props.item.name width="100%")
+                        img(src="/api/barcode/EQ-"+this.props.item.type+"-"+this.props.item.id+"/"+(this.props.type.manufacturer?(this.props.type.manufacturer+" "):"")+this.props.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h3 Daten
                     .form-horizontal
@@ -76,36 +76,37 @@ append body
                                                 | Objekt erfasst
                                             when "removed"
                                                 | Objekt entfernt
-            .row
-                .col-xs-12
-                    .pull-left
-                        h3 Inhalt
-                    .btn-toolbar.pull-right(style="margin-top:18px")
-                        ScanButton.pull-left(onScan=this.handleScan supplier="own")
-                        .btn-group.pull-left(style="margin-left:10px")
-                            div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode)
-                                i.glyphicon.glyphicon-minus
-                            div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode)
-                                i.glyphicon.glyphicon-plus                                                            
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th ID
-                                th Name
-                                th Menge
-                                th Einzel IDs
-                        tbody
-                            each item, id in this.props.item.contents
-                                if item.newcount > 0
-                                    tr
-                                        td= id
-                                        td= item.name
-                                        td= item.newcount
-                                        td
-                                            each iid, i in item.newids
-                                                if i > 0
-                                                    = ", "
-                                                a(href="/equipment/"+id+"/"+iid)= iid
+            if this.props.type.contents
+                .row
+                    .col-xs-12
+                        .pull-left
+                            h3 Inhalt
+                        .btn-toolbar.pull-right(style="margin-top:18px")
+                            ScanButton.pull-left(onScan=this.handleScan supplier="own")
+                            .btn-group.pull-left(style="margin-left:10px")
+                                div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode)
+                                    i.glyphicon.glyphicon-minus
+                                div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode)
+                                    i.glyphicon.glyphicon-plus                                                            
+                        table.table.table-striped.table-hover
+                            thead
+                                tr
+                                    th ID
+                                    th Name
+                                    th Menge
+                                    th Einzel IDs
+                            tbody
+                                each item, id in this.props.item.contents
+                                    if item.newcount > 0
+                                        tr
+                                            td= id
+                                            td= item.name
+                                            td= item.newcount
+                                            td
+                                                each iid, i in item.newids
+                                                    if i > 0
+                                                        = ", "
+                                                    a(href="/equipment/"+id+"/"+iid)= iid
 script.
     var client = require("../client.js");
     var TextArea = require("react-textarea-autosize");
@@ -117,10 +118,11 @@ script.
     }
     
     exports.componentDidMount = function(){
-        if(!this.props.item) this.refresh();
+        if(!this.props.item) this.loadItem();
+        if(!this.props.type) this.loadType();
     }
     
-    exports.refresh = function(){
+    exports.loadItem = function(){
         var self = this;
         client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
             if(err) return;
@@ -128,7 +130,6 @@ script.
             self.props.logs = data.logs;
             self.props.location = data.location;
             self.props.container = data.container;
-            self.props.manufacturer = data.manufacturer;
             for(var type in self.props.item.contents){
                 self.props.item.contents[type].newcount = self.props.item.contents[type].count;
                 if(self.props.item.contents[type].ids){
@@ -137,6 +138,14 @@ script.
             }
             self.update();
         });
+    }
+    
+    exports.loadType = function(){
+        client.getEquipmentType(this.props.params.type,function(err,data){
+            if(err) return;
+            this.props.type = data;
+            this.update();
+        }.bind(this));
     }
     
     exports.onSerialNumberChange = function(e){
@@ -159,7 +168,6 @@ script.
     }
     
     exports.handleScan = function(code){
-        console.log("SCAN",code);
         if(!code.count) code.count = 1;
         if(this.props.remove){
             if(!this.props.item.contents[code.type]){
@@ -180,13 +188,14 @@ script.
                 delete this.props.item.contents[code.type].newcount;
                 delete this.props.item.contents[code.type].newids;
             }
-            console.log(this.props.item.contents);
             this.update();
         }else{
+            if(this.props.type.contents instanceof Array){
+                var allowed = this.props.type.contents.map(function(type){return type._id});
+                if(allowed.indexOf(parseInt(code.type,10)) < 0) return this.playErrorSound();
+            }
             if(code.item){
-                console.log("getting container");
                 client.getEquipmentContainer(code.type,code.item,function(err,container){
-                    console.log("container:",container);
                     if(err) return this.playErrorSound();
                     if(this.props.item.contents[code.type] && this.props.item.contents[code.type].newids && this.props.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
                     if(container && container != this.props.params.id) return this.playErrorSound();                    
@@ -219,7 +228,6 @@ script.
                 if(!this.props.item.contents[code.type].newids) this.props.item.contents[code.type].newids = [];
                 this.props.item.contents[code.type].newids.push(code.item);
             }
-            console.log(this.props.item.contents)
             this.update();
         };    
     }
