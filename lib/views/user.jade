@@ -21,8 +21,9 @@ script.
     
     exports.getContactId = function(){
         return this.props.params.user;
-    }
+    }    
     
+    exports.hideBackButton = false;
     exports._loadContact = exports.loadContact;
     
     exports.loadContact = function(){
@@ -45,10 +46,7 @@ script.
         }.bind(this);        
     }
     
-    exports._save = exports.save;
-
-    exports.save = function(){
-        this._save();
+    exports.onSaved = function(){
         var permissions = {};
         for(var permission in this.props.user.permissions){
             permissions[permission] = this.props.user.permissions[permission].allowed;
@@ -59,7 +57,7 @@ script.
             ownedUsers:this.props.user.ownedUsers.map(function(user){return user._id})
         },function(err){
             if(err) return true;
-            back(true);
+            history.back();
         });
     }
     

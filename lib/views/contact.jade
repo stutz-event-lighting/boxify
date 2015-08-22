@@ -5,9 +5,10 @@ append body
         .container
             h2 Kontakt bearbeiten
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel)
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
+                    if !this.hideBackButton
+                        button.btn.btn-default(onClick=this.cancel)
+                            i.glyphicon.glyphicon-chevron-left
+                            |  Zurück
                     button.btn.btn-primary(onClick=this.save)
                         i.glyphicon.glyphicon-ok
                         |  Speichern
@@ -78,18 +79,32 @@ append body
                                 div(style="marginBottom:15px")
                                     .btn.btn-default.pull-right(onClick=this.addPhone)
                                         i.glyphicon.glyphicon-plus
+                        if this.props.item.type == "company" || this.props.item.type == "club"
+                            .form-group
+                                label.col-lg-2.control-label Kontakte
+                                .col-lg-10
+                                    each contact in this.props.item.contacts
+                                        .input-group(style="marginBottom:15px")
+                                            span.input-group-addon
+                                                a(href="/contacts/"+contact.id)=contact.name
+                                            input.form-control(placeholder="Funktion" value=contact.type onChange=this.setValue("type",contact))
+                                            span.input-group-btn
+                                                .btn.btn-default(onClick=this.removeContact(contact))
+                                                    i.glyphicon.glyphicon-trash
+                                    CreateContactButton(callback=this.addContact)
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
                                 TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.setValue("comment"))
+
                     block properties
-            block container
+            block container                
 append properties
 append container
-
 script.
     var client = require("../client.js");
     var TextArea = require("react-textarea-autosize");
+    var CreateContactButton = require("./CreateContactButton.jade");
     
     
     exports.componentDidMount = function(){
@@ -184,6 +199,23 @@ script.
         }.bind(this);
     }
     
+    exports.addContact = function(id,name){
+        if(!this.props.item.contacts) this.props.item.contacts = [];
+        this.props.item.contacts.push({
+            id:id,
+            name:name,
+            type:""
+        });
+        this.update();
+    }
+    
+    exports.removeContact = function(contact){
+        return function(){            
+            this.props.item.contacts.splice(this.props.item.contacts.indexOf(contact),1);
+            this.update();
+        }.bind(this);
+    }
+    
     exports.cancel = function(){
         history.back();
     }
@@ -200,18 +232,26 @@ script.
             city:this.props.item.city,
             emails:this.props.item.emails,
             phones:this.props.item.phones,
-            comment:this.props.item.comment
+            contacts:this.props.item.contacts,
+            comment:this.props.item.comment,
         };
         client.updateContact(this.getContactId(),data,function(err,id){
             if(err) return;
-        }.bind(this));
-        if(this.props.item.image){
-            client.updateContactImage(this.getContactId(),{image:this.props.item.image.url},function(err){
-                if(err) return;
-                delete this.props.item.image;
-                this.update();
-            }.bind(this));
-        }        
+            if(this.props.item.image){
+                client.updateContactImage(this.getContactId(),{image:this.props.item.image.url},function(err){
+                    if(err) return;
+                    delete this.props.item.image;
+                    this.update();
+                    this.onSaved();
+                }.bind(this));
+            }else{
+                this.onSaved();
+            }
+        }.bind(this));        
+    }
+    
+    exports.onSaved = function(){
+        history.back();
     }
     
     

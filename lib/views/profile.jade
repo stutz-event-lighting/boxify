@@ -80,7 +80,7 @@ script.
     exports.confirmChangePassword = function(){
         if(!this.props.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
         if(this.props.changepassword.password != this.props.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
-        client.setPassword(this.props.params.user,this.props.changepassword.password,function(err){
+        client.setPassword(this.getContactId(),this.props.changepassword.password,function(err){
             delete this.props.changepassword;
             this.update();
         }.bind(this))
@@ -103,8 +103,10 @@ script.
     
     exports.confirmChangePin = function(){
         if(!this.props.changepin.pin.length) return alert("Bitte geben Sie eine neue PIN ein");
-        client.setPin(this.props.params.user,this.props.changepin.pin,function(err){
+        client.setPin(this.getContactId(),this.props.changepin.pin,function(err){
             delete this.props.changepin;
             this.update();
         }.bind(this))
     }
+    
+    exports.onSaved = function(){}

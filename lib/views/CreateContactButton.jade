@@ -105,10 +105,12 @@ script.
     exports.create = function(){
         client.createContact(this.state.new,function(err,id){
             if(err) return;
-            this.props.callback(id);
+            this.props.callback(id,(this.state.new.firstname?this.state.new.firstname+" ":"")+(this.state.new.lastname||""));
+            this.cancel();
         }.bind(this))
     }
     
     exports.pick = function(){
-        this.props.callback(this.state.existing.contact.value);
+        this.props.callback(this.state.existing.contact.value,this.state.existing.contact.label);
+        this.cancel();
     }
