@@ -1,7 +1,6 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
     .container
         h1 Zulieferer
         .searchbar(style="display:flex")
@@ -10,7 +9,7 @@ append body
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="margin-left:10px")
-                button.btn.btn-primary(onClick=function(){this.create();}.bind(this)) Erfassen
+                CreateContactButton(callback=this.create)
         table.table.table-striped.table-hover
             thead
                 tr
@@ -19,33 +18,17 @@ append body
             tbody
                 each item in this.props.items
                     tr(onClick=this.edit(item))
-                        td= item.name
+                        td= (item.firstname?item.firstname+" ":"")+(item.lastname||"")
                         td
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
-    if this.props.create
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Zulieferer erfassen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Name
-                                .col-lg-10
-                                    input.form-control(type="text" value=this.props.create.name onChange=this.validateCreateName.bind(this))
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
     if this.props.delete
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
-                        h2 Equipmenttyp löschen
+                        h2 Zulieferer löschen
                     .modal-body= "Sind sie sicher, dass sie \""+this.props.delete.name+"\" löschen möchten?"
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
@@ -65,25 +48,26 @@ append body
                         button.btn.btn-primary(onClick=this.dismiss) Ich verstehe
 script.
     var client = require("../client.js");
+    var CreateContactButton = require("./CreateContactButton.jade");
     
     exports.getNeededPermissions = function(){
         return ["suppliers_read"];
     }
     
-    exports.checkData = function(){
-        var self = this;
-        if(!this.props.items){
-            client.findSuppliers({search:this.props.search},function(err,items){
-                self.props.items = items;
-                self.update();
-            });
-        }
+    exports.componentDidMount = function(){
+        if(!this.props.items) this.findContacts();
+    }
+    
+    exports.findContacts = function(){
+        client.findSuppliers({search:this.props.search},function(err,items){
+            this.props.items = items;
+            this.update();
+        }.bind(this));
     }
 
     exports.search = function(e){
         this.props.search = e.target.value;
-        delete this.props.items;
-        this.update();
+        this.findContacts();
     }
     
     exports.dismiss = function(){
@@ -91,26 +75,10 @@ script.
         this.update();
     }
 
-    exports.create = function(){
-        var self = this;
-        this.props.create = {name:""};
-        this.update();
-    }
-    exports.validateCreateName = function(e){
-        this.props.create.name = e.target.value;
-        this.update();
-    }
-    exports.cancelCreate = function(){
-        delete this.props.create;
-        this.update();
-    }
-    exports.confirmCreate = function(){
-        var self = this;
-        client.createSupplier(this.props.create.name,function(err,id){
+    exports.create = function(id){
+        client.createSupplier(id,function(err){
             if(err) return;
-            delete self.props.create;
-            self.update();
-            visit("/suppliers/"+id)
+            visit("/suppliers/"+id);
         });
     }
 

@@ -22,7 +22,7 @@ append body
                                 th Name
                                 each supplier in this.props.suppliers
                                     th
-                                        img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+                                        img(src="/api/contacts/"+supplier+"/image" style="height:20px")
                                 th Total
                         tbody
                             each type in this.props.data.types
@@ -43,7 +43,7 @@ append body
                         DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.props.supplier||"own")[0] onSelect=this.setSupplier)        
                             each supplier in this.props.allsuppliers
                                 MenuItem(eventKey=supplier)
-                                    img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+                                    img(src="/api/contacts/"+supplier+"/image" style="height:20px")
                         ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.props.supplier||"own")
                     table.table.table-striped.table-hover
                         thead
@@ -54,7 +54,7 @@ append body
                             each entry,i in this.props.data.history
                                 tr
                                     td
-                                        img(src="/api/suppliers/"+entry.supplier+"/image" style="height:20px")
+                                        img(src="/api/contacts/"+entry.supplier+"/image" style="height:20px")
                                     td
                                         +renderLogEntry(entry,0)
                                     td
@@ -86,7 +86,7 @@ mixin renderLogEntry(entry,level)
             b= entry.count+" "
             = this.props.data.types[entry.type].name
 mixin renderSupplierButtonTitle(supplier)
-    img(src="/api/suppliers/"+supplier+"/image" style="height:20px")
+    img(src="/api/contacts/"+supplier+"/image" style="height:20px")
 mixin renderCaseEntry(entry,level)
     -var parentscanreceiver = this.scanreceiver;
     if entry.items

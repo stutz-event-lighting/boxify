@@ -116,7 +116,6 @@ script.
     }
     
     exports.onCustomerChanged = function(id,selection){
-        console.log(name);
         if(id.length){
             this.props.create.customer = id;
             this.props.create.customername = selection[0].label;
@@ -137,8 +136,8 @@ script.
     }
     
     exports.findCustomers = function(input,cb){
-        client.findCustomers({search:input,finished:false},function(err,customers){
-            cb(err,{options:customers.map(function(customer){return {value:customer._id,label:customer.name}})})
+        client.findCustomers({search:input},function(err,customers){
+            cb(err,{options:customers.map(function(customer){return {value:customer._id,label:(customer.firstname?customer.firstname+" ":"")+(customer.lastname||"")}})})
         })
     }
     

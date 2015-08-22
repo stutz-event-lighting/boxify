@@ -73,7 +73,6 @@ script.
         async.parallel([
             function(cb){
                 if(self.props.items) return cb();
-                console.log("getting items...");
                 client.findEquipmentTypes({search:self.props.search},function(err,items){
                     self.props.items = items;
                     cb(true);

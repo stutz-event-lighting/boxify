@@ -101,7 +101,6 @@ script.
             var opts = {};
             if(this.props.project) opts.project = this.props.project;
             client.getRental(this.props.params.rental,opts,function(err,data){
-                console.log("result",err,data)
                 if(err) return;
                 self.props.data = data;
                 if(!self.props.data.rental){
@@ -119,7 +118,6 @@ script.
                     if(!category.types) category.types = [];
                     category.types.push(type);                    
                 }
-                console.log(self.props)
                 self.update();
             });
         }
@@ -132,7 +130,7 @@ script.
     
     exports.findSuppliers = function(input,cb){
         client.findSuppliers({search:input},function(err,suppliers){
-            cb(err,{options:suppliers.map(function(suppliers){return {value:suppliers._id,label:suppliers.name}})})
+            cb(err,{options:suppliers.map(function(supplier){return {value:supplier._id,label:(supplier.firstname?supplier.firstname+" ":"")+(supplier.lastname||"")}})})
         })
     }
     

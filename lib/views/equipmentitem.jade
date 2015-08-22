@@ -33,7 +33,7 @@ append body
                         .col-md-4.col-xs-6
                             h4 Aktueller Standort
                             if this.props.location
-                                a(href="/customers/"+this.props.location._id)= this.props.location.name
+                                a(href="/customers/"+this.props.location._id)= (this.props.location.firstname?this.props.location.firstname+" ":"")+(this.props.location.lastname||"")
                             else
                                 | Lager
                         .col-md-4.col-xs-6

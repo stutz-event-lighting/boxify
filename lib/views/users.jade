@@ -1,114 +1,45 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
     .container
         h2
             | Benutzer
-            button.btn.btn-primary.pull-right(onClick=this.create) Neu
+            CreateContactButton(callback=this.create)
         table.table.table-striped
             thead
                 tr
                     th Name
-                    th E-Mail
-                    th Letze Aktivität
             tbody
                 each user in this.props.users
                     tr(onClick=this.edit(user))
-                        td= user.firstname+" "+user.lastname
-                        td= user.email
                         td
-                            | 12.12.2014 12:34:12
+                            = (user.firstname?user.firstname+" ":"")+(user.lastname||"")
                             button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(user))
                                 i.glyphicon.glyphicon-trash
-    if this.props.create
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 User anlegen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Vor- und Nachname
-                                .col-lg-10
-                                    .row
-                                        .col-xs-6
-                                            input.form-control(type="text" value=this.props.create.firstname onChange=this.validateCreateFirstname.bind(this))
-                                        .col-xs-6
-                                            input.form-control(type="text" value=this.props.create.lastname onChange=this.validateCreateLastname.bind(this))
-                            .form-group
-                                label.col-lg-2.control-label E-Mail
-                                .col-lg-10
-                                    input.form-control(type="text" value=this.props.create.email onChange=this.validateCreateMail.bind(this))
-                            .form-group
-                                label.col-lg-2.control-label Passwort
-                                .col-lg-10
-                                    input.form-control(type="password" value=this.props.create.password onChange=this.validateCreatePassword.bind(this))
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
 script.
     var client = require("../client.js");
+    var CreateContactButton = require("./CreateContactButton.jade");
     
     exports.getNeededPermissions = function(){
         return ["users_read"];
     }
     
-    exports.checkData = function(){
-        var self = this;
-        if(!this.props.users){
-            client.getUsers(function(err,users){
-                if(err) return;
-                self.props.users = users;
-                self.update();
-            })
-        }
+    exports.componentDidMount = function(){
+        this.findUsers();
+    }
+    
+    exports.findUsers = function(){
+        client.findUsers({},function(err,users){
+            if(err) return;
+            this.props.users = users;
+            this.update();
+        }.bind(this))
     }
     
     exports.create = function(){
-        this.props.create = {firstname:"",lastname:"",email:"",password:""};
-        this.update();
-    }
-    
-    exports.validateCreateFirstname = function(e){
-        this.props.create.firstname = e.target.value;
-        this.update();
-    }
-    
-    exports.validateCreateLastname = function(e){
-        this.props.create.lastname = e.target.value;
-        this.update();
-    }
-    
-    exports.validateCreateMail = function(e){
-        this.props.create.email = e.target.value;
-        this.update();
-    }
-    
-    exports.validateCreatePassword = function(e){
-        this.props.create.password = e.target.value;
-        this.update();
-    }
-    
-    exports.cancelCreate = function(){
-        delete this.props.create;
-        this.update();
-    }
-    
-    exports.confirmCreate = function(){
-        var self = this;
-        client.createUser({
-            firstname:this.props.create.firstname,
-            lastname:this.props.create.lastname,
-            email:this.props.create.email,
-            password:this.props.create.password            
-        },function(err,id){
+        client.createUser(id,function(err){
             if(err) return;
-            delete self.props.create;
-            self.update();
-            visit("/users/"+id);            
+            visit("/users/"+id);
         });
     }
     

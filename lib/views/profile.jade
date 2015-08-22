@@ -1,76 +1,49 @@
-extends ./base.jade
+extends ./contact.jade
 
-append body
-    - this.checkData();
-    if this.props.user
-        .container
-            h2 Profil
-                .btn-toolbar.pull-right
-                    button.btn.btn-primary(onClick=function(){this.save()}.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        |  Speichern
-            .row
-                .col-lg-3.col-md-4.col-sm-6.col-xs-12
-                    div.text-center
-                        img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
-                        input(type="file" style="display:none" ref="image" onChange=this.applyImage)
-                .col-lg-9.col-md-8.col-sm-6.col-xs-12
-                    h4 Benutzerinformationen
-                    .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Vor- und Nachname
-                            .col-lg-10
-                                .row
-                                    .col-xs-6
-                                        input.form-control(type="text" value=this.props.user.firstname onChange=this.validateFirstname.bind(this))
-                                    .col-xs-6
-                                        input.form-control(type="text" value=this.props.user.lastname onChange=this.validateLastname.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label E-Mail
-                            .col-lg-10
-                                input.form-control(type="text" placeholder="Name" value=this.props.user.email onChange=function(e){this.props.user.email = e.target.value; this.update()}.bind(this))
-            .row
-                .col-xs-12
-                    h2 Passwort & PIN
-                    .btn-toolbar
-                        .btn.btn-default(onClick=this.changePassword) Passwort ändern
-                        .btn.btn-default(onClick=this.changePin) PIN ändern
-        if this.props.changepassword
-            .modal(style="display:block").fade.in
-                .modal-backdrop(style="bottom:0px;display:block").fade.in
-                .modal-dialog
-                    .modal-content
-                        .modal-header
-                            h2 Passwort ändern
-                        .modal-body
-                            .form-horizontal
-                                .form-group
-                                    label.col-lg-2.control-label Neues Passwort
-                                    .col-lg-10
-                                        input.form-control(type="password" value=this.props.changepassword.password onChange=this.onPasswordChanged)
-                                .form-group
-                                    label.col-lg-2.control-label Neues Passwort bestätigen
-                                    .col-lg-10
-                                        input.form-control(type="password" value=this.props.changepassword.password2 onChange=this.onPassword2Changed)
-                        .modal-footer
-                            button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
-                            button.btn.btn-primary(onClick=this.confirmChangePassword) Bestätigen
-        if this.props.changepin
-            .modal(style="display:block").fade.in
-                .modal-backdrop(style="bottom:0px;display:block").fade.in
-                .modal-dialog
-                    .modal-content
-                        .modal-header
-                            h2 PIN ändern
-                        .modal-body
-                            .form-horizontal
-                                .form-group
-                                    label.col-lg-2.control-label Neue PIN
-                                    .col-lg-10
-                                        input.form-control(type="password" value=this.props.changepin.pin onChange=this.onPinChanged)
-                        .modal-footer
-                            button.btn.btn-default(onClick=this.cancelChangePin) Abbrechen
-                            button.btn.btn-primary(onClick=this.confirmChangePin) Bestätigen
+append properties
+append container
+    .row
+        .col-xs-12
+            h2 Passwort & PIN
+            .btn-toolbar
+                .btn.btn-default(onClick=this.changePassword) Passwort ändern
+                .btn.btn-default(onClick=this.changePin) PIN ändern
+    if this.props.changepassword
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 Passwort ändern
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Neues Passwort
+                                .col-lg-10
+                                    input.form-control(type="password" value=this.props.changepassword.password onChange=this.onPasswordChanged)
+                            .form-group
+                                label.col-lg-2.control-label Neues Passwort bestätigen
+                                .col-lg-10
+                                    input.form-control(type="password" value=this.props.changepassword.password2 onChange=this.onPassword2Changed)
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
+    if this.props.changepin
+        .modal(style="display:block").fade.in
+            .modal-backdrop(style="bottom:0px;display:block").fade.in
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        h2 PIN ändern
+                    .modal-body
+                        .form-horizontal
+                            .form-group
+                                label.col-lg-2.control-label Neue PIN
+                                .col-lg-10
+                                    input.form-control(type="password" value=this.props.changepin.pin onChange=this.onPinChanged)
+                    .modal-footer
+                        button.btn.btn-default(onClick=this.cancelChangePin) Abbrechen
+                        button.btn.btn-primary(onClick=this.confirmChangePin) Speichern
 script.
     var client = require("../client.js");
     
@@ -78,59 +51,11 @@ script.
         return [];
     }
     
-    exports.checkData = function(){
-        var self = this;
-        if(!this.props.user){
-            client.getUser(client.session.user._id,function(err,user){
-                if(err) return;
-                self.props.user = user;
-                self.update();
-            })
-        }
+    exports.getContactId = function(){
+        return client.session.user._id;
     }
     
-    exports.validateFirstname = function(e){
-        this.props.user.firstname = e.target.value;
-        this.update();
-    }
-    
-    exports.validateLastname = function(e){
-        this.props.user.lastname = e.target.value;
-        this.update();
-    }
-    
-    exports.getImagePath = function(){
-        return this.props.user.image?this.props.user.image.url:"/api/users/"+this.props.user._id+"/image";
-    }
-
-    exports.choseImage = function(e){
-        this.refs.image.getDOMNode().click();
-    }
-    
-    exports.applyImage = function(e){
-        var self = this;
-        var files = e.target.files;
-        if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                self.props.user.image = {file:files[0],url:e.target.result}
-                self.update();
-            }
-            reader.readAsDataURL(files[0]);
-        }
-    }
-
-    exports.save = function(){
-        client.saveUser(this.props.user._id,{
-            firstname:this.props.user.firstname,
-            lastname:this.props.user.lastname,
-            email:this.props.user.email,
-            image:this.props.user.image?this.props.user.image.url:undefined
-        },function(err){
-            if(err) return true;
-            back(true);
-        });
-    }
+    exports.hideBackButton = true;
     
     exports.changePassword = function(){
         this.props.changepassword = {password:"",password2:""};
@@ -155,7 +80,7 @@ script.
     exports.confirmChangePassword = function(){
         if(!this.props.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
         if(this.props.changepassword.password != this.props.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
-        client.setPassword(client.session.user._id,this.props.changepassword.password,function(err){
+        client.setPassword(this.props.params.user,this.props.changepassword.password,function(err){
             delete this.props.changepassword;
             this.update();
         }.bind(this))
@@ -178,7 +103,7 @@ script.
     
     exports.confirmChangePin = function(){
         if(!this.props.changepin.pin.length) return alert("Bitte geben Sie eine neue PIN ein");
-        client.setPin(client.session.user._id,this.props.changepin.pin,function(err){
+        client.setPin(this.props.params.user,this.props.changepin.pin,function(err){
             delete this.props.changepin;
             this.update();
         }.bind(this))
