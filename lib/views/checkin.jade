@@ -14,7 +14,11 @@ append body
                         |  Speichern
             .row
                 .col-xs-12.col-md-8
-                    h3 Equipment
+                    h3.pull-left Equipment
+                    .pull-right.checkbox(style="paddingTop:20px")
+                        label
+                            input(type="checkbox" checked=this.props.hideUnbooked onChange=this.onUnbookedChanged)
+                            |  Ungebuchte ausblenden
                     table.table.table-striped.table-hover
                         thead
                             tr
@@ -26,8 +30,8 @@ append body
                                 th Total
                         tbody
                             each type in this.props.data.types
-                                if type.available !== undefined || type.count !== undefined
-                                    tr(onClick=this.startScan(type._id))
+                                if (type.available !== undefined && !this.props.hideUnbooked) || type.count !== undefined
+                                    tr(onClick=this.startScan(type._id) className=(type.available===type.count)?"success":"")
                                         td= type._id
                                         td= type.name
                                         each supplier in this.props.suppliers
@@ -114,6 +118,7 @@ script.
     
     exports.getInitialState = function(){
         this.props.supplier = "own";
+        this.props.hideUnbooked = this.props.params.checkin != "new";
         return {};
     }
     
@@ -131,6 +136,11 @@ script.
                 self.update();
             });
         }
+    }
+    
+    exports.onUnbookedChanged = function(e){
+        this.props.hideUnbooked = e.target.checked;
+        this.update();
     }
     
     exports.select = function(e){
