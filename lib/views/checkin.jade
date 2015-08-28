@@ -168,7 +168,7 @@ script.
                 count:code.count||1
             };
             
-            if(code.item){                
+            if(code.item){
                 this.getEntryContents(entry,[code.item],function(err){
                     if(err) return this.playErrorSound();
                     this.insertOrClose(entry,this.scanreceiver);
@@ -187,6 +187,7 @@ script.
         while(receiver != null){
             for(var i = 0; i < receiver.contents.length; i++){
                 if(receiver.contents[i].type == entry.type){
+                    if(receiver.contents[i].items[itemId]) return this.playErrorSound();
                     receiver.contents[i].count ++;
                     receiver.contents[i].items[itemId] = item;
                     //reorder this item to the end
