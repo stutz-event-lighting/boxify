@@ -55,7 +55,7 @@ append body
                             th Name
                             th
                         tbody
-                            each entry,i in this.props.data.history
+                            each entry,i in this.props.data.history.slice().reverse()
                                 tr
                                     td
                                         img(src="/api/contacts/"+entry.supplier+"/image" style="height:20px")
