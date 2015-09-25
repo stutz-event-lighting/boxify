@@ -286,7 +286,7 @@ script.
     }
     
     exports.loadStock = function(){
-        client.getEquipmentTypeStock(this.props.params.type,function(err,stock){
+        client.getEquipmentTypeStock(this.props.params.type,false,function(err,stock){
             if(err) return;
             this.props.stock = stock;
             this.update();

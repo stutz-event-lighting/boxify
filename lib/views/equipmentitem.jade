@@ -202,7 +202,7 @@ script.
                     this.continueAddingItems(code);
                 }.bind(this))
             }else{
-                client.getEquipmentTypeStock(code.type,function(err,count){
+                client.getEquipmentTypeStock(code.type,true,function(err,count){
                     if(err) return this.playErrorSound();
                     count += this.props.item.contents[code.type]?(this.props.item.contents[code.type].count||0):0;
                     if(code.count > count) code.count = count;
