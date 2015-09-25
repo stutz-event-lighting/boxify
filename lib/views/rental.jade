@@ -39,14 +39,15 @@ append body
                 .col-xs-12                    
                     h3
                         | Equipment
-                        if this.props.params.rental.indexOf("new") == 0
-                            .btn.btn-primary.pull-right(onClick=this.add) Hinzufügen
-                        else if this.props.data.rental.status == "requested"
-                            .btn.btn-primary.pull-right(onClick=this.book) Buchen
-                        else if this.props.data.rental.status == "booked"
-                            .btn.btn-primary.pull-right(onClick=this.receive) Ware erhalten
-                        else
-                            .btn.btn-primary.pull-right(onClick=this.return) Ware zurückgeben
+                        .pull-right
+                            if this.props.params.rental.indexOf("new") == 0
+                                .btn.btn-primary(onClick=this.add) Hinzufügen
+                            else if this.props.data.rental.status == "requested"
+                                .btn.btn-primary(onClick=this.book) Buchen
+                            else if this.props.data.rental.status == "booked"
+                                .btn.btn-primary(onClick=this.receive) Ware erhalten
+                            else
+                                .btn.btn-primary(onClick=this.return) Ware zurückgeben
                     table.table.table-striped.table-hover
                         thead
                             tr

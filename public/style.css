@@ -51,3 +51,19 @@
 .searchbar > div{
 
 }
+
+@media print {
+    .btn{
+        display:none;
+    }
+    input, .rw-datetimepicker{
+        border:none !important;
+        box-shadow: none !important;
+        outline: none !important;
+        transition: none !important;
+        padding-left:0px !important;
+    }
+    .rw-select{
+        display:none;
+    }
+}
