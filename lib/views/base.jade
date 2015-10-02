@@ -1,8 +1,10 @@
 #sel
     = require("./menu.jade")()
+    div(style="padding-top:60px")
     if this.needsLogin()
         LoginPage(onLogin=this.update)
     else
+
         block body
 script.
     var client = require("../client.js");

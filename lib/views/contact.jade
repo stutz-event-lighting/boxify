@@ -15,8 +15,7 @@ append body
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
-                        input(type="file" style="display:none" ref="image" onChange=this.applyImage)
+                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged editable)
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h3 Kontakt Daten
                     .form-horizontal
@@ -105,6 +104,7 @@ script.
     var client = require("../client.js");
     var TextArea = require("react-textarea-autosize");
     var CreateContactButton = require("./CreateContactButton.jade");
+    var ImageViewer = require("./ImageViewer.jade");
     
     
     exports.componentDidMount = function(){
@@ -134,21 +134,9 @@ script.
         return this.props.item.image?this.props.item.image.url:"/api/contacts/"+this.props.item._id+"/image";
     }
     
-    exports.choseImage = function(e){
-        this.refs.image.getDOMNode().click();
-    }
-    
-    exports.applyImage = function(e){
-        var self = this;
-        var files = e.target.files;
-        if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                self.props.item.image = {file:files[0],url:e.target.result}
-                self.update();
-            }
-            reader.readAsDataURL(files[0]);
-        }
+    exports.onImageChanged = function(image){
+        this.props.item.image = image;
+        this.update();
     }
     
     exports.addEmail = function(){

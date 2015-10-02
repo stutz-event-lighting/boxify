@@ -14,8 +14,7 @@ append body
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        img.img-responsive(src=this.getImagePath() onClick=this.choseImage)
-                        input(type="file" style="display:none" ref="image" onChange=this.applyImage)
+                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged editable)
                         br
                         img(src="/api/barcode/EQ-"+this.props.item._id+"/"+(this.props.item.manufacturer?(this.props.item.manufacturer+" "):"")+this.props.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
@@ -238,6 +237,7 @@ script.
     var Select = require("react-select");
     var moment = require("moment");
     var TextArea = require("react-textarea-autosize");
+    var ImageViewer = require("./ImageViewer.jade");
 
     function isInt(str){
         return /^[0-9]*$/.test(str)
@@ -317,22 +317,10 @@ script.
     exports.getImagePath = function(){
         return this.props.item.image?this.props.item.image.url:"/api/equipment/"+this.props.item._id+"/image";
     }
-
-    exports.choseImage = function(e){
-        this.refs.image.getDOMNode().click();
-    }
     
-    exports.applyImage = function(e){
-        var self = this;
-        var files = e.target.files;
-        if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                self.props.item.image = {file:files[0],url:e.target.result}
-                self.update();
-            }
-            reader.readAsDataURL(files[0]);
-        }
+    exports.onImageChanged = function(image){
+        this.props.item.image = image;
+        this.update();
     }
     
     exports.startEditCategories = function(){
