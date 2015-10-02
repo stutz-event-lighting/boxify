@@ -107,7 +107,7 @@ script.
 
     exports.create = function(){
         var self = this;
-        this.props.create = {name:"",start:new Date().getTime(),end:new Date().getTime()+24*60*60*1000};
+        this.props.create = {name:"",start:moment({hour:20}).toDate().getTime(),end:moment({hour:20}).add(1,"days").toDate().getTime()};
         this.update();
     }
     exports.validateCreateName = function(e){

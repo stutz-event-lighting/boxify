@@ -91,6 +91,7 @@ script.
     var client = require("../client.js");
     var Select = require("react-select");
     var DatePicker = require("react-widgets").DateTimePicker;
+    var moment = require("moment");
     
     exports.getNeededPermissions = function(){
         return ["rentals_read"];
@@ -111,8 +112,8 @@ script.
                         status:self.props.params.rental=="newrequest"?"requested":(self.props.params.rental=="newbooking"?"booked":"received")
                     }                    
                 }
-                if(!self.props.data.rental.delivery) self.props.data.rental.delivery = new Date().getTime();
-                if(!self.props.data.rental.return) self.props.data.rental.return = new Date().getTime()+24*60*60*1000;
+                if(!self.props.data.rental.delivery) self.props.data.rental.delivery = moment({hour:20}).toDate().getTime();
+                if(!self.props.data.rental.return) self.props.data.rental.return = moment({hour:20}).add(1,"days").toDate().getTime();
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
                     var category = data.categories[data.types[type].category];
