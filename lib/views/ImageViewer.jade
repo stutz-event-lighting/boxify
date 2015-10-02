@@ -1,0 +1,44 @@
+.imageviewer(style="position:relative")
+    if this.props.image
+        img(src=this.props.image.url?this.props.image.url:this.props.image style="width:100%" onClick=this.enlarge)
+    else
+        div(style="backgroundColor:grey;width:100%;height:250px")
+    if this.props.editable
+        input(type="file" style="display:none" ref="image" onChange=this.applyImage)
+        .btn.btn-default(style="position:absolute;top:5px;right:5px" onClick=this.choseImage)
+            i.glyphicon.glyphicon-pencil
+    if this.state.enlarge
+        -console.log(this.props.image)
+        div(style={position:"fixed",top:"0px",bottom:"0px",right:"0px",left:"0px",backgroundColor:"rgba(0,0,0,0.7)",backgroundImage:"url("+(this.props.image.url?this.props.image.url:this.props.image)+")",backgroundSize:"contain",backgroundRepeat:"no-repeat",backgroundPosition:"center",zIndex:"2000"} onClick=this.close)
+script.
+    exports.getInitialState = function(){
+        return {};
+    }
+    
+    exports.choseImage = function(e){
+        this.refs.image.getDOMNode().click();
+    }
+
+    exports.applyImage = function(e){
+        var self = this;
+        var files = e.target.files;
+        if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                self.props.image = {file:files[0],url:e.target.result}
+                self.forceUpdate();
+                self.props.onChange(self.props.image);
+            }
+            reader.readAsDataURL(files[0]);
+        }
+    }
+    
+    exports.enlarge = function(){
+        this.state.enlarge = true;
+        this.forceUpdate();
+    }
+    
+    exports.close = function(){
+        delete this.state.enlarge;
+        this.forceUpdate();
+    }
