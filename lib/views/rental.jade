@@ -30,11 +30,11 @@ append body
                         .form-group
                             label.col-lg-2.control-label Erhalt
                             .col-lg-10
-                                DatePicker(disabled=(this.props.data.rental.status=="received") value=this.props.data.rental.delivery?new Date(this.props.data.rental.delivery):undefined onChange=this.onDeliveryChanged)
+                                DatePicker(disabled=(this.props.data.rental.status=="received") format="dd.MM.yyyy HH:mm" value=this.props.data.rental.delivery?new Date(this.props.data.rental.delivery):undefined onChange=this.onDeliveryChanged)
                         .form-group
                             label.col-lg-2.control-label Rückgabe
                             .col-lg-10
-                                DatePicker(value=this.props.data.rental.return?new Date(this.props.data.rental.return):undefined onChange=this.onReturnChanged)
+                                DatePicker(value=this.props.data.rental.return?new Date(this.props.data.rental.return):undefined format="dd.MM.yyyy HH:mm" onChange=this.onReturnChanged)
             .row
                 .col-xs-12                    
                     h3

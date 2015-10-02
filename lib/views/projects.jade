@@ -57,11 +57,11 @@ append body
                             .form-group
                                 label.col-lg-2.control-label Beginn
                                 .col-lg-10
-                                    DatePicker(value=this.props.create.start?new Date(this.props.create.start):undefined onChange=this.onStartChanged)
+                                    DatePicker(value=this.props.create.start?new Date(this.props.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
                             .form-group
                                 label.col-lg-2.control-label Ende
                                 .col-lg-10
-                                    DatePicker(value=this.props.create.end?new Date(this.props.create.end):undefined onChange=this.onEndChanged)
+                                    DatePicker(value=this.props.create.end?new Date(this.props.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
