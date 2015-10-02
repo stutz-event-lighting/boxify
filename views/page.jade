@@ -9,5 +9,6 @@ html
         link(rel="stylesheet" type="text/css" href="/public/react-widgets/css/react-widgets.css")
         link(rel="icon" href="/public/icon.png" sizes="48x48" type="image/png")
     body
+        script(src="/public/quagga.min.js")
         script!= "var data = "+JSON.stringify(data)+";"
         script(src='/main.js')

@@ -1,0 +1,31 @@
+#interactive.viewport(style="position:fixed;top:0px;bottom:0px;right:0px;left:0px;backgroundColor:rgba(0,0,0,0.7);zIndex:2000")
+script.
+    exports.componentDidMount = function(){    
+        var self = this;
+        Quagga.init({
+            inputStream: {
+                type : "LiveStream"
+            },
+            locator: {
+                patchSize: "medium",
+                halfSample: true
+            },
+            numOfWorkers: 4,
+            decoder: {
+                readers : ["code_128_reader"]
+            },
+            locate: true
+        },function(err){
+            Quagga.start();
+        });
+        function onDetected(result){
+            Quagga.offDetected(onDetected);
+            Quagga.stop();
+            var code = result.codeResult.code;
+            self.props.onScan(code);
+        }
+        Quagga.onDetected(onDetected);       
+    }
+
+    
+    

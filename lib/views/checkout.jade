@@ -48,6 +48,7 @@ append body
                                 MenuItem(eventKey=supplier)
                                     img(src="/api/contacts/"+supplier+"/image" style="height:20px")
                         ScanButton.pull-left(onScan=this.handleScan supplier=this.props.supplier ref="scanbutton")
+                        QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
                     table.table.table-striped.table-hover
                         thead
                             th
@@ -84,6 +85,8 @@ script.
     var async = require("async");
     var DropdownButton = require("react-bootstrap/DropdownButton");
     var MenuItem = require("react-bootstrap/MenuItem");
+    var QuaggaButton = require("./QuaggaButton.jade");
+    var bs = require("../barcodescanner.js");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -136,6 +139,10 @@ script.
             this.refs.scanbutton.scan();
             this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.props.data.types[type].name}]);
         }.bind(this)
+    }
+        
+    exports.onQuaggaScan = function(code){
+        bs.parse(code);
     }
     
     exports.handleScan = function(code){
