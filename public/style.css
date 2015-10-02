@@ -1,6 +1,10 @@
 .navbar{
     height:60px;
     border-radius:0px;
+    top:0px;
+}
+.navbar.hidden{
+    top:-60px;
 }
 .navbar-header{
     height:59px;
