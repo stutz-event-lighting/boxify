@@ -1,4 +1,4 @@
-Navbar(componentClass="header" brand=this.brand() className="bs-docs-nav "+(this.state.hidden?"hidden":"") fixedTop role="banner" toggleNavKey=0)
+Navbar(componentClass="header" brand=this.brand() className="bs-docs-nav " fixedTop role="banner" toggleNavKey=0)
     = this.create()
     if client.session
         .session
@@ -23,10 +23,6 @@ script.
         "Benutzer":{url:"/users",permissions:["users_read"]},
         "Profil":{url:"/profile",loggedIn:true},
         "Elektronik":{url:"/electronic",loggedIn:true}
-    }
-    
-    exports.getInitialState = function(){
-        return {visible:true};
     }
     
     exports.brand = function(){
@@ -56,23 +52,6 @@ script.
         client.deleteSession(function(){
             location.reload();
         })
-    }
-    
-    exports.componentDidMount = function(){
-        var start = 0;
-        document.body.addEventListener("touchstart",function(e){
-            start = e.touches[0].clientY;
-            document.body.addEventListener("touchmove",onMove);            
-        });
-        document.body.addEventListener("touchend",function(){
-            document.body.removeEventListener("touchmove",onMove);
-        })
-        
-        var onMove = function (e){
-            var up = start-e.touches[0].clientY > 0;
-            this.state.hidden = up;
-            this.forceUpdate();
-        }.bind(this);
     }
     
     function isActive(path){
