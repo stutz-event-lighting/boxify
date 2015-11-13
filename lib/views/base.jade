@@ -1,12 +1,16 @@
 #sel
-    = require("./menu.jade")()
-    div(style="padding-top:60px")
-    if this.needsLogin()
-        LoginPage(onLogin=this.update)
-    else
+    //
+        Menu
+        div(style="padding-top:60px")
+        if this.needsLogin()
+            - console.log(this)
+            LoginPage(onLogin=this.update)
+        else
 
-        block body
+            block body
 script.
+    /*
+    var Menu = require("./menu.jade")
     var client = require("../client.js");
     var LoginPage = require("./loginpage.jade");
     
@@ -26,4 +30,4 @@ script.
     
     exports.getNeededPermissions = function(){
         return [];
-    }
+    }*/
