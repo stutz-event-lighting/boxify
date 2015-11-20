@@ -25,36 +25,31 @@ append body
                                 button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(category))
                                     i.glyphicon.glyphicon-trash
     if this.state.category
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2= "Kategorie "+(this.state.category._id?"umbenennen":"erstellen")
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Name
-                                .col-lg-10
-                                    input.form-control(type="text" placeholder="Name" value=this.state.category.name onChange=this.onCategoryNameChange)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancel) Abbrechen
-                        button.btn.btn-primary(onClick=this.save) Speichern
+        Modal
+            .modal-header
+                h2= "Kategorie "+(this.state.category._id?"umbenennen":"erstellen")
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(type="text" placeholder="Name" value=this.state.category.name onChange=this.onCategoryNameChange)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancel) Abbrechen
+                button.btn.btn-primary(onClick=this.save) Speichern
     if this.state.error
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Ups!
-                    .modal-body                        
-                        case this.state.error
-                            when 601
-                                .alert.alert-warning Diese Kategorie ist noch Objekten zugewiesen. 
-                    .modal-footer
-                        button.btn.btn-primary(onClick=this.dismiss) Ich verstehe        
+        Modal
+            .modal-header
+                h2 Ups!
+            .modal-body                        
+                case this.state.error
+                    when 601
+                        .alert.alert-warning Diese Kategorie ist noch Objekten zugewiesen. 
+            .modal-footer
+                button.btn.btn-primary(onClick=this.dismiss) Ich verstehe        
 script.
     var client = require("../client.js");
+    var Modal = require("./Modal.jade");
     
     exports.getNeededPermissions = function(){
         return ["equipment_read"];

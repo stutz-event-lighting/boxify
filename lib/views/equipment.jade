@@ -37,35 +37,30 @@ append body
                                 button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                     i.glyphicon.glyphicon-trash
     if this.state.create
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Equipmenttyp anlegen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Name
-                                .col-lg-10
-                                    input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
+        modal-header
+            .modal-header
+                h2 Equipmenttyp anlegen
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
     if this.state.delete
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Equipmenttyp löschen
-                    .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+        Modal
+            .modal-header
+                h2 Equipmenttyp löschen
+            .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmDelete) Löschen
 script.
     var client = require("../client.js");
     var async = require("async");
+    var Modal = require("./Modal.jade");
     
     exports.checkData = function(){
         var self = this;

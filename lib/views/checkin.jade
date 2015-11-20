@@ -67,17 +67,14 @@ append body
                                             .glyphicon.glyphicon-trash
     - this.scanreceiver = null;
     if this.state.entry
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Case-Inhalt scannen
-                    .modal-body(style="maxHeight:500px;overflowY:auto")
-                        +renderCaseEntry(this.state.entry,0)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelEntry) Abbrechen
-                        button.btn.btn-primary(onClick=this.finishEntry) Fertig
+        Modal
+            .modal-header
+                h2 Case-Inhalt scannen
+            .modal-body(style="maxHeight:500px;overflowY:auto")
+                +renderCaseEntry(this.state.entry,0)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelEntry) Abbrechen
+                button.btn.btn-primary(onClick=this.finishEntry) Fertig
 mixin renderLogEntry(entry,level)
     if entry.items
         each contents,item in entry.items
@@ -109,6 +106,7 @@ mixin renderCaseEntry(entry,level)
 script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
+    var Modal = require("./Modal.jade");
     var async = require("async");
     var DropdownButton = require("react-bootstrap/DropdownButton");
     var MenuItem = require("react-bootstrap/MenuItem");

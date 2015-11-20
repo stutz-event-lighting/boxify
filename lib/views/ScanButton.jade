@@ -2,38 +2,36 @@ div(style="display:inline-block" className=this.props.className)
     .btn.btn-default( onClick=this.scan)
         .glyphicon.glyphicon-barcode
     if this.state.type !== undefined
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Equipment scannen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Typ
+        Modal
+            .modal-header
+                h2 Equipment scannen
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Typ
+                        .col-lg-10
+                            Select(ref="typefield" value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
+                    if this.state.type
+                        .form-group
+                            if this.state.type.stock.length && this.props.supplier == "own"
+                                label.col-lg-2.control-label Objekt
                                 .col-lg-10
-                                    Select(ref="typefield" value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
-                            if this.state.type
-                                .form-group
-                                    if this.state.type.stock.length && this.props.supplier == "own"
-                                        label.col-lg-2.control-label Objekt
-                                        .col-lg-10
-                                            select.form-control(value=this.state.type.value onChange=this.onValueChanged ref="countfield")
-                                                each item in this.state.type.stock
-                                                    option(value=item.id)= this.state.type.name+" "+item.id
-                                    else
-                                        label.col-lg-2.control-label Menge
-                                        .col-lg-10
-                                            input.form-control(type="text" value=this.state.type.value ref="countfield" onChange=this.onValueChanged)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelScan) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmScan disabled=(!this.state.type || (typeof this.state.type.value == "string" && isNaN(parseInt(this.state.type.value,10))))) Scannen
+                                    select.form-control(value=this.state.type.value onChange=this.onValueChanged ref="countfield")
+                                        each item in this.state.type.stock
+                                            option(value=item.id)= this.state.type.name+" "+item.id
+                            else
+                                label.col-lg-2.control-label Menge
+                                .col-lg-10
+                                    input.form-control(type="text" value=this.state.type.value ref="countfield" onChange=this.onValueChanged)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelScan) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmScan disabled=(!this.state.type || (typeof this.state.type.value == "string" && isNaN(parseInt(this.state.type.value,10))))) Scannen
 script.
     var OverlayTrigger = require("react-bootstrap/OverlayTrigger");
     var Popover = require("react-bootstrap/Popover");
     var Select = require("react-select");
     var client = require("../client.js");
+    var Modal = require("./Modal.jade");
     
     
     exports.getInitialState = function(){

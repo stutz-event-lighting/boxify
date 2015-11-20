@@ -9,43 +9,38 @@ append container
                 .btn.btn-default(onClick=this.changePassword) Passwort ändern
                 .btn.btn-default(onClick=this.changePin) PIN ändern
     if this.props.changepassword
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Passwort ändern
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Neues Passwort
-                                .col-lg-10
-                                    input.form-control(type="password" value=this.props.changepassword.password onChange=this.onPasswordChanged)
-                            .form-group
-                                label.col-lg-2.control-label Neues Passwort bestätigen
-                                .col-lg-10
-                                    input.form-control(type="password" value=this.props.changepassword.password2 onChange=this.onPassword2Changed)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
+        Modal
+            .modal-header
+                h2 Passwort ändern
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Neues Passwort
+                        .col-lg-10
+                            input.form-control(type="password" value=this.props.changepassword.password onChange=this.onPasswordChanged)
+                    .form-group
+                        label.col-lg-2.control-label Neues Passwort bestätigen
+                        .col-lg-10
+                            input.form-control(type="password" value=this.props.changepassword.password2 onChange=this.onPassword2Changed)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
     if this.props.changepin
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 PIN ändern
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Neue PIN
-                                .col-lg-10
-                                    input.form-control(type="password" value=this.props.changepin.pin onChange=this.onPinChanged)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelChangePin) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmChangePin) Speichern
+        Modal
+            .modal-header
+                h2 PIN ändern
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Neue PIN
+                        .col-lg-10
+                            input.form-control(type="password" value=this.props.changepin.pin onChange=this.onPinChanged)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelChangePin) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmChangePin) Speichern
 script.
     var client = require("../client.js");
+    var Modal = require("./Modal.jade");
     
     exports.getNeededPermissions = function(){
         return [];

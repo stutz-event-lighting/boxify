@@ -24,32 +24,27 @@ append body
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
     if this.state.delete
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Kunden löschen
-                    .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+        Modal
+            .modal-header
+                h2 Kunden löschen
+            .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmDelete) Löschen
     if this.state.error
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Ups!
-                    .modal-body                        
-                        case this.state.error
-                            when 601
-                                .alert.alert-warning Dieser Kunde ist noch Objekten zugewiesen. 
-                    .modal-footer
-                        button.btn.btn-primary(onClick=this.dismiss) Ich verstehe
+        Modal
+            .modal-header
+                h2 Ups!
+            .modal-body                        
+                case this.state.error
+                    when 601
+                        .alert.alert-warning Dieser Kunde ist noch Objekten zugewiesen. 
+            .modal-footer
+                button.btn.btn-primary(onClick=this.dismiss) Ich verstehe
 script.
     var client = require("../client.js");
     var Select = require("react-select");
+    var Modal = require("./Modal.jade");
     var CreateContactButton = require("./CreateContactButton.jade");
     
     exports.getNeededPermissions = function(){

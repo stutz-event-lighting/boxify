@@ -70,28 +70,26 @@ append body
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
                                                 i.glyphicon.glyphicon-trash
     if this.state.add
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Equipment hinzufügen
-                    .modal-body(style="maxHeight:500px;overflowY:auto")
-                        each category in this.state.data.categories
-                            h4= category.name
-                            table.table.table-striped
-                                tbody
-                                    each type in category.types                                
-                                        if this.state.data.types[type].count === undefined
-                                            tr
-                                                td(onClick=this.addItem(type))= this.state.data.types[type].name
-                    .modal-footer
-                        button.btn.btn-primary(onClick=this.done) Fertig
+        Modal
+            .modal-header
+                h2 Equipment hinzufügen
+            .modal-body(style="maxHeight:500px;overflowY:auto")
+                each category in this.state.data.categories
+                    h4= category.name
+                    table.table.table-striped
+                        tbody
+                            each type in category.types                                
+                                if this.state.data.types[type].count === undefined
+                                    tr
+                                        td(onClick=this.addItem(type))= this.state.data.types[type].name
+            .modal-footer
+                button.btn.btn-primary(onClick=this.done) Fertig
 script.
     var client = require("../client.js");
     var Select = require("react-select");
     var DatePicker = require("react-widgets").DateTimePicker;
     var moment = require("moment");
+    var Modal = require("./Modal.jade");
     
     exports.getNeededPermissions = function(){
         return ["rentals_read"];

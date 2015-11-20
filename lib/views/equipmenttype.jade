@@ -212,23 +212,20 @@ append body
                                         path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M"+(i/days.length*100)+",0L"+(i/days.length*100)+",100")
                                     path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.demand))
     if this.state.increase
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2= "Bestand "+(this.state.increase.type=="add"?"erhöhen":"verringern")
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Menge
-                                div(className="col-lg-10 "+(!this.state.increase.countOk?"has-error":""))
-                                    .input-group
-                                        input.form-control(type="text" placeholder="Menge" value=this.state.increase.count onChange=function(e){this.state.increase.count=e.target.value;this.update()}.bind(this))
-                                        span.input-group-addon Stk.
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmIncrease)= this.state.increase.type=="add"?"Hinzufügen":"Entfernen"
+        Modal
+            .modal-header
+                h2= "Bestand "+(this.state.increase.type=="add"?"erhöhen":"verringern")
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Menge
+                        div(className="col-lg-10 "+(!this.state.increase.countOk?"has-error":""))
+                            .input-group
+                                input.form-control(type="text" placeholder="Menge" value=this.state.increase.count onChange=function(e){this.state.increase.count=e.target.value;this.update()}.bind(this))
+                                span.input-group-addon Stk.
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmIncrease)= this.state.increase.type=="add"?"Hinzufügen":"Entfernen"
 script.
     var client = require("../client.js");
     var DropdownButton = require("react-bootstrap/DropdownButton");

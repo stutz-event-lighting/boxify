@@ -4,56 +4,51 @@
         MenuItem(eventKey="1") Von neuem Kontakt
         
     if this.state.new
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Von neuem Kontakt
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Typ
-                                .col-lg-10
-                                    select.form-control(value=this.state.new.type onChange=this.setValue("type"))
-                                        option(value="person") Person
-                                        option(value="company") Firma
-                                        option(value="club") Verein
-                            if this.state.new.type == "person"
-                                .form-group
-                                    label.col-lg-2.control-label Name
-                                    .col-lg-10(style="display:flex")
-                                        input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.new.firstname onChange=this.setValue("firstname"))
-                                        input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.new.lastname onChange=this.setValue("lastname"))
-                            else
-                                .form-group
-                                    label.col-lg-2.control-label Name
-                                    .col-lg-10
-                                        input.form-control(placeholder="Name" value=this.state.new.firstname onChange=this.setValue("firstname"))
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancel) Abbrechen
-                        button.btn.btn-primary(onClick=this.create) Erfassen
+        Modal
+            .modal-header
+                h2 Von neuem Kontakt
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Typ
+                        .col-lg-10
+                            select.form-control(value=this.state.new.type onChange=this.setValue("type"))
+                                option(value="person") Person
+                                option(value="company") Firma
+                                option(value="club") Verein
+                    if this.state.new.type == "person"
+                        .form-group
+                            label.col-lg-2.control-label Name
+                            .col-lg-10(style="display:flex")
+                                input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.new.firstname onChange=this.setValue("firstname"))
+                                input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.new.lastname onChange=this.setValue("lastname"))
+                    else
+                        .form-group
+                            label.col-lg-2.control-label Name
+                            .col-lg-10
+                                input.form-control(placeholder="Name" value=this.state.new.firstname onChange=this.setValue("firstname"))
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancel) Abbrechen
+                button.btn.btn-primary(onClick=this.create) Erfassen
     if this.state.existing
-        .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Von bestehendem Kontakt
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Kontakt
-                                .col-lg-10
-                                    Select(value=this.state.existing.contact asyncOptions=this.findContacts onChange=this.onContactChanged)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancel) Abbrechen
-                        button.btn.btn-primary(onClick=this.pick) Erfassen
+        Modal
+            .modal-header
+                h2 Von bestehendem Kontakt
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Kontakt
+                        .col-lg-10
+                            Select(value=this.state.existing.contact asyncOptions=this.findContacts onChange=this.onContactChanged)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancel) Abbrechen
+                button.btn.btn-primary(onClick=this.pick) Erfassen
 script.
     var client = require("../client.js");
     var Select = require("react-select");
     var DropdownButton = require("react-bootstrap/DropdownButton");
     var MenuItem = require("react-bootstrap/MenuItem");
+    var Modal = require("./Modal.jade");
     
     exports.getInitialState = function(){
         return {};

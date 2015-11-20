@@ -38,33 +38,30 @@ append body
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
     if this.state.create
-        .modal-backdrop(style="bottom:0px;display:block").fade.in
-        .modal(style="display:block").fade.in
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        h2 Projekt erstellen
-                    .modal-body
-                        .form-horizontal
-                            .form-group
-                                label.col-lg-2.control-label Name
-                                .col-lg-10
-                                    input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
-                            .form-group
-                                label.col-lg-2.control-label Kunde
-                                .col-lg-10
-                                    Select(value=this.state.create.customer asyncOptions=this.findCustomers onChange=this.onCustomerChanged)
-                            .form-group
-                                label.col-lg-2.control-label Beginn
-                                .col-lg-10
-                                    DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
-                            .form-group
-                                label.col-lg-2.control-label Ende
-                                .col-lg-10
-                                    DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
-                    .modal-footer
-                        button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
+        Modal
+            .modal-header
+                h2 Projekt erstellen
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Kunde
+                        .col-lg-10
+                            Select(value=this.state.create.customer asyncOptions=this.findCustomers onChange=this.onCustomerChanged)
+                    .form-group
+                        label.col-lg-2.control-label Beginn
+                        .col-lg-10
+                            DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
+                    .form-group
+                        label.col-lg-2.control-label Ende
+                        .col-lg-10
+                            DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
     if this.state.delete
         ConfirmDialog(title="Projekt löschen" action="Löschen" question=("\""+this.state.delete.name+"\" löschen möchten") onConfirm=this.confirmDelete onCancel=this.cancelDelete)
 script.
@@ -73,6 +70,7 @@ script.
     var DatePicker = require("react-widgets").DateTimePicker;
     var moment = require("moment");
     var ConfirmDialog = require("./ConfirmDialog.jade");
+    var Modal = require("./Modal.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
