@@ -2,7 +2,7 @@ extends ./base.jade
 
 append body
     - this.checkData();
-    if this.props.data
+    if this.state.data
         .container
             h2 Reservation
                 .btn-toolbar.pull-right
@@ -27,17 +27,17 @@ append body
                                 th Anzahl
                                 th
                         tbody
-                            each type in this.props.data.types
-                                if this.props.data.reservation.items[type._id] !== undefined
+                            each type in this.state.data.types
+                                if this.state.data.reservation.items[type._id] !== undefined
                                     tr
                                         td= type._id
-                                        td= this.props.data.types[type._id].name
+                                        td= this.state.data.types[type._id].name
                                         td(style="paddingTop:2px;paddingBottom:2px")
-                                            input.form-control.input-sm(value=this.props.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
+                                            input.form-control.input-sm(value=this.state.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
                                         td
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
                                                 i.glyphicon.glyphicon-trash
-    if this.props.add
+    if this.state.add
         .modal(style="display:block;overflowY:auto;position:fixed;height:100%").fade.in
             .modal-backdrop(style="height:100%;top:0px;display:block;position:fixed").fade.in
             .modal-dialog
@@ -45,14 +45,14 @@ append body
                     .modal-header
                         h2 Equipment hinzufügen
                     .modal-body(style="height:400px;overflowY:auto")
-                        each category in this.props.data.categories
+                        each category in this.state.data.categories
                             h4= category.name
                             table.table.table-striped
                                 tbody
                                     each type in category.types                                
-                                        if this.props.data.reservation.items[type] === undefined
+                                        if this.state.data.reservation.items[type] === undefined
                                             tr
-                                                td(onClick=this.addItem(type))= this.props.data.types[type].name
+                                                td(onClick=this.addItem(type))= this.state.data.types[type].name
                     .modal-footer
                         button.btn.btn-primary(onClick=this.done) Fertig
 script.
@@ -65,10 +65,10 @@ script.
     
     exports.checkData = function(){
         var self = this;
-        if(this.props.data === undefined){
+        if(this.state.data === undefined){
             client.getReservation(this.props.params.project,this.props.params.reservation,function(err,data){
                 if(err) return;
-                self.props.data = data;
+                self.state.data = data;
                 var itemlist = [];
                 data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
                 for(var type in data.types){
@@ -82,18 +82,18 @@ script.
     }
     
     exports.add = function(){
-        this.props.add = true;
+        this.state.add = true;
         this.update();
     }
     
     exports.done = function(){
-        delete this.props.add;
+        delete this.state.add;
         this.update();
     }
     
     exports.addItem = function(type,count){
         return function(){
-            this.props.data.reservation.items[type] = count||0;
+            this.state.data.reservation.items[type] = count||0;
             this.update();
         }.bind(this);
     }
@@ -104,8 +104,8 @@ script.
     
     exports.changeItem = function(type){
         return function(e){
-            if(/^[0-9]+$/.test(e.target.value)) this.props.data.reservation.items[type] = parseInt(e.target.value,10);
-            if(e.target.value.length == 0) this.props.data.reservation.items[type] = 0;            
+            if(/^[0-9]+$/.test(e.target.value)) this.state.data.reservation.items[type] = parseInt(e.target.value,10);
+            if(e.target.value.length == 0) this.state.data.reservation.items[type] = 0;            
             this.update();
         }.bind(this);
     }
@@ -116,7 +116,7 @@ script.
     
     exports.removeItem = function(type){
         return function(){
-            delete this.props.data.reservation.items[type];
+            delete this.state.data.reservation.items[type];
             this.update();
         }.bind(this);
     }
@@ -126,7 +126,7 @@ script.
     }
 
     exports.save = function(){
-        client.updateReservation(this.props.params.project,this.props.params.reservation,this.props.data.reservation.items,function(err){
+        client.updateReservation(this.props.params.project,this.props.params.reservation,this.state.data.reservation.items,function(err){
             if(err) return true;
             back(true);
         });

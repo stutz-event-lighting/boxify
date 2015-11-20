@@ -9,8 +9,9 @@ Navbar(componentClass="header" brand=this.brand() className="bs-docs-nav " fixed
                 .glyphicon.glyphicon-log-out
                 |  Ausloggen
 script.
+    var react = require("react");
     var Navbar = require("react-bootstrap/Navbar");
-    var Nav = require("react-bootstrap/Nav");
+    var Nav = react.createFactory(require("react-bootstrap/Nav"));
     var Button = require("react-bootstrap/Button");
     var client = require("../client.js");
     

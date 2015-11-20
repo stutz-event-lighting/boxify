@@ -1,16 +1,16 @@
 extends ./profile.jade
 
 append properties
-    if this.props.user
+    if this.state.user
         h4 Berechtigungen
-        each permission,key in this.props.user.permissions
+        each permission,key in this.state.user.permissions
             if client.hasPermission(key)
                 div
                     label
                         input(type="checkbox" checked=permission.allowed onChange=this.togglePermission(permission))
                         = " "+permission.name
         h4 Verwaltete Benutzer
-        Select(value=this.props.user.ownedUsers.map(function(user){return {value:user._id,label:user.name}}) asyncOptions=this.findUsers onChange=this.onUsersChanged multi=true)
+        Select(value=this.state.user.ownedUsers.map(function(user){return {value:user._id,label:user.name}}) asyncOptions=this.findUsers onChange=this.onUsersChanged multi=true)
 script.
     var client = require("../client.js");
     var Select = require("react-select");
@@ -30,7 +30,7 @@ script.
         this._loadContact();
         client.getUser(this.getContactId(),function(err,user){
             if(err) return;
-            this.props.user = user;
+            this.state.user = user;
             this.update();
         }.bind(this));
     }
@@ -48,13 +48,13 @@ script.
     
     exports.onSaved = function(){
         var permissions = {};
-        for(var permission in this.props.user.permissions){
-            permissions[permission] = this.props.user.permissions[permission].allowed;
+        for(var permission in this.state.user.permissions){
+            permissions[permission] = this.state.user.permissions[permission].allowed;
         }
         
-        client.saveUser(this.props.user._id,{
+        client.saveUser(this.state.user._id,{
             permissions:permissions,
-            ownedUsers:this.props.user.ownedUsers.map(function(user){return user._id})
+            ownedUsers:this.state.user.ownedUsers.map(function(user){return user._id})
         },function(err){
             if(err) return true;
             history.back();
@@ -68,6 +68,6 @@ script.
     }
     
     exports.onUsersChanged = function(id,selection){
-        this.props.user.ownedUsers = selection.map(function(selection){return {_id:selection.value,name:selection.label}});
+        this.state.user.ownedUsers = selection.map(function(selection){return {_id:selection.value,name:selection.label}});
         this.forceUpdate();
     }

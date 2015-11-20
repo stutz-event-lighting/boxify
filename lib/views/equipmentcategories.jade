@@ -17,30 +17,30 @@ append body
                         button.btn.btn-primary.btn-xs.pull-right(onClick=this.addCategory)
                             i.glyphicon.glyphicon-plus
             tbody
-                if this.props.categories
-                    each category in this.props.categories
+                if this.state.categories
+                    each category in this.state.categories
                         tr
                             td(onClick=this.edit(category))
                                 = category.name
                                 button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(category))
                                     i.glyphicon.glyphicon-trash
-    if this.props.category
+    if this.state.category
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
-                        h2= "Kategorie "+(this.props.category._id?"umbenennen":"erstellen")
+                        h2= "Kategorie "+(this.state.category._id?"umbenennen":"erstellen")
                     .modal-body
                         .form-horizontal
                             .form-group
                                 label.col-lg-2.control-label Name
                                 .col-lg-10
-                                    input.form-control(type="text" placeholder="Name" value=this.props.category.name onChange=this.onCategoryNameChange)
+                                    input.form-control(type="text" placeholder="Name" value=this.state.category.name onChange=this.onCategoryNameChange)
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancel) Abbrechen
                         button.btn.btn-primary(onClick=this.save) Speichern
-    if this.props.error
+    if this.state.error
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
@@ -48,7 +48,7 @@ append body
                     .modal-header
                         h2 Ups!
                     .modal-body                        
-                        case this.props.error
+                        case this.state.error
                             when 601
                                 .alert.alert-warning Diese Kategorie ist noch Objekten zugewiesen. 
                     .modal-footer
@@ -62,49 +62,49 @@ script.
     
     exports.checkData = function(){
         var self = this;
-        if(!this.props.categories){
+        if(!this.state.categories){
             client.getEquipmentCategories(function(err,categories){
                 if(err) categories = [];
-                this.props.categories = categories;
+                this.state.categories = categories;
                 this.update();
             }.bind(this))
         }
     }
 
     exports.addCategory = function(){
-        this.props.category = {name:""};
+        this.state.category = {name:""};
         this.update();
     }
     
     exports.onCategoryNameChange = function(e){
-        this.props.category.name = e.target.value;
+        this.state.category.name = e.target.value;
         this.update();
     }
     
     exports.cancel = function(){
-        delete this.props.category;
+        delete this.state.category;
         this.update();
     }
     
     exports.edit = function(category){        
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            this.props.category = category;
+            this.state.category = category;
             this.update();
         }.bind(this);
     }
     
     exports.dismiss = function(){
-        delete this.props.error;
+        delete this.state.error;
         this.update();
     }
     exports.delete = function(category){
         return function(){
             client.deleteEquipmentCategory(category._id,function(err){
                 if(err){
-                    this.props.error = err.code;
+                    this.state.error = err.code;
                 }else{
-                    this.props.categories.splice(this.props.categories.indexOf(category),1);
+                    this.state.categories.splice(this.state.categories.indexOf(category),1);
                 }
                 this.update();
             }.bind(this))
@@ -112,15 +112,15 @@ script.
     }
     
     exports.save = function(){
-        if(this.props.category._id){
-            client.updateEquipmentCategory(this.props.category._id,this.props.category.name,function(err){
-                delete this.props.category;
+        if(this.state.category._id){
+            client.updateEquipmentCategory(this.state.category._id,this.state.category.name,function(err){
+                delete this.state.category;
                 this.update();
             }.bind(this))
         }else{
-            client.createEquipmentCategory(this.props.category.name,function(err,id){
-                this.props.categories.push({_id:id,name:this.props.category.name});
-                delete this.props.category;
+            client.createEquipmentCategory(this.state.category.name,function(err,id){
+                this.state.categories.push({_id:id,name:this.state.category.name});
+                delete this.state.category;
                 this.update();
             }.bind(this))
         }

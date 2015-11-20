@@ -10,7 +10,7 @@ append body
                 tr
                     th Name
             tbody
-                each user in this.props.users
+                each user in this.state.users
                     tr(onClick=this.edit(user))
                         td
                             = (user.firstname?user.firstname+" ":"")+(user.lastname||"")
@@ -31,7 +31,7 @@ script.
     exports.findUsers = function(){
         client.findUsers({},function(err,users){
             if(err) return;
-            this.props.users = users;
+            this.state.users = users;
             this.update();
         }.bind(this))
     }
@@ -54,7 +54,7 @@ script.
         var self = this;
         return function(){
             client.deleteUser(user._id,function(err){
-                delete self.props.users;
+                delete self.state.users;
                 self.update();
             });
         }

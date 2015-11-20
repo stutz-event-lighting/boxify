@@ -2,7 +2,7 @@ extends ./base.jade
 
 append body
     - this.checkData();
-    if this.props.data
+    if this.state.data
         .container
             h2 Wareneingang
                 .btn-toolbar.pull-right
@@ -17,38 +17,38 @@ append body
                     h3.pull-left Equipment
                     .pull-right.checkbox(style="paddingTop:20px")
                         label
-                            input(type="checkbox" checked=this.props.hideUnbooked onChange=this.onUnbookedChanged)
+                            input(type="checkbox" checked=this.state.hideUnbooked onChange=this.onUnbookedChanged)
                             |  Ungebuchte ausblenden
                     table.table.table-striped.table-hover
                         thead
                             tr
                                 th ID
                                 th Name
-                                each supplier in this.props.suppliers
+                                each supplier in this.state.suppliers
                                     th
                                         img(src="/api/contacts/"+supplier+"/image" style="height:20px")
                                 th Total
                         tbody
-                            each type in this.props.data.types
-                                if (type.available !== undefined && !this.props.hideUnbooked) || type.count !== undefined
+                            each type in this.state.data.types
+                                if (type.available !== undefined && !this.state.hideUnbooked) || type.count !== undefined
                                     tr(onClick=this.startScan(type._id) className=(type.available===type.count)?"success":"")
                                         td= type._id
                                         td= type.name
-                                        each supplier in this.props.suppliers
+                                        each supplier in this.state.suppliers
                                             td
-                                                = ((this.props.data.types[type._id].suppliers && this.props.data.types[type._id].suppliers[supplier])?(this.props.data.types[type._id].suppliers[supplier].count||"0"):"0")
+                                                = ((this.state.data.types[type._id].suppliers && this.state.data.types[type._id].suppliers[supplier])?(this.state.data.types[type._id].suppliers[supplier].count||"0"):"0")
                                                 | /
-                                                = ((this.props.data.types[type._id].suppliers && this.props.data.types[type._id].suppliers[supplier])?this.props.data.types[type._id].suppliers[supplier].available:0)
-                                        td= (this.props.data.types[type._id].count||"0") + "/"+this.props.data.types[type._id].available
+                                                = ((this.state.data.types[type._id].suppliers && this.state.data.types[type._id].suppliers[supplier])?this.state.data.types[type._id].suppliers[supplier].available:0)
+                                        td= (this.state.data.types[type._id].count||"0") + "/"+this.state.data.types[type._id].available
                 .col-md-4
                     .pull-left
                         h3 Verlauf
                     .btn-toolbar.pull-right(style="margin-top:18px")
-                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.props.supplier||"own")[0] onSelect=this.setSupplier)        
-                            each supplier in this.props.allsuppliers
+                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
+                            each supplier in this.state.allsuppliers
                                 MenuItem(eventKey=supplier)
                                     img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                        ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.props.supplier||"own")
+                        ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.state.supplier||"own")
                         QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
                     table.table.table-striped.table-hover
                         thead
@@ -56,7 +56,7 @@ append body
                             th Name
                             th
                         tbody
-                            each entry,i in this.props.data.history.slice().reverse()
+                            each entry,i in this.state.data.history.slice().reverse()
                                 tr
                                     td
                                         img(src="/api/contacts/"+entry.supplier+"/image" style="height:20px")
@@ -66,7 +66,7 @@ append body
                                         .btn.btn-xs.btn-default(onClick=this.remove(i))
                                             .glyphicon.glyphicon-trash
     - this.scanreceiver = null;
-    if this.props.entry
+    if this.state.entry
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
@@ -74,7 +74,7 @@ append body
                     .modal-header
                         h2 Case-Inhalt scannen
                     .modal-body(style="maxHeight:500px;overflowY:auto")
-                        +renderCaseEntry(this.props.entry,0)
+                        +renderCaseEntry(this.state.entry,0)
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelEntry) Abbrechen
                         button.btn.btn-primary(onClick=this.finishEntry) Fertig
@@ -82,14 +82,14 @@ mixin renderLogEntry(entry,level)
     if entry.items
         each contents,item in entry.items
             div(style="paddingLeft:"+(level*20)+"px")
-                = this.props.data.types[entry.type].name
+                = this.state.data.types[entry.type].name
                 b= " #"+item
             each subentry in contents
                 +renderLogEntry(subentry,level+1)
     else
         div(style="paddingLeft:"+(level*20)+"px")
             b= entry.count+" "
-            = this.props.data.types[entry.type].name
+            = this.state.data.types[entry.type].name
 mixin renderSupplierButtonTitle(supplier)
     img(src="/api/contacts/"+supplier+"/image" style="height:20px")
 mixin renderCaseEntry(entry,level)
@@ -98,14 +98,14 @@ mixin renderCaseEntry(entry,level)
         each contents,item in entry.items
             - this.scanreceiver = {parent:parentscanreceiver,contents:contents, entry:entry}
             div(style="paddingLeft:"+(level*20)+"px")
-                = this.props.data.types[entry.type].name
+                = this.state.data.types[entry.type].name
                 b= " #"+item
             each subentry in contents
                 +renderCaseEntry(subentry,level+1)
     else
         div(style="paddingLeft:"+(level*20)+"px")
             input.form-control(type="text" value=entry.count style="width:50px;display:inline-block" onChange=this.onCountChanged(entry) onFocus=this.select)
-            = " "+this.props.data.types[entry.type].name                
+            = " "+this.state.data.types[entry.type].name                
 script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
@@ -119,30 +119,32 @@ script.
         return ["projects_read"];
     }
     
+    exports._getInitialState = exports.getInitialState;
     exports.getInitialState = function(){
-        this.props.supplier = "own";
-        this.props.hideUnbooked = this.props.params.checkin != "new";
-        return {};
+        var state = this._getInitialState();
+        state.supplier = "own";
+        state.hideUnbooked = this.props.params.checkin != "new";
+        return state;
     }
     
     exports.checkData = function(){
         var self = this;
-        if(this.props.data === undefined){
+        if(this.state.data === undefined){
             client.getCheckin(this.props.params.project,this.props.params.checkin,function(err,data){
                 if(err) return;
-                self.props.data = data;
+                self.state.data = data;
                 var suppliers = {};
-                for(var type in self.props.data.types){
-                    for(var supplier in self.props.data.types[type].suppliers) suppliers[supplier] = true;
+                for(var type in self.state.data.types){
+                    for(var supplier in self.state.data.types[type].suppliers) suppliers[supplier] = true;
                 }
-                self.props.suppliers = self.props.allsuppliers = Object.keys(suppliers);
+                self.state.suppliers = self.state.allsuppliers = Object.keys(suppliers);
                 self.update();
             });
         }
     }
     
     exports.onUnbookedChanged = function(e){
-        this.props.hideUnbooked = e.target.checked;
+        this.state.hideUnbooked = e.target.checked;
         this.update();
     }
     
@@ -161,14 +163,14 @@ script.
     }
     
     exports.setSupplier = function(supplier){
-        this.props.supplier = supplier;
+        this.state.supplier = supplier;
         this.update();
     }
     
     exports.startScan = function(type){
         return function(){
             this.refs.scanbutton.scan();
-            this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.props.data.types[type].name}]);
+            this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.state.data.types[type].name}]);
         }.bind(this)
     }
     
@@ -177,8 +179,8 @@ script.
     }
     
     exports.handleScan = function(code){
-        if(code.kind == "EQ" && this.props.data.types[code.type]){
-            if(!code.supplier) code.supplier = this.props.supplier;
+        if(code.kind == "EQ" && this.state.data.types[code.type]){
+            if(!code.supplier) code.supplier = this.state.supplier;
             var entry = {
                 supplier:code.supplier||"own",
                 type:parseInt(code.type,10),
@@ -190,7 +192,7 @@ script.
                     if(err) return this.playErrorSound();
                     this.insertOrClose(entry,this.scanreceiver);
                 }.bind(this));
-            }else if(entry.supplier == "own" && this.props.data.types[entry.type].hasItems){
+            }else if(entry.supplier == "own" && this.state.data.types[entry.type].hasItems){
                 return this.playErrorSound();
             }else if(!this.scanreceiver){
                 this.add(entry);
@@ -213,7 +215,7 @@ script.
                     return;
                 }
             }
-            var type = this.props.data.types[receiver.entry.type];
+            var type = this.state.data.types[receiver.entry.type];
             if(type.contents == "*"){
                 receiver.contents.push(entry);
                 this.update();
@@ -221,9 +223,9 @@ script.
             }            
             receiver = receiver.parent;
         }
-        if(this.props.entry) this.finishEntry();
-        this.props.entry = entry;
-        if(!entry.items[itemId].length && this.props.data.types[entry.type].contents != "*"){
+        if(this.state.entry) this.finishEntry();
+        this.state.entry = entry;
+        if(!entry.items[itemId].length && this.state.data.types[entry.type].contents != "*"){
             this.finishEntry();
         }else{
             this.update();
@@ -231,13 +233,13 @@ script.
     }
     
     exports.finishEntry = function(){
-        var entry = this.props.entry;
-        delete this.props.entry;
+        var entry = this.state.entry;
+        delete this.state.entry;
         this.add(entry);
     }
     
     exports.cancelEntry = function(){
-        delete this.props.entry;
+        delete this.state.entry;
         this.update();
     }
     
@@ -247,7 +249,7 @@ script.
             var item = data.item;
         
             if(err) return cb(err);
-            var type = this.props.data.types[entry.type];
+            var type = this.state.data.types[entry.type];
 
             var entries = [];
             if(type.contents instanceof Array){
@@ -258,7 +260,7 @@ script.
                         type:t,
                         count:item.contents[t]?item.contents[t].count:0
                     };
-                    if(this.props.data.types[t].hasItems){
+                    if(this.state.data.types[t].hasItems){
                         subentry.items = {};
                         subentry.count = 0;
                     }
@@ -293,17 +295,17 @@ script.
     exports.checkAvailability = function(supplier,total){
         for(var type in total){
             if(
-                !this.props.data.types[type].suppliers ||
-                !this.props.data.types[type].suppliers[supplier] ||
-                ((this.props.data.types[type].suppliers[supplier].available||0) - (this.props.data.types[type].suppliers[supplier].count||0)) < total[type].count
+                !this.state.data.types[type].suppliers ||
+                !this.state.data.types[type].suppliers[supplier] ||
+                ((this.state.data.types[type].suppliers[supplier].available||0) - (this.state.data.types[type].suppliers[supplier].count||0)) < total[type].count
             ){
                 return false;
             }
             if(total[type].ids){
                 for(var i = 0; i < total[type].ids.length; i++){
                     if(
-                        this.props.data.types[type].suppliers[supplier].ids &&
-                        this.props.data.types[type].suppliers[supplier].ids.indexOf(total[type].ids[i]) >= 0
+                        this.state.data.types[type].suppliers[supplier].ids &&
+                        this.state.data.types[type].suppliers[supplier].ids.indexOf(total[type].ids[i]) >= 0
                     ){
                         return false;
                     }
@@ -317,17 +319,17 @@ script.
         var total = this.calculateEntryTotal(entry);
         if(this.checkAvailability(entry.supplier,total)){
             for(var type in total){
-                if(!this.props.data.types[type].count) this.props.data.types[type].count = 0;
-                this.props.data.types[type].count += total[type].count;
-                if(!this.props.data.types[type].suppliers[entry.supplier]) this.props.data.types[type].suppliers[entry.supplier] = {count:0,available:0}
-                if(!this.props.data.types[type].suppliers[entry.supplier].count) this.props.data.types[type].suppliers[entry.supplier].count = 0;
-                this.props.data.types[type].suppliers[entry.supplier].count += total[type].count;
+                if(!this.state.data.types[type].count) this.state.data.types[type].count = 0;
+                this.state.data.types[type].count += total[type].count;
+                if(!this.state.data.types[type].suppliers[entry.supplier]) this.state.data.types[type].suppliers[entry.supplier] = {count:0,available:0}
+                if(!this.state.data.types[type].suppliers[entry.supplier].count) this.state.data.types[type].suppliers[entry.supplier].count = 0;
+                this.state.data.types[type].suppliers[entry.supplier].count += total[type].count;
                 if(total[type].ids) {
-                    if(!this.props.data.types[type].suppliers[entry.supplier].ids) this.props.data.types[type].suppliers[entry.supplier].ids = [];
-                    Array.prototype.splice.apply(this.props.data.types[type].suppliers[entry.supplier].ids,[0,0].concat(total[type].ids));
+                    if(!this.state.data.types[type].suppliers[entry.supplier].ids) this.state.data.types[type].suppliers[entry.supplier].ids = [];
+                    Array.prototype.splice.apply(this.state.data.types[type].suppliers[entry.supplier].ids,[0,0].concat(total[type].ids));
                 }
             }
-            this.props.data.history.push(entry);
+            this.state.data.history.push(entry);
             this.applyContents(entry);
         }else{
             this.playErrorSound();
@@ -337,23 +339,23 @@ script.
     
     exports.remove = function(index){
         return function(){
-            var entry = this.props.data.history.splice(index,1)[0];
+            var entry = this.state.data.history.splice(index,1)[0];
             var total = this.calculateEntryTotal(entry);
             for(var type in total){
                 if(total[type].ids) {
                     for(var i = 0; i < total[type].ids.length; i++){
-                        this.props.data.types[type].suppliers[entry.supplier].ids.splice(this.props.data.types[type].suppliers[entry.supplier].ids.indexOf(total[type].ids[i]),1);
+                        this.state.data.types[type].suppliers[entry.supplier].ids.splice(this.state.data.types[type].suppliers[entry.supplier].ids.indexOf(total[type].ids[i]),1);
                     }
-                    if(!this.props.data.types[type].suppliers[entry.supplier].ids.length) delete this.props.data.types[type].suppliers[entry.supplier].ids;
+                    if(!this.state.data.types[type].suppliers[entry.supplier].ids.length) delete this.state.data.types[type].suppliers[entry.supplier].ids;
                 }
-                this.props.data.types[type].suppliers[entry.supplier].count -= total[type].count;
-                if(!this.props.data.types[type].suppliers[entry.supplier].count){
-                    delete this.props.data.types[type].suppliers[entry.supplier].count;
-                    if(!this.props.data.types[type].suppliers[entry.supplier].available && !this.props.data.types[type].suppliers[entry.supplier].needed) delete this.props.data.types[type].suppliers[entry.supplier];
+                this.state.data.types[type].suppliers[entry.supplier].count -= total[type].count;
+                if(!this.state.data.types[type].suppliers[entry.supplier].count){
+                    delete this.state.data.types[type].suppliers[entry.supplier].count;
+                    if(!this.state.data.types[type].suppliers[entry.supplier].available && !this.state.data.types[type].suppliers[entry.supplier].needed) delete this.state.data.types[type].suppliers[entry.supplier];
                 }
             
-                this.props.data.types[type].count -= total[type].count;
-                if(!this.props.data.types[type].count) delete this.props.data.types[type].count
+                this.state.data.types[type].count -= total[type].count;
+                if(!this.state.data.types[type].count) delete this.state.data.types[type].count
             }
             this.update();            
         }.bind(this);
@@ -387,8 +389,8 @@ script.
 
     exports.save = function(){
         var data = {};
-        for(var type in this.props.data.types){
-            var t = this.props.data.types[type];
+        for(var type in this.state.data.types){
+            var t = this.state.data.types[type];
             if(!t.count) continue;
             data[type] = {
                 count:t.count,
@@ -403,7 +405,7 @@ script.
             }
         }
     
-        client.updateCheckin(this.props.params.project,this.props.params.checkin,{items:data,history:this.props.data.history},function(err){
+        client.updateCheckin(this.props.params.project,this.props.params.checkin,{items:data,history:this.state.data.history},function(err){
             if(err) return true;
             back(true);
         });

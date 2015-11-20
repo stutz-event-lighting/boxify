@@ -1,21 +1,21 @@
 #sel
-    //
         Menu
-        div(style="padding-top:60px")
+        div(style="paddingTop:60px")
         if this.needsLogin()
-            - console.log(this)
             LoginPage(onLogin=this.update)
         else
-
             block body
 script.
-    /*
     var Menu = require("./menu.jade")
     var client = require("../client.js");
     var LoginPage = require("./loginpage.jade");
     
+    exports.getInitialState = function(){
+        return this.props.state;
+    }
+    
     exports.update = function(){
-        history.replaceState(this.props,undefined,location.pathname);
+        history.replaceState(this.state,undefined,location.pathname);
         this.forceUpdate();
     }
     
@@ -30,4 +30,4 @@ script.
     
     exports.getNeededPermissions = function(){
         return [];
-    }*/
+    }

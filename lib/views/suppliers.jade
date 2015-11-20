@@ -5,7 +5,7 @@ append body
         h1 Zulieferer
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.props.search||"")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.state.search||"")
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="margin-left:10px")
@@ -16,24 +16,24 @@ append body
                     th Name
                     th
             tbody
-                each item in this.props.items
+                each item in this.state.items
                     tr(onClick=this.edit(item))
                         td= (item.firstname?item.firstname+" ":"")+(item.lastname||"")
                         td
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
-    if this.props.delete
+    if this.state.delete
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
                         h2 Zulieferer löschen
-                    .modal-body= "Sind sie sicher, dass sie \""+this.props.delete.name+"\" löschen möchten?"
+                    .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmDelete) Löschen
-    if this.props.error
+    if this.state.error
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
@@ -41,7 +41,7 @@ append body
                     .modal-header
                         h2 Ups!
                     .modal-body                        
-                        case this.props.error
+                        case this.state.error
                             when 601
                                 .alert.alert-warning Dieser Kunde ist noch Objekten zugewiesen. 
                     .modal-footer
@@ -55,23 +55,23 @@ script.
     }
     
     exports.componentDidMount = function(){
-        if(!this.props.items) this.findContacts();
+        if(!this.state.items) this.findContacts();
     }
     
     exports.findContacts = function(){
-        client.findSuppliers({search:this.props.search},function(err,items){
-            this.props.items = items;
+        client.findSuppliers({search:this.state.search},function(err,items){
+            this.state.items = items;
             this.update();
         }.bind(this));
     }
 
     exports.search = function(e){
-        this.props.search = e.target.value;
+        this.state.search = e.target.value;
         this.findContacts();
     }
     
     exports.dismiss = function(){
-        delete this.props.error;
+        delete this.state.error;
         this.update();
     }
 
@@ -91,24 +91,24 @@ script.
 
     exports.delete = function(item){
         return function(){
-            this.props.delete = item;
+            this.state.delete = item;
             this.update();
         }.bind(this)
     }
 
     exports.cancelDelete = function(){
-        delete this.props.delete;
+        delete this.state.delete;
         this.update();
     }
     exports.confirmDelete = function(){
         var self = this;
-        var del = this.props.delete;
-        delete this.props.delete;
+        var del = this.state.delete;
+        delete this.state.delete;
         client.deleteSupplier(del._id,function(err){
             if(err){
-                self.props.error = err.code;
+                self.state.error = err.code;
             }else{
-                delete self.props.items;
+                delete self.state.items;
             }
             self.update();
         })

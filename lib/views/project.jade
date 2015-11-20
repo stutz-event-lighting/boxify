@@ -2,7 +2,7 @@ extends ./base.jade
 
 append body
     - this.checkData();
-    if this.props.item
+    if this.state.item
         .container
             h2 Projekt
                 .btn-toolbar.pull-right
@@ -19,24 +19,24 @@ append body
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10
-                                input.form-control(placeholder="Kommentar" value=this.props.item.name onChange=this.onNameChange)
+                                input.form-control(placeholder="Kommentar" value=this.state.item.name onChange=this.onNameChange)
                         .form-group
                             label.col-lg-2.control-label Beginn
                             .col-lg-10
-                                DatePicker(disabled=(this.props.io.length>0) value=new Date(this.props.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
+                                DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
                         .form-group
                             label.col-lg-2.control-label Ende
                             .col-lg-10
-                                DatePicker(value=new Date(this.props.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
+                                DatePicker(value=new Date(this.state.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.onCommentChange)
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.comment onChange=this.onCommentChange)
             .row
                 .col-xs-12
                     h3
                         | Reservationen
-                        if this.props.item.status == "ongoing"
+                        if this.state.item.status == "ongoing"
                             .btn.btn-primary.pull-right(onClick=this.createReservation) Neu
                     table.table.table-striped.table-hover
                         thead
@@ -46,7 +46,7 @@ append body
                                 th Objekte
                         tbody
                             - var i = 1;
-                            each reservation in this.props.reservations
+                            each reservation in this.state.reservations
                                 tr(onClick=this.openReservation(reservation))
                                     td= "Reservation "+(i++)
                                     td= reservation.count
@@ -57,13 +57,13 @@ append body
                                                 i.glyphicon.glyphicon-trash
                                             button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
                                                 i.glyphicon.glyphicon-log-out
-                    if this.props.needsRental
+                    if this.state.needsRental
                         .alert.alert-warning(onClick=this.createRental) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
             .row
                 .col-xs-12
                     h3
                         | Aus- und Eingänge
-                        if this.props.item.status == "ongoing"
+                        if this.state.item.status == "ongoing"
                             .btn-toolbar.pull-right
                                 .btn.btn-primary(onClick=this.createCheckout) 
                                     .glyphicon.glyphicon-log-out
@@ -79,26 +79,26 @@ append body
                                 th Benutzer
                                 th Objekte
                         tbody
-                            each io in this.props.io
+                            each io in this.state.io
                                 tr(onClick=io.type=="checkout"?this.editCheckout(io):this.editCheckin(io))
                                     td
                                         div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
                                     td= moment(io.time).format("LLL")
-                                    td= this.props.users[io.user].firstname+" "+this.props.users[io.user].lastname
+                                    td= this.state.users[io.user].firstname+" "+this.state.users[io.user].lastname
                                     td
                                         = io.count+" / "+io.total
                                         button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteCheckout(io):this.deleteCheckin(io)))
                                             i.glyphicon.glyphicon-trash
-                    if Object.keys(this.props.item.balance).length
+                    if Object.keys(this.state.item.balance).length
                         .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles Material vom Kunden zurückgekommen!
             .row
                 .col-xs-12
                     h3 Aktionen
                         .btn-toolbar.pull-right
-                            if this.props.item.status == "ongoing"
-                                .btn.btn-primary(onClick=this.finish disabled=Object.keys(this.props.item.balance).length>0) Projekt abschliessen
-    if this.props.confirm
-        = this.createConfirmDialog(this.props.confirm)
+                            if this.state.item.status == "ongoing"
+                                .btn.btn-primary(onClick=this.finish disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
+    if this.state.confirm
+        = this.createConfirmDialog(this.state.confirm)
 script.
     var client = require("../client.js");
     var moment = require("moment");
@@ -112,37 +112,37 @@ script.
     
     exports.checkData = function(){
         var self = this;
-        if(this.props.item === undefined){
+        if(this.state.item === undefined){
             client.getProject(this.props.params.id,function(err,data){
                 if(err) return;
-                self.props.item = data.project;
-                self.props.reservations = data.reservations;
-                self.props.needsRental = data.needsRental;
-                self.props.io = data.io;
-                self.props.users = data.users;
+                self.state.item = data.project;
+                self.state.reservations = data.reservations;
+                self.state.needsRental = data.needsRental;
+                self.state.io = data.io;
+                self.state.users = data.users;
                 self.update();
             });
         }
     }
 
     exports.onNameChange = function(e){
-        this.props.item.name = e.target.value;
+        this.state.item.name = e.target.value;
         this.update();
     }
     
     
     exports.onCommentChange = function(e){
-        this.props.item.comment = e.target.value;
+        this.state.item.comment = e.target.value;
         this.update();
     }    
     
     exports.onStartChanged = function(time){
-        if(time) this.props.item.start = time.getTime();
+        if(time) this.state.item.start = time.getTime();
         this.update();
     }
     
     exports.onEndChanged = function(time){
-        if(time) this.props.item.end = time.getTime();
+        if(time) this.state.item.end = time.getTime();
         this.update();
     }
 
@@ -177,7 +177,7 @@ script.
     
     exports.confirmDeleteReservation = function(reservation){
         client.deleteReservation(this.props.params.id,reservation,function(){
-            delete this.props.item;
+            delete this.state.item;
             this.update();
         }.bind(this));
     }
@@ -205,7 +205,7 @@ script.
     
     exports.confirmDeleteCheckout = function(checkout){    
         client.deleteCheckout(this.props.params.id,checkout,function(){
-            delete this.props.item;
+            delete this.state.item;
             this.update();
         }.bind(this));
     }
@@ -228,15 +228,15 @@ script.
     }
     exports.confirmDeleteCheckin = function(checkin){
         client.deleteCheckin(this.props.params.id,checkin,function(){
-            delete this.props.item;
+            delete this.state.item;
             this.update();
         }.bind(this));
     }
     
     exports.finish = function(){
-        client.finishProject(this.props.item._id,function(err){
+        client.finishProject(this.state.item._id,function(err){
             if(err) return;
-            this.props.item.status = "finished";
+            this.state.item.status = "finished";
             this.update();
         }.bind(this));
     }
@@ -247,7 +247,7 @@ script.
     }
 
     exports.save = function(){
-        client.updateProject(this.props.item._id,{name:this.props.item.name,start:this.props.item.start,end:this.props.item.end,comment:this.props.item.comment||""},function(err){
+        client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,comment:this.state.item.comment||""},function(err){
             if(err) return true;
             back(true);
         });
@@ -259,7 +259,7 @@ script.
             action:opts.action,
             question:opts.question,
             onAnswer:function(confirmed){
-                delete this.props.confirm;
+                delete this.state.confirm;
                 this.update();
                 if(confirmed) this[opts.callback](opts.data);
             }.bind(this)
@@ -267,7 +267,7 @@ script.
     }
     
     exports.confirm = function(title,action,question,cb,data){
-        this.props.confirm = {
+        this.state.confirm = {
             title:title,
             action:action,
             question:question,

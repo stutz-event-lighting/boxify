@@ -1,7 +1,7 @@
 extends ./base.jade
 
 append body
-    if this.props.item
+    if this.state.item
         .container
             h2 Kontakt bearbeiten
                 .btn-toolbar.pull-right
@@ -22,38 +22,38 @@ append body
                         .form-group
                             label.col-lg-2.control-label Typ
                             .col-lg-10
-                                select.form-control(value=this.props.item.type onChange=this.setValue("type"))
+                                select.form-control(value=this.state.item.type onChange=this.setValue("type"))
                                     option(value="person") Person
                                     option(value="company") Firma
                                     option(value="club") Verein
-                        if this.props.item.type == "person"
+                        if this.state.item.type == "person"
                             .form-group
                                 label.col-lg-2.control-label Anrede
                                 .col-lg-10
-                                    input.form-control(placeholder="Anrede" value=this.props.item.salutation onChange=this.setValue("salutation"))
+                                    input.form-control(placeholder="Anrede" value=this.state.item.salutation onChange=this.setValue("salutation"))
                             .form-group
                                 label.col-lg-2.control-label Name
                                 .col-lg-10(style="display:flex")
-                                    input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.props.item.firstname onChange=this.setValue("firstname"))
-                                    input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.props.item.lastname onChange=this.setValue("lastname"))
+                                    input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.firstname onChange=this.setValue("firstname"))
+                                    input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.lastname onChange=this.setValue("lastname"))
                         else
                             .form-group
                                 label.col-lg-2.control-label Name
                                 .col-lg-10
-                                    input.form-control(placeholder="Name" value=this.props.item.firstname onChange=this.setValue("firstname"))
+                                    input.form-control(placeholder="Name" value=this.state.item.firstname onChange=this.setValue("firstname"))
                         .form-group
                             label.col-lg-2.control-label Adresse
                             .col-lg-10
                                 div(style="marginBottom:15px;display:flex")
-                                    input.form-control(placeholder="Strasse" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.props.item.streetName onChange=this.setValue("streetName"))
-                                    input.form-control(placeholder="Hausnummer" style="width:25%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.props.item.streetNr onChange=this.setValue("streetNr"))
+                                    input.form-control(placeholder="Strasse" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.streetName onChange=this.setValue("streetName"))
+                                    input.form-control(placeholder="Hausnummer" style="width:25%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.streetNr onChange=this.setValue("streetNr"))
                                 div(style="marginBottom:15px;display:flex")
-                                    input.form-control(placeholder="PLZ" style="width:25%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.props.item.zip onChange=this.setValue("zip"))
-                                    input.form-control(placeholder="Ort" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.props.item.city onChange=this.setValue("city"))
+                                    input.form-control(placeholder="PLZ" style="width:25%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.zip onChange=this.setValue("zip"))
+                                    input.form-control(placeholder="Ort" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.city onChange=this.setValue("city"))
                         .form-group
                             label.col-lg-2.control-label E-Mail
                             .col-lg-10
-                                each email in this.props.item.emails
+                                each email in this.state.item.emails
                                     div(style="marginBottom:15px;display:flex")
                                         input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=email.type onChange=this.setValue("type",email))
                                         input.form-control(placeholder="E-Mail" style="flex:1;borderRight:0px;borderRadius:0px" value=email.email onChange=this.setValue("email",email))
@@ -67,7 +67,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Telefon
                             .col-lg-10
-                                each phone in this.props.item.phones
+                                each phone in this.state.item.phones
                                     div(style="marginBottom:15px;display:flex")
                                         input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=phone.type onChange=this.setValue("type",phone))
                                         input.form-control(placeholder="Nummer" style="flex:1;borderRight:0px;borderRadius:0px" value=phone.number onChange=this.setValue("number",phone))
@@ -78,11 +78,11 @@ append body
                                 div(style="marginBottom:15px")
                                     .btn.btn-default.pull-right(onClick=this.addPhone)
                                         i.glyphicon.glyphicon-plus
-                        if this.props.item.type == "company" || this.props.item.type == "club"
+                        if this.state.item.type == "company" || this.state.item.type == "club"
                             .form-group
                                 label.col-lg-2.control-label Kontakte
                                 .col-lg-10
-                                    each contact in this.props.item.contacts
+                                    each contact in this.state.item.contacts
                                         .input-group(style="marginBottom:15px")
                                             span.input-group-addon
                                                 a(href="/contacts/"+contact.id)=contact.name
@@ -94,7 +94,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.setValue("comment"))
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.comment onChange=this.setValue("comment"))
 
                     block properties
             block container                
@@ -106,9 +106,8 @@ script.
     var CreateContactButton = require("./CreateContactButton.jade");
     var ImageViewer = require("./ImageViewer.jade");
     
-    
     exports.componentDidMount = function(){
-        if(!this.props.item) this.loadContact();
+        if(!this.state.item) this.loadContact();
     }
     
     exports.getContactId = function(){
@@ -118,45 +117,45 @@ script.
     exports.loadContact = function(){
         client.getContact(this.getContactId(),function(err,contact){
             if(err) return;
-            this.props.item = contact;
+            this.state.item = contact;
             this.update();
         }.bind(this));       
     }
     
     exports.setValue = function(name,target){
         return function(e){
-            (target||this.props.item)[name] = e.target.value;
+            (target||this.state.item)[name] = e.target.value;
             this.update();
         }.bind(this)
     }
     
     exports.getImagePath = function(){
-        return this.props.item.image?this.props.item.image.url:"/api/contacts/"+this.props.item._id+"/image";
+        return this.state.item.image?this.state.item.image.url:"/api/contacts/"+this.state.item._id+"/image";
     }
     
     exports.onImageChanged = function(image){
-        this.props.item.image = image;
+        this.state.item.image = image;
         this.update();
     }
     
     exports.addEmail = function(){
         var entry = {type:"",email:""};
-        if(!this.props.item.emails.length) entry.standard = true;
-        this.props.item.emails.push(entry);
+        if(!this.state.item.emails.length) entry.standard = true;
+        this.state.item.emails.push(entry);
         this.update();
     }
     
     exports.removeEmail = function(email){
         return function(){            
-            this.props.item.emails.splice(this.props.item.emails.indexOf(email),1);
-            if(email.standard && this.props.item.emails.length) this.props.item.emails[0].standard = true;
+            this.state.item.emails.splice(this.state.item.emails.indexOf(email),1);
+            if(email.standard && this.state.item.emails.length) this.state.item.emails[0].standard = true;
             this.update();
         }.bind(this);
     }
     
     exports.setEmailAsStandard = function(email){
         return function(){
-            var emails = this.props.item.emails;
+            var emails = this.state.item.emails;
             for(var i = 0; i < emails.length; i++) delete emails[i].standard;
             email.standard = true;
             this.update();
@@ -165,22 +164,22 @@ script.
     
     exports.addPhone = function(){
         var entry = {type:"",number:""};
-        if(!this.props.item.phones.length) entry.standard = true;
-        this.props.item.phones.push(entry);
+        if(!this.state.item.phones.length) entry.standard = true;
+        this.state.item.phones.push(entry);
         this.update();
     }
     
     exports.removePhone = function(phone){
         return function(){            
-            this.props.item.phones.splice(this.props.item.phones.indexOf(phone),1);
-            if(phone.standard && this.props.item.phones.length) this.props.item.phones[0].standard = true;
+            this.state.item.phones.splice(this.state.item.phones.indexOf(phone),1);
+            if(phone.standard && this.state.item.phones.length) this.state.item.phones[0].standard = true;
             this.update();
         }.bind(this);
     }
     
     exports.setPhoneAsStandard = function(phone){
         return function(){
-            var phones = this.props.item.phones;
+            var phones = this.state.item.phones;
             for(var i = 0; i < phones.length; i++) delete phones[i].standard;
             phone.standard = true;
             this.update();
@@ -188,8 +187,8 @@ script.
     }
     
     exports.addContact = function(id,name){
-        if(!this.props.item.contacts) this.props.item.contacts = [];
-        this.props.item.contacts.push({
+        if(!this.state.item.contacts) this.state.item.contacts = [];
+        this.state.item.contacts.push({
             id:id,
             name:name,
             type:""
@@ -199,7 +198,7 @@ script.
     
     exports.removeContact = function(contact){
         return function(){            
-            this.props.item.contacts.splice(this.props.item.contacts.indexOf(contact),1);
+            this.state.item.contacts.splice(this.state.item.contacts.indexOf(contact),1);
             this.update();
         }.bind(this);
     }
@@ -210,25 +209,25 @@ script.
     
     exports.save = function(){
         var data = {
-            type:this.props.item.type,
-            salutation:this.props.item.salutation,
-            firstname:this.props.item.firstname,
-            lastname:this.props.item.lastname,
-            streetName:this.props.item.streetName,
-            streetNr:this.props.item.streetNr,
-            zip:this.props.item.zip,
-            city:this.props.item.city,
-            emails:this.props.item.emails,
-            phones:this.props.item.phones,
-            contacts:this.props.item.contacts,
-            comment:this.props.item.comment,
+            type:this.state.item.type,
+            salutation:this.state.item.salutation,
+            firstname:this.state.item.firstname,
+            lastname:this.state.item.lastname,
+            streetName:this.state.item.streetName,
+            streetNr:this.state.item.streetNr,
+            zip:this.state.item.zip,
+            city:this.state.item.city,
+            emails:this.state.item.emails,
+            phones:this.state.item.phones,
+            contacts:this.state.item.contacts,
+            comment:this.state.item.comment,
         };
         client.updateContact(this.getContactId(),data,function(err,id){
             if(err) return;
-            if(this.props.item.image){
-                client.updateContactImage(this.getContactId(),{image:this.props.item.image.url},function(err){
+            if(this.state.item.image){
+                client.updateContactImage(this.getContactId(),{image:this.state.item.image.url},function(err){
                     if(err) return;
-                    delete this.props.item.image;
+                    delete this.state.item.image;
                     this.update();
                     this.onSaved();
                 }.bind(this));

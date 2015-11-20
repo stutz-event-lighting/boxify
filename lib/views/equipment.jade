@@ -6,7 +6,7 @@ append body
         h1 Equipment
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.props.search||"")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.state.search||"")
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="margin-left:10px")
@@ -23,20 +23,20 @@ append body
                     th.hidden-xs Gewicht
                     th
             tbody
-                if this.props.categories && this.props.items
-                    each item in this.props.items
+                if this.state.categories && this.state.items
+                    each item in this.state.items
                         tr(onClick=this.edit(item))
                             td= item._id
                             td= item.name
                             td= item.manufacturer
-                            td.hidden-xs= item.category?this.props.categoriesbyid[item.category]:"Keine"
+                            td.hidden-xs= item.category?this.state.categoriesbyid[item.category]:"Keine"
                             td.hidden-xs= item.count
                             td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
                             td.hidden-xs= item.weight
                             td
                                 button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                     i.glyphicon.glyphicon-trash
-    if this.props.create
+    if this.state.create
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
@@ -48,18 +48,18 @@ append body
                             .form-group
                                 label.col-lg-2.control-label Name
                                 .col-lg-10
-                                    input.form-control(type="text" value=this.props.create.name onChange=this.validateCreateName.bind(this))
+                                    input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
-    if this.props.delete
+    if this.state.delete
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
                         h2 Equipmenttyp löschen
-                    .modal-body= "Sind sie sicher, dass sie \""+this.props.delete.name+"\" löschen möchten?"
+                    .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmDelete) Löschen
@@ -72,20 +72,20 @@ script.
         
         async.parallel([
             function(cb){
-                if(self.props.items) return cb();
-                client.findEquipmentTypes({search:self.props.search},function(err,items){
-                    self.props.items = items;
+                if(self.state.items) return cb();
+                client.findEquipmentTypes({search:self.state.search},function(err,items){
+                    self.state.items = items;
                     cb(true);
                 });
             },
             function(cb){
-                if(self.props.categories) return cb();
+                if(self.state.categories) return cb();
                 client.getEquipmentCategories(function(err,categories){
                     if(err) return cb();
-                    self.props.categories = categories;
-                    self.props.categoriesbyid = {};
+                    self.state.categories = categories;
+                    self.state.categoriesbyid = {};
                     categories.forEach(function(category){
-                        self.props.categoriesbyid[category._id] = category.name;
+                        self.state.categoriesbyid[category._id] = category.name;
                     })
                     cb(true);
                 })
@@ -100,38 +100,36 @@ script.
     }
     
     exports.search = function(e){
-        this.props.search = e.target.value;
-        delete this.props.items;
+        this.state.search = e.target.value;
+        delete this.state.items;
         this.update();
     }
 
-    exports.getInitialState = function(){
+    exports.componentDidMount = function(){
         this.checkData();
-        this.XYZ = 5;
-        return {};
     }
 
     exports.create = function(){
         var self = this;
-        this.props.create = {_id:"",name:""};
+        this.state.create = {_id:"",name:""};
         this.update();
         setTimeout(function(){
             self.refs.createid.getDOMNode().focus();
         },1);
     }
     exports.validateCreateName = function(e){
-        this.props.create.name = e.target.value;
+        this.state.create.name = e.target.value;
         this.update();
     }
     exports.cancelCreate = function(){
-        delete this.props.create;
+        delete this.state.create;
         this.update();
     }
     exports.confirmCreate = function(){
         var self = this;
-        client.createEquipmentType(this.props.create,function(err,id){
+        client.createEquipmentType(this.state.create,function(err,id){
             if(err) return;
-            delete self.props.create;
+            delete self.state.create;
             self.update();
             setTimeout(function(){
                 visit("/equipment/"+id)
@@ -148,21 +146,21 @@ script.
     
     exports.delete = function(item){
         return function(){
-            this.props.delete = item;
+            this.state.delete = item;
             this.update();
         }.bind(this)
     }
     
     exports.cancelDelete = function(){
-        delete this.props.delete;
+        delete this.state.delete;
         this.update();
     }
     exports.confirmDelete = function(){
         var self = this;
-        var del = this.props.delete;
-        delete this.props.delete;
+        var del = this.state.delete;
+        delete this.state.delete;
         client.deleteEquipmentType(del._id,function(err){
-            delete self.props.items;
+            delete self.state.items;
             self.update();            
         })
     }

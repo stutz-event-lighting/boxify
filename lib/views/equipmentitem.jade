@@ -1,10 +1,10 @@
 extends ./base.jade
 
 append body
-    if this.props.item && this.props.type
+    if this.state.item && this.state.type
         .container
             h2
-                = this.props.item.name+" "+this.props.item.id
+                = this.state.item.name+" "+this.state.item.id
                 .btn-toolbar.pull-right
                     button.btn.btn-default(onClick=function(){this.cancel()}.bind(this))
                         i.glyphicon.glyphicon-chevron-left
@@ -15,31 +15,31 @@ append body
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        ImageViewer(image="/api/equipment/"+this.props.item.type+"/image")
+                        ImageViewer(image="/api/equipment/"+this.state.item.type+"/image")
                         br
-                        img(src="/api/barcode/EQ-"+this.props.item.type+"-"+this.props.item.id+"/"+(this.props.type.manufacturer?(this.props.type.manufacturer+" "):"")+this.props.item.name width="100%")
+                        img(src="/api/barcode/EQ-"+this.state.item.type+"-"+this.state.item.id+"/"+(this.state.type.manufacturer?(this.state.type.manufacturer+" "):"")+this.state.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h3 Daten
                     .form-horizontal
                         .form-group
                             label.col-lg-2.control-label Seriennummer
                             .col-lg-10
-                                input.form-control(placeholder="Seriennummer" value=this.props.item.serialnumber||"" onChange=this.onSerialNumberChange)
+                                input.form-control(placeholder="Seriennummer" value=this.state.item.serialnumber||"" onChange=this.onSerialNumberChange)
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.props.item.comment onChange=this.onCommentChange)
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.comment onChange=this.onCommentChange)
                     .row
                         .col-md-4.col-xs-6
                             h4 Aktueller Standort
-                            if this.props.location
-                                a(href="/customers/"+this.props.location._id)= (this.props.location.firstname?this.props.location.firstname+" ":"")+(this.props.location.lastname||"")
+                            if this.state.location
+                                a(href="/customers/"+this.state.location._id)= (this.state.location.firstname?this.state.location.firstname+" ":"")+(this.state.location.lastname||"")
                             else
                                 | Lager
                         .col-md-4.col-xs-6
                             h4 Case
-                            if this.props.container
-                                a(href="/equipment/"+this.props.container.type+"/"+this.props.container.id)= this.props.container.name+" "+this.props.container.id
+                            if this.state.container
+                                a(href="/equipment/"+this.state.container.type+"/"+this.state.container.id)= this.state.container.name+" "+this.state.container.id
                             else
                                 | Keines
                         .col-md-4.col-xs-6
@@ -67,7 +67,7 @@ append body
                                 th Zeit
                                 th Ereignis
                         tbody
-                            each log in this.props.logs
+                            each log in this.state.logs
                                 tr
                                     td= moment(log.time).format("llll")
                                     td
@@ -76,7 +76,7 @@ append body
                                                 | Objekt erfasst
                                             when "removed"
                                                 | Objekt entfernt
-            if this.props.type.contents
+            if this.state.type.contents
                 .row
                     .col-xs-12
                         .pull-left
@@ -84,9 +84,9 @@ append body
                         .btn-toolbar.pull-right(style="margin-top:18px")
                             ScanButton.pull-left(onScan=this.handleScan supplier="own")
                             .btn-group.pull-left(style="margin-left:10px")
-                                div(className="btn "+(this.props.remove?"btn-primary":"btn-default") onClick=this.toggleMode)
+                                div(className="btn "+(this.state.remove?"btn-primary":"btn-default") onClick=this.toggleMode)
                                     i.glyphicon.glyphicon-minus
-                                div(className="btn "+(this.props.remove?"btn-default":"btn-primary") onClick=this.toggleMode)
+                                div(className="btn "+(this.state.remove?"btn-default":"btn-primary") onClick=this.toggleMode)
                                     i.glyphicon.glyphicon-plus                                                            
                         table.table.table-striped.table-hover
                             thead
@@ -96,7 +96,7 @@ append body
                                     th Menge
                                     th Einzel IDs
                             tbody
-                                each item, id in this.props.item.contents
+                                each item, id in this.state.item.contents
                                     if item.newcount > 0
                                         tr
                                             td= id
@@ -119,22 +119,22 @@ script.
     }
     
     exports.componentDidMount = function(){
-        if(!this.props.item) this.loadItem();
-        if(!this.props.type) this.loadType();
+        if(!this.state.item) this.loadItem();
+        if(!this.state.type) this.loadType();
     }
     
     exports.loadItem = function(){
         var self = this;
         client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
             if(err) return;
-            self.props.item = data.item;
-            self.props.logs = data.logs;
-            self.props.location = data.location;
-            self.props.container = data.container;
-            for(var type in self.props.item.contents){
-                self.props.item.contents[type].newcount = self.props.item.contents[type].count;
-                if(self.props.item.contents[type].ids){
-                    self.props.item.contents[type].newids = JSON.parse(JSON.stringify(self.props.item.contents[type].ids));
+            self.state.item = data.item;
+            self.state.logs = data.logs;
+            self.state.location = data.location;
+            self.state.container = data.container;
+            for(var type in self.state.item.contents){
+                self.state.item.contents[type].newcount = self.state.item.contents[type].count;
+                if(self.state.item.contents[type].ids){
+                    self.state.item.contents[type].newids = JSON.parse(JSON.stringify(self.state.item.contents[type].ids));
                 }
             }
             self.update();
@@ -144,68 +144,68 @@ script.
     exports.loadType = function(){
         client.getEquipmentType(this.props.params.type,function(err,data){
             if(err) return;
-            this.props.type = data;
+            this.state.type = data;
             this.update();
         }.bind(this));
     }
     
     exports.onSerialNumberChange = function(e){
-        this.props.item.serialnumber = e.target.value;
+        this.state.item.serialnumber = e.target.value;
         this.update();
     }
     
     exports.onCommentChange = function(e){
-        this.props.item.comment = e.target.value;
+        this.state.item.comment = e.target.value;
         this.update();
     }
 
     exports.toggleMode = function(){
-        if(this.props.remove){
-            delete this.props.remove;
+        if(this.state.remove){
+            delete this.state.remove;
         }else{
-            this.props.remove = true;
+            this.state.remove = true;
         }
         this.update();
     }
     
     exports.handleScan = function(code){
         if(!code.count) code.count = 1;
-        if(this.props.remove){
-            if(!this.props.item.contents[code.type]){
+        if(this.state.remove){
+            if(!this.state.item.contents[code.type]){
                 this.playErrorSound();
                 return;
             }
             if(code.item){
-                var index = (this.props.item.contents[code.type].newids||[]).indexOf(code.item);
+                var index = (this.state.item.contents[code.type].newids||[]).indexOf(code.item);
                 if(index < 0){
                     this.playErrorSound();
                     return;
                 }else{
-                    this.props.item.contents[code.type].newids.splice(index,1);
+                    this.state.item.contents[code.type].newids.splice(index,1);
                 }
             }
-            this.props.item.contents[code.type].newcount -= code.count;
-            if(this.props.item.contents[code.type].newcount < 0){
-                delete this.props.item.contents[code.type].newcount;
-                delete this.props.item.contents[code.type].newids;
+            this.state.item.contents[code.type].newcount -= code.count;
+            if(this.state.item.contents[code.type].newcount < 0){
+                delete this.state.item.contents[code.type].newcount;
+                delete this.state.item.contents[code.type].newids;
             }
             this.update();
         }else{
-            if(this.props.type.contents instanceof Array){
-                var allowed = this.props.type.contents.map(function(type){return type._id});
+            if(this.state.type.contents instanceof Array){
+                var allowed = this.state.type.contents.map(function(type){return type._id});
                 if(allowed.indexOf(parseInt(code.type,10)) < 0) return this.playErrorSound();
             }
             if(code.item){
                 client.getEquipmentContainer(code.type,code.item,function(err,container){
                     if(err) return this.playErrorSound();
-                    if(this.props.item.contents[code.type] && this.props.item.contents[code.type].newids && this.props.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
+                    if(this.state.item.contents[code.type] && this.state.item.contents[code.type].newids && this.state.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
                     if(container && container != this.props.params.id) return this.playErrorSound();                    
                     this.continueAddingItems(code);
                 }.bind(this))
             }else{
                 client.getEquipmentTypeStock(code.type,true,function(err,count){
                     if(err) return this.playErrorSound();
-                    count += this.props.item.contents[code.type]?(this.props.item.contents[code.type].count||0):0;
+                    count += this.state.item.contents[code.type]?(this.state.item.contents[code.type].count||0):0;
                     if(code.count > count) code.count = count;
                     this.continueAddingItems(code);
                 }.bind(this))
@@ -214,20 +214,20 @@ script.
     }
     
     exports.continueAddingItems = function(code){   
-        if(!this.props.item.contents[code.type]){
+        if(!this.state.item.contents[code.type]){
             client.getEquipmentTypeName(code.type,function(err,name){
                 if(err) return this.playErrorSound();
-                this.props.item.contents[code.type] = {name:name};
+                this.state.item.contents[code.type] = {name:name};
                 next.call(this);
             }.bind(this))
         }else{
             next.call(this);
         }
         function next(){
-            this.props.item.contents[code.type].newcount = (this.props.item.contents[code.type].newcount||0)+code.count;
+            this.state.item.contents[code.type].newcount = (this.state.item.contents[code.type].newcount||0)+code.count;
             if(code.item){
-                if(!this.props.item.contents[code.type].newids) this.props.item.contents[code.type].newids = [];
-                this.props.item.contents[code.type].newids.push(code.item);
+                if(!this.state.item.contents[code.type].newids) this.state.item.contents[code.type].newids = [];
+                this.state.item.contents[code.type].newids.push(code.item);
             }
             this.update();
         };    
@@ -243,8 +243,8 @@ script.
 
     exports.save = function(){    
         var contents = {};
-        for(var type in this.props.item.contents){
-            var t = this.props.item.contents[type];
+        for(var type in this.state.item.contents){
+            var t = this.state.item.contents[type];
             if(t.newcount){
                 contents[type] = {count:t.newcount};
                 if(t.newids && t.newids.length){
@@ -253,7 +253,7 @@ script.
             }
         }
     
-        client.saveEquipment(this.props.item.type,this.props.item.id,{comment:this.props.item.comment,serialnumber:this.props.item.serialnumber||"",contents:contents},function(err){
+        client.saveEquipment(this.state.item.type,this.state.item.id,{comment:this.state.item.comment,serialnumber:this.state.item.serialnumber||"",contents:contents},function(err){
             if(err) return true;
             history.back();
         });

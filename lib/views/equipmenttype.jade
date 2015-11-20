@@ -1,7 +1,7 @@
 extends ./base.jade
 
 append body
-    if this.props.item && this.props.stock !== undefined && this.props.items && this.props.graph && this.props.categories
+    if this.state.item && this.state.stock !== undefined && this.state.items && this.state.graph && this.state.categories
         .container
             h2 Equipmenttyp bearbeiten
                 .btn-toolbar.pull-right
@@ -16,21 +16,21 @@ append body
                     div.text-center
                         ImageViewer(image=this.getImagePath() onChange=this.onImageChanged editable)
                         br
-                        img(src="/api/barcode/EQ-"+this.props.item._id+"/"+(this.props.item.manufacturer?(this.props.item.manufacturer+" "):"")+this.props.item.name width="100%")
+                        img(src="/api/barcode/EQ-"+this.state.item._id+"/"+(this.state.item.manufacturer?(this.state.item.manufacturer+" "):"")+this.state.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h4 Technische Daten
                     .form-horizontal
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10
-                                input.form-control(type="text" placeholder="Name" value=this.props.item.name onChange=function(e){this.props.item.name = e.target.value; this.update()}.bind(this))
+                                input.form-control(type="text" placeholder="Name" value=this.state.item.name onChange=function(e){this.state.item.name = e.target.value; this.update()}.bind(this))
                         .form-group
                             label.col-lg-2.control-label Kategorie
                             .col-lg-10
                                 .input-group
-                                    select.form-control(onChange=this.onCategoryChanged value=this.props.item.category||"null")
+                                    select.form-control(onChange=this.onCategoryChanged value=this.state.item.category||"null")
                                         option(value="null") Keine
-                                        each category in this.props.categories
+                                        each category in this.state.categories
                                             option(value=category._id)= category.name
                                     span.input-group-btn
                                         button.btn.btn-default(onClick=this.startEditCategories)
@@ -38,84 +38,84 @@ append body
                         .form-group
                             label.col-lg-2.control-label Tags
                             .col-lg-10
-                                Select(value=(this.props.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) asyncOptions=this.findTags onChange=this.onTagsChanged multi=true)
+                                Select(value=(this.state.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) asyncOptions=this.findTags onChange=this.onTagsChanged multi=true)
                         .form-group
                             label.col-lg-2.control-label Hersteller
                             .col-lg-10
-                                input.form-control(type="text" placeholder="Hersteller" value=this.props.item.manufacturer onChange=function(e){this.props.item.manufacturer = e.target.value;this.update();}.bind(this))
+                                input.form-control(type="text" placeholder="Hersteller" value=this.state.item.manufacturer onChange=function(e){this.state.item.manufacturer = e.target.value;this.update();}.bind(this))
                         .form-group
                             label.col-lg-2.control-label Hersteller Artikelnummer
                             .col-lg-10
-                                input.form-control(type="text" placeholder="Hersteller Artikelnummer" value=this.props.item.manufacturerArticlenumber onChange=function(e){this.props.item.manufacturerArticlenumber = e.target.value;this.update();}.bind(this))
+                                input.form-control(type="text" placeholder="Hersteller Artikelnummer" value=this.state.item.manufacturerArticlenumber onChange=function(e){this.state.item.manufacturerArticlenumber = e.target.value;this.update();}.bind(this))
                         .form-group
                             label.col-lg-2.control-label Hersteller EAN Code
                             .col-lg-10
-                                input.form-control(type="text" placeholder="Hersteller EAN Code" value=this.props.item.manufacturerEAN onChange=function(e){this.props.item.manufacturerEAN = e.target.value;this.update();}.bind(this))
+                                input.form-control(type="text" placeholder="Hersteller EAN Code" value=this.state.item.manufacturerEAN onChange=function(e){this.state.item.manufacturerEAN = e.target.value;this.update();}.bind(this))
                         .form-group
                             label.col-lg-2.control-label Technische Beschreibung
                             .col-lg-10
-                                TextArea.form-control(placeholder="Technische Beschreibung" value=this.props.item.technicalDescription onChange=this.onTechnicalDescriptionChanged)
+                                TextArea.form-control(placeholder="Technische Beschreibung" value=this.state.item.technicalDescription onChange=this.onTechnicalDescriptionChanged)
                         .form-group
                             label.col-lg-2.control-label Gewicht
-                            div(className="col-lg-10 "+(!this.props.weightOk?"has-error":""))
+                            div(className="col-lg-10 "+(!this.state.weightOk?"has-error":""))
                                 .input-group
-                                    input.form-control(type="text" placeholder="Gewicht" value=this.props.weight onChange=this.onWeightChange onBlur=this.onWeightBlur)
+                                    input.form-control(type="text" placeholder="Gewicht" value=this.state.weight onChange=this.onWeightChange onBlur=this.onWeightBlur)
                                     span.input-group-addon kg
                         .form-group
                             label.col-lg-2.control-label Grösse
                             .col-lg-10(style="display:flex")
-                                div(className=!this.props.lengthOk?"has-error":"" style="flex:1")
+                                div(className=!this.state.lengthOk?"has-error":"" style="flex:1")
                                     .input-group
-                                        input.form-control(type="text" placeholder="Länge" value=this.props.length onChange=this.onLengthChange onBlur=this.onLengthBlur)
+                                        input.form-control(type="text" placeholder="Länge" value=this.state.length onChange=this.onLengthChange onBlur=this.onLengthBlur)
                                         span.input-group-addon cm
-                                div(className=!this.props.widthOk?"has-error":"" style="flex:1;marginLeft:10px")
+                                div(className=!this.state.widthOk?"has-error":"" style="flex:1;marginLeft:10px")
                                     .input-group
-                                        input.form-control(type="text" placeholder="Breite" value=this.props.width onChange=this.onWidthChange onBlur=this.onWidthBlur)
+                                        input.form-control(type="text" placeholder="Breite" value=this.state.width onChange=this.onWidthChange onBlur=this.onWidthBlur)
                                         span.input-group-addon cm
-                                div(className=!this.props.heightOk?"has-error":"" style="flex:1;marginLeft:10px")
+                                div(className=!this.state.heightOk?"has-error":"" style="flex:1;marginLeft:10px")
                                     .input-group
-                                        input.form-control(type="text" placeholder="Höhe" value=this.props.height onChange=this.onHeightChange onBlur=this.onHeightBlur)
+                                        input.form-control(type="text" placeholder="Höhe" value=this.state.height onChange=this.onHeightChange onBlur=this.onHeightBlur)
                                         span.input-group-addon cm
                         .form-group
                             label.col-lg-2.control-label Mietpreis
-                            div(className="col-lg-10 "+(!this.props.rentOk?"has-error":""))
+                            div(className="col-lg-10 "+(!this.state.rentOk?"has-error":""))
                                 .input-group
                                     span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Mietpreis" value=this.props.rent onChange=this.onRentChange onBlur=this.onRentBlur)
+                                    input.form-control(type="text" placeholder="Mietpreis" value=this.state.rent onChange=this.onRentChange onBlur=this.onRentBlur)
                                     span.input-group-addon /Tag
                         .form-group
                             label.col-lg-2.control-label Neupreis
-                            div(className="col-lg-10 "+(!this.props.factoryPriceOk?"has-error":""))
+                            div(className="col-lg-10 "+(!this.state.factoryPriceOk?"has-error":""))
                                 .input-group
                                     span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Neupreis" value=this.props.factoryPrice onChange=this.onFactoryPriceChange onBlur=this.onFactoryPriceBlur)
+                                    input.form-control(type="text" placeholder="Neupreis" value=this.state.factoryPrice onChange=this.onFactoryPriceChange onBlur=this.onFactoryPriceBlur)
                         .form-group
                             label.col-lg-2.control-label Inhalt
                             .col-lg-10
-                                select.form-control(value=this.props.item.contents?(this.props.item.contents=="*"?"all":"specific"):"none" disabled=(this.props.item.contents instanceof Array && this.props.item.contents.length) onChange=this.onContentsChange)
+                                select.form-control(value=this.state.item.contents?(this.state.item.contents=="*"?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange)
                                     option(value="none") Kein
                                     option(value="specific") Spezifisch
                                     option(value="all") Universal
-                        if this.props.item.contents instanceof Array
+                        if this.state.item.contents instanceof Array
                             .form-group
                                 .col-lg-10.col-lg-offset-2
-                                    Select(value=this.props.item.contents.map(function(type){return {value:type._id,label:type.name}}) asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged multi=true)
+                                    Select(value=this.state.item.contents.map(function(type){return {value:type._id,label:type.name}}) asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged multi=true)
             br
             br
             .row
                 .col-xs-12
                     h3
-                        = "Bestand: "+this.props.stock
+                        = "Bestand: "+this.state.stock
                         .btn-toolbar.pull-right
-                            if this.props.stock
-                                if !this.props.item.hasItems
+                            if this.state.stock
+                                if !this.state.item.hasItems
                                     button.btn.btn-danger(onClick=this.decrease) Entfernen
-                                button.btn.btn-primary(onClick=this.props.items.length?this.createItem:this.increase) Hinzufügen
+                                button.btn.btn-primary(onClick=this.state.items.length?this.createItem:this.increase) Hinzufügen
                             else
                                 DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick)
                                     MenuItem(eventKey="1") Menge
                                     MenuItem(eventKey="2") Einzelobjekt
-                    if this.props.items.length
+                    if this.state.items.length
                         table.table.table-striped.table-hover
                             thead
                                 tr
@@ -123,10 +123,10 @@ append body
                                     th Letzte Wartung
                                     th
                             tbody
-                                each item in this.props.items
+                                each item in this.state.items
                                     - (function(item){
                                     tr
-                                        td(onClick=this.editItem(item))= this.props.item.name+" "+item.id
+                                        td(onClick=this.editItem(item))= this.state.item.name+" "+item.id
                                         td(onClick=this.editItem(item)) 12.12.2012
                                         td
                                             button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem(item))
@@ -142,7 +142,7 @@ append body
                                 th Anzahl
                                 th Rückkehr
                         tbody
-                            each project in this.props.item.locations
+                            each project in this.state.item.locations
                                 tr
                                     td= project.name
                                     td= project.count
@@ -158,7 +158,7 @@ append body
                                 th Ausgang
                                 th Rückkehr
                         tbody
-                            each project in this.props.item.reservations
+                            each project in this.state.item.reservations
                                 tr
                                     td= project.name
                                     td= project.count
@@ -175,7 +175,7 @@ append body
                                 th Erhalt
                                 th Rückgabe
                         tbody
-                            each rental in this.props.item.rentals
+                            each rental in this.state.item.rentals
                                 tr
                                     td= rental.name
                                     td= rental.count
@@ -184,7 +184,7 @@ append body
             .row
                 .col-xs-12
                     h3
-                        = "Graph "+moment(this.props.start).format("MMMM YYYY")
+                        = "Graph "+moment(this.state.start).format("MMMM YYYY")
                         .btn-toolbar.pull-right
                             .btn.btn-default(onClick=this.graphBackward)
                                 .glyphicon.glyphicon-chevron-left
@@ -193,7 +193,7 @@ append body
                     .graph(style="width:100%;height:300px;position:relative")
                         - var yAxisWidth = 50;
                         - var xAxisHeight = 50;
-                        - var cap = this.cap([this.props.graph.supply,this.props.graph.ownsupply,this.props.graph.demand])
+                        - var cap = this.cap([this.state.graph.supply,this.state.graph.ownsupply,this.state.graph.demand])
                         - var days = this.days();
                         .y-axis(style="position:absolute;bottom:"+xAxisHeight+"px;width:"+yAxisWidth+"px;top:0px;left:0px;borderRight:1px solid black")
                             each step in this.steps(cap)
@@ -204,31 +204,31 @@ append body
                         .data(style="position:absolute;top:0px;right:0px;left:"+yAxisWidth+";bottom:"+xAxisHeight+"px")
                             svg(style="width:100%;height:100%")
                                 svg(viewBox="0 0 100 100" preserveAspectRatio="none")
-                                    path(style="fill: #ffc540;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.props.graph.supply,true))
-                                    path(style="fill: #6B8E00;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.props.graph.ownsupply,true))
+                                    path(style="fill: #ffc540;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.supply,true))
+                                    path(style="fill: #6B8E00;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.ownsupply,true))
                                     each step in this.steps(cap)
                                         path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M0,"+(100-step/cap.range*100)+" L100,"+(100-step/cap.range*100))
                                     each day,i in days
                                         path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M"+(i/days.length*100)+",0L"+(i/days.length*100)+",100")
-                                    path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.props.graph.demand))
-    if this.props.increase
+                                    path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.demand))
+    if this.state.increase
         .modal(style="display:block").fade.in
             .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
-                        h2= "Bestand "+(this.props.increase.type=="add"?"erhöhen":"verringern")
+                        h2= "Bestand "+(this.state.increase.type=="add"?"erhöhen":"verringern")
                     .modal-body
                         .form-horizontal
                             .form-group
                                 label.col-lg-2.control-label Menge
-                                div(className="col-lg-10 "+(!this.props.increase.countOk?"has-error":""))
+                                div(className="col-lg-10 "+(!this.state.increase.countOk?"has-error":""))
                                     .input-group
-                                        input.form-control(type="text" placeholder="Menge" value=this.props.increase.count onChange=function(e){this.props.increase.count=e.target.value;this.update()}.bind(this))
+                                        input.form-control(type="text" placeholder="Menge" value=this.state.increase.count onChange=function(e){this.state.increase.count=e.target.value;this.update()}.bind(this))
                                         span.input-group-addon Stk.
                     .modal-footer
                         button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
-                        button.btn.btn-primary(onClick=this.confirmIncrease)= this.props.increase.type=="add"?"Hinzufügen":"Entfernen"
+                        button.btn.btn-primary(onClick=this.confirmIncrease)= this.state.increase.type=="add"?"Hinzufügen":"Entfernen"
 script.
     var client = require("../client.js");
     var DropdownButton = require("react-bootstrap/DropdownButton");
@@ -251,7 +251,9 @@ script.
     }
     
     exports.componentDidMount = function(){
-        if(!this.props.item) this.loadEquipmentType();
+        this.state.start = moment().startOf("month").toDate().getTime();
+        this.state.end = moment().endOf("month").toDate().getTime();
+        if(!this.state.item) this.loadEquipmentType();
         this.loadStock();
         this.loadItems();
         this.loadCategories();
@@ -260,19 +262,19 @@ script.
     
     exports.loadEquipmentType = function(){
         client.getEquipmentType(this.props.params.type,function(err,item){
-            this.props.item = item;
-            this.props.weight = (item.weight||"")+"";
-            this.props.weightOk = true;
-            this.props.length = (item.length||"")+"";
-            this.props.lengthOk = true;
-            this.props.width = (item.width||"")+"";
-            this.props.widthOk = true;
-            this.props.height = (item.height||"")+"";
-            this.props.heightOk = true;
-            this.props.rent = (item.rent||"")+"";
-            this.props.rentOk = true;
-            this.props.factoryPrice = (item.factoryPrice||"")+"";
-            this.props.factoryPriceOk = true;
+            this.state.item = item;
+            this.state.weight = (item.weight||"")+"";
+            this.state.weightOk = true;
+            this.state.length = (item.length||"")+"";
+            this.state.lengthOk = true;
+            this.state.width = (item.width||"")+"";
+            this.state.widthOk = true;
+            this.state.height = (item.height||"")+"";
+            this.state.heightOk = true;
+            this.state.rent = (item.rent||"")+"";
+            this.state.rentOk = true;
+            this.state.factoryPrice = (item.factoryPrice||"")+"";
+            this.state.factoryPriceOk = true;
             this.update();
         }.bind(this));
     }
@@ -280,7 +282,7 @@ script.
     exports.loadItems = function(){
         client.getEquipmentTypeItems(this.props.params.type,function(err,items){
             if(err) return;
-            this.props.items = items;
+            this.state.items = items;
             this.update();
         }.bind(this));
     }
@@ -288,7 +290,7 @@ script.
     exports.loadStock = function(){
         client.getEquipmentTypeStock(this.props.params.type,false,function(err,stock){
             if(err) return;
-            this.props.stock = stock;
+            this.state.stock = stock;
             this.update();
         }.bind(this));
     }
@@ -296,30 +298,24 @@ script.
     exports.loadCategories = function(){
         client.getEquipmentCategories(function(err,categories){
             if(err) categories = [];
-            this.props.categories = categories;
+            this.state.categories = categories;
             this.update();
         }.bind(this));
     }
     
     exports.loadGraph = function(){
         client.getEquipmentTypeGraph(this.props.params.type,0,0,function(err,graph){
-            this.props.graph = graph;
+            this.state.graph = graph;
             this.update();
         }.bind(this))
     }
     
-    exports.getInitialState = function(){
-        this.props.start = moment().startOf("month").toDate().getTime();
-        this.props.end = moment().endOf("month").toDate().getTime();
-        return {};
-    }
-    
     exports.getImagePath = function(){
-        return this.props.item.image?this.props.item.image.url:"/api/equipment/"+this.props.item._id+"/image";
+        return this.state.item.image?this.state.item.image.url:"/api/equipment/"+this.state.item._id+"/image";
     }
     
     exports.onImageChanged = function(image){
-        this.props.item.image = image;
+        this.state.item.image = image;
         this.update();
     }
     
@@ -330,90 +326,90 @@ script.
 
     exports.onCategoryChanged = function(e){
         if(e.target.value=="null"){
-            delete this.props.item.category;
+            delete this.state.item.category;
         }else{
-            this.props.item.category = e.target.value;
+            this.state.item.category = e.target.value;
         }
         this.update();
     }
     
     exports.onTechnicalDescriptionChanged = function(e){
-        this.props.item.technicalDescription = e.target.value;
+        this.state.item.technicalDescription = e.target.value;
         this.update();
     }
     
     exports.onLengthChange = function(e){
-        this.props.length = e.target.value;
+        this.state.length = e.target.value;
         this.update();
     }
     exports.onWidthChange = function(e){
-        this.props.width = e.target.value;
+        this.state.width = e.target.value;
         this.update();
     }
     exports.onHeightChange = function(e){
-        this.props.height = e.target.value;
+        this.state.height = e.target.value;
         this.update();
     }
     exports.onWeightChange = function(e){
-        this.props.weight = e.target.value;
+        this.state.weight = e.target.value;
         this.update();
     }
     exports.onRentChange = function(e){
-        this.props.rent = e.target.value;
+        this.state.rent = e.target.value;
         this.update();
     }
     exports.onFactoryPriceChange = function(e){
-        this.props.factoryPrice = e.target.value;
+        this.state.factoryPrice = e.target.value;
         this.update();
     }
     exports.onLengthBlur = function(){
-        if(!isInt(this.props.length)){
-            this.props.lengthOk = false;
+        if(!isInt(this.state.length)){
+            this.state.lengthOk = false;
         }else{
-            this.props.lengthOk = true;
-            this.props.item.length = parseInt(this.props.length,10);
+            this.state.lengthOk = true;
+            this.state.item.length = parseInt(this.state.length,10);
         }
         this.update();
     }
     exports.onWidthBlur = function(){
-        if(!isInt(this.props.width)){
-            this.props.widthOk = false;
+        if(!isInt(this.state.width)){
+            this.state.widthOk = false;
         }else{
-            this.props.widthOk = true;
-            this.props.item.width = parseInt(this.props.width,10);
+            this.state.widthOk = true;
+            this.state.item.width = parseInt(this.state.width,10);
         }
         this.update();
     }
     exports.onHeightBlur = function(){
-        if(!isInt(this.props.height)){
-            this.props.heightOk = false;
+        if(!isInt(this.state.height)){
+            this.state.heightOk = false;
         }else{
-            this.props.heightOk = true;
-            this.props.item.height = parseInt(this.props.height,10);
+            this.state.heightOk = true;
+            this.state.item.height = parseInt(this.state.height,10);
         }
         this.update();
     }
     exports.onWeightBlur = function(){
-        if(!isFloat(this.props.weight)){
-            this.props.weightOk = false;
+        if(!isFloat(this.state.weight)){
+            this.state.weightOk = false;
         }else{
-            this.props.weightOk = true;
-            this.props.item.weight = parseFloat(this.props.weight);
+            this.state.weightOk = true;
+            this.state.item.weight = parseFloat(this.state.weight);
         }
         this.update();
     }
     exports.onRentBlur = function(){
-        if(!isFloat(this.props.rent)){
-            this.props.rentOk = false;
+        if(!isFloat(this.state.rent)){
+            this.state.rentOk = false;
         }else{
-            this.props.rentOk = true;
-            this.props.item.rent = parseFloat(this.props.rent);
+            this.state.rentOk = true;
+            this.state.item.rent = parseFloat(this.state.rent);
         }
         this.update();
     }
     exports.onFactoryPriceBlur = function(){
-        if(this.props.factoryPriceOk = isFloat(this.props.factoryPrice)){
-            this.props.item.factoryPrice = parseFloat(this.props.factoryPrice);
+        if(this.state.factoryPriceOk = isFloat(this.state.factoryPrice)){
+            this.state.item.factoryPrice = parseFloat(this.state.factoryPrice);
         }
         this.update();
     }
@@ -430,54 +426,54 @@ script.
     }
 
     exports.increase = function(){
-        this.props.increase = {type:"add",count:"",countOk:true}
+        this.state.increase = {type:"add",count:"",countOk:true}
         this.update();
     }
     exports.decrease = function(){
-        this.props.increase = {type:"remove",count:"",countOk:true}
+        this.state.increase = {type:"remove",count:"",countOk:true}
         this.update();
     }
 
     exports.cancelIncrease = function(){
-        delete this.props.increase;
+        delete this.state.increase;
         this.update();
     }
 
     exports.confirmIncrease = function(){
         var self = this;
-        if(/^[0-9]+$/.test(this.props.increase.count) && (this.props.increase.type=="add" || parseInt(this.props.increase.count,10) <= this.props.stock)){
-            client.increaseEquipmentCount(this.props.item._id,{type:this.props.increase.type,count:parseInt(this.props.increase.count,10)},function(err){
-                delete self.props.increase;
+        if(/^[0-9]+$/.test(this.state.increase.count) && (this.state.increase.type=="add" || parseInt(this.state.increase.count,10) <= this.state.stock)){
+            client.increaseEquipmentCount(this.state.item._id,{type:this.state.increase.type,count:parseInt(this.state.increase.count,10)},function(err){
+                delete self.state.increase;
                 self.loadStock();
             });
         }else{
-            this.props.increase.countOk = false;
+            this.state.increase.countOk = false;
             this.update();
         }
     }
 
     exports.createItem = function(){
         var self = this;
-        client.createEquipment(this.props.item._id,{},function(err,id){
+        client.createEquipment(this.state.item._id,{},function(err,id){
             if(err) return;
-            visit("/equipment/"+self.props.item._id+"/"+id);
+            visit("/equipment/"+self.state.item._id+"/"+id);
         });
     }
 
     exports.editItem = function(equipment){
         var self = this;
         return function(){
-            visit("/equipment/"+self.props.item._id+"/"+equipment.id);
+            visit("/equipment/"+self.state.item._id+"/"+equipment.id);
         }
     }
 
     exports.deleteItem = function(item){
         var self = this;
         return function(){
-            client.deleteEquipment(self.props.item._id,item.id,function(err){
+            client.deleteEquipment(self.state.item._id,item.id,function(err){
                 if(err) return;
-                for(var i = 0; i < self.props.items.length; i++){
-                    if(self.props.items[i].id == item.id){
+                for(var i = 0; i < self.state.items.length; i++){
+                    if(self.state.items[i].id == item.id){
                         self.loadStock();
                         self.loadItems();
                         break;
@@ -488,7 +484,7 @@ script.
     }
     
     exports.addContents = function(){
-        this.props.addcontents = {type:null};
+        this.state.addcontents = {type:null};
         this.update();
     }
     
@@ -499,7 +495,7 @@ script.
     }
     
     exports.onEquipmenttypeChanged = function(id,selection){
-        this.props.item.contents = selection.map(function(sel){return {_id:sel.value,name:sel.label}});
+        this.state.item.contents = selection.map(function(sel){return {_id:sel.value,name:sel.label}});
         this.update();
     }
     
@@ -512,7 +508,7 @@ script.
     }
     
     exports.onTagsChanged = function(id,tags){
-        this.props.item.tags = tags.map(function(tag){
+        this.state.item.tags = tags.map(function(tag){
             return tag.value
         });
         this.update();
@@ -521,13 +517,13 @@ script.
     exports.onContentsChange = function(e){
         switch(e.target.value){
             case "none":
-                this.props.item.contents = null;
+                this.state.item.contents = null;
                 break;
             case "specific":
-                this.props.item.contents = [];
+                this.state.item.contents = [];
                 break;
             case "all":
-                this.props.item.contents = "*";
+                this.state.item.contents = "*";
                 break;
         }
         this.update();
@@ -539,15 +535,15 @@ script.
         var start = 0;
         var before = 0;
         var end = 0;
-        var week = this.props.end-this.props.start;
+        var week = this.state.end-this.state.start;
         
         for(var time in timeline){
             time = parseInt(time,10);
-            if(time < this.props.start){
+            if(time < this.state.start){
                 before = start = end = timeline[time];
-            }else if(time <= this.props.end){
+            }else if(time <= this.state.end){
                 end = timeline[time];
-                path += 100*(time-this.props.start)/week+","+(100-before/cap.range*100)+" "+100*(time-this.props.start)/week+","+(100-end/cap.range*100)+" ";
+                path += 100*(time-this.state.start)/week+","+(100-before/cap.range*100)+" "+100*(time-this.state.start)/week+","+(100-end/cap.range*100)+" ";
                 before = end;
             }
         }        
@@ -574,7 +570,7 @@ script.
     exports.days = function(){
         var day = 1000*60*60*24;
         var days = [];
-        for(var i = this.props.start; i <= this.props.end; i+=day){
+        for(var i = this.state.start; i <= this.state.end; i+=day){
             days.push(new Date(i).getDate());
         }
         return days;
@@ -602,13 +598,13 @@ script.
     }
     
     exports.graphForward = function(){
-        this.props.start = this.props.end+1;
-        this.props.end = moment(this.props.start).endOf("month").toDate().getTime();
+        this.state.start = this.state.end+1;
+        this.state.end = moment(this.state.start).endOf("month").toDate().getTime();
         this.update();
     }
     exports.graphBackward = function(){
-        this.props.end = this.props.start-1;
-        this.props.start = moment(this.props.end).startOf("month").toDate().getTime();
+        this.state.end = this.state.start-1;
+        this.state.start = moment(this.state.end).startOf("month").toDate().getTime();
         this.update();
     }
     
@@ -619,22 +615,22 @@ script.
     }
 
     exports.save = function(){
-        client.saveEquipmentType(this.props.item._id,{
-            name:this.props.item.name,
-            category:this.props.item.category,
-            tags:this.props.item.tags,
-            manufacturer:this.props.item.manufacturer,
-            manufacturerArticlenumber:this.props.item.manufacturerArticlenumber,
-            manufacturerEAN:this.props.item.manufacturerEAN,
-            technicalDescription:this.props.item.technicalDescription,
-            weight:this.props.item.weight,
-            length:this.props.item.length,
-            width:this.props.item.width,
-            height:this.props.item.height,
-            rent:this.props.item.rent,
-            factoryPrice:this.props.item.factoryPrice,
-            image:this.props.item.image?this.props.item.image.url:undefined,
-            contents:this.props.item.contents?(this.props.item.contents instanceof Array?this.props.item.contents.map(function(type){return type._id}):"*"):null
+        client.saveEquipmentType(this.state.item._id,{
+            name:this.state.item.name,
+            category:this.state.item.category,
+            tags:this.state.item.tags,
+            manufacturer:this.state.item.manufacturer,
+            manufacturerArticlenumber:this.state.item.manufacturerArticlenumber,
+            manufacturerEAN:this.state.item.manufacturerEAN,
+            technicalDescription:this.state.item.technicalDescription,
+            weight:this.state.item.weight,
+            length:this.state.item.length,
+            width:this.state.item.width,
+            height:this.state.item.height,
+            rent:this.state.item.rent,
+            factoryPrice:this.state.item.factoryPrice,
+            image:this.state.item.image?this.state.item.image.url:undefined,
+            contents:this.state.item.contents?(this.state.item.contents instanceof Array?this.state.item.contents.map(function(type){return type._id}):"*"):null
         },function(err){
             if(err) return true;
             back(true);
