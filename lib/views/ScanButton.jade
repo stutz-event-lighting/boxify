@@ -55,7 +55,6 @@ script.
     }
     
     exports.findTypes = function(input,cb){
-        console.log("searching ",input);
         client.findEquipmentTypes({search:input},function(err,types){
             cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
         });
