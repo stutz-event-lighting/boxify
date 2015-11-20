@@ -81,9 +81,9 @@ append body
                     .col-xs-12
                         .pull-left
                             h3 Inhalt
-                        .btn-toolbar.pull-right(style="margin-top:18px")
+                        .btn-toolbar.pull-right(style="marginTop:18px")
                             ScanButton.pull-left(onScan=this.handleScan supplier="own")
-                            .btn-group.pull-left(style="margin-left:10px")
+                            .btn-group.pull-left(style="marginLeft:10px")
                                 div(className="btn "+(this.state.remove?"btn-primary":"btn-default") onClick=this.toggleMode)
                                     i.glyphicon.glyphicon-minus
                                 div(className="btn "+(this.state.remove?"btn-default":"btn-primary") onClick=this.toggleMode)

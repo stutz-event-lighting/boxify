@@ -10,7 +10,7 @@ div(style="display:inline-block" className=this.props.className)
                     .form-group
                         label.col-lg-2.control-label Typ
                         .col-lg-10
-                            Select(ref="typefield" value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
+                            Select(ref="typefield" searchable value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
                     if this.state.type
                         .form-group
                             if this.state.type.stock.length && this.props.supplier == "own"
@@ -55,6 +55,7 @@ script.
     }
     
     exports.findTypes = function(input,cb){
+        console.log("searching ",input);
         client.findEquipmentTypes({search:input},function(err,types){
             cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
         });
