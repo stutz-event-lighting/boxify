@@ -176,7 +176,7 @@ script.
                 return;
             }
             if(code.item){
-                var index = (this.state.item.contents[code.type].newids||[]).indexOf(code.item);
+                var index = (this.state.item.contents[code.type].newids||[]).indexOf(code.item+"");
                 if(index < 0){
                     this.playErrorSound();
                     return;
@@ -227,7 +227,7 @@ script.
             this.state.item.contents[code.type].newcount = (this.state.item.contents[code.type].newcount||0)+code.count;
             if(code.item){
                 if(!this.state.item.contents[code.type].newids) this.state.item.contents[code.type].newids = [];
-                this.state.item.contents[code.type].newids.push(code.item);
+                this.state.item.contents[code.type].newids.push(code.item+"");
             }
             this.update();
         };    
