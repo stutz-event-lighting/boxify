@@ -1,6 +1,6 @@
 @import url(./bootstrap/css/bootstrap.min.css);
 @import url(./react-select/react-select.css);
-@import url(./react-widgets/react-widgets.css);
+@import url(./react-widgets/css/react-widgets.css);
 
 .navbar{
     height:60px;
