@@ -37,8 +37,8 @@ append body
                                 button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                     i.glyphicon.glyphicon-trash
     if this.state.create
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
@@ -53,8 +53,8 @@ append body
                         button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
     if this.state.delete
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header

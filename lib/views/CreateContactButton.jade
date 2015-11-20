@@ -4,8 +4,8 @@
         MenuItem(eventKey="1") Von neuem Kontakt
         
     if this.state.new
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header

@@ -212,8 +212,8 @@ append body
                                         path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M"+(i/days.length*100)+",0L"+(i/days.length*100)+",100")
                                     path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.demand))
     if this.state.increase
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header

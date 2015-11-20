@@ -38,8 +38,8 @@ append body
                             button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
                                 i.glyphicon.glyphicon-trash
     if this.state.create
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header

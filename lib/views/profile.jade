@@ -9,8 +9,8 @@ append container
                 .btn.btn-default(onClick=this.changePassword) Passwort ändern
                 .btn.btn-default(onClick=this.changePin) PIN ändern
     if this.props.changepassword
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
@@ -29,8 +29,8 @@ append container
                         button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
                         button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
     if this.props.changepin
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header

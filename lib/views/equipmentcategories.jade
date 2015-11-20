@@ -25,8 +25,8 @@ append body
                                 button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(category))
                                     i.glyphicon.glyphicon-trash
     if this.state.category
+        .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
-            .modal-backdrop(style="bottom:0px;display:block").fade.in
             .modal-dialog
                 .modal-content
                     .modal-header
