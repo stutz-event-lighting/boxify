@@ -24,7 +24,7 @@ append body
             tbody
                 - var over;
                 each item in this.state.items
-                    - var isOver = item.end < new Date()
+                    - var isOver = item.start < new Date()
                     if over!==undefined && over != isOver
                         tr
                             td(style="backgroundColor:white;height:70px" colSpan=4)
