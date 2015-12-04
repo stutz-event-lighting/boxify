@@ -1,7 +1,6 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
     if this.state.item
         .container
             h2 Projekt
@@ -80,15 +79,16 @@ append body
                                 th Objekte
                         tbody
                             each io in this.state.io
-                                tr(onClick=io.type=="checkout"?this.editCheckout(io):this.editCheckin(io))
+                                tr(onClick=this.editIo(io) className=io.draft?"warning":"")
                                     td
                                         div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
-                                    td= moment(io.time).format("LLL")
-                                    td= this.state.users[io.user].firstname+" "+this.state.users[io.user].lastname
+                                    td= !io.draft?moment(io.time).format("LLL"):"Entwurf"
+                                    td= io.user?(this.state.users[io.user].firstname+" "+this.state.users[io.user].lastname):""
                                     td
                                         = io.count+" / "+io.total
-                                        button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteCheckout(io):this.deleteCheckin(io)))
-                                            i.glyphicon.glyphicon-trash
+                                        if io.draft
+                                            button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteIo(io):this.deleteIo(io)))
+                                                i.glyphicon.glyphicon-trash
                     if Object.keys(this.state.item.balance).length
                         .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles Material vom Kunden zurückgekommen!
             .row
@@ -103,26 +103,27 @@ script.
     var client = require("../client.js");
     var moment = require("moment");
     var TextArea = require("react-textarea-autosize");
-    var ConfirmDialog = require("./ConfirmDialog.jade");
+    var ConfirmDialog = React.createFactory(require("./ConfirmDialog.jade"));
     var DatePicker = require("react-widgets").DateTimePicker;
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
     }
     
-    exports.checkData = function(){
-        var self = this;
-        if(this.state.item === undefined){
-            client.getProject(this.props.params.id,function(err,data){
-                if(err) return;
-                self.state.item = data.project;
-                self.state.reservations = data.reservations;
-                self.state.needsRental = data.needsRental;
-                self.state.io = data.io;
-                self.state.users = data.users;
-                self.update();
-            });
-        }
+    exports.componentDidMount = function(){
+        this.loadData();
+    }
+    
+    exports.loadData = function(){
+        client.getProject(this.props.params.id,function(err,data){
+            if(err) return;
+            if(!this.state.item) this.state.item = data.project;
+            this.state.reservations = data.reservations;
+            this.state.needsRental = data.needsRental;
+            this.state.io = data.io;
+            this.state.users = data.users;
+            this.update();
+        }.bind(this));
     }
 
     exports.onNameChange = function(e){
@@ -163,10 +164,11 @@ script.
     }
 
     exports.checkoutReservation = function(reservation){
-        var self = this;
         return function(){
-            visit("/projects/"+self.props.params.id+"/checkouts/new",{reservation:reservation._id});
-        }
+            client.createEquipmentIo({type:"checkout",project:this.props.params.id,reservation:reservation._id},function(err,id){
+                visit("/projects/"+this.props.params.id+"/checkouts/"+id);
+            }.bind(this));            
+        }.bind(this)
     }
 
     exports.deleteReservation = function(reservation){
@@ -177,8 +179,7 @@ script.
     
     exports.confirmDeleteReservation = function(reservation){
         client.deleteReservation(this.props.params.id,reservation,function(){
-            delete this.state.item;
-            this.update();
+            this.loadData();
         }.bind(this));
     }
     
@@ -187,52 +188,36 @@ script.
     }
     
     exports.createCheckout = function(){
-        visit("/projects/"+this.props.params.id+"/checkouts/new");
-    }
-    
-    exports.editCheckout = function(io){
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/projects/"+this.props.params.id+"/checkouts/"+io._id)
-        }.bind(this);
-    }
-    
-    exports.deleteCheckout = function(checkout){
-        return function(){
-            this.confirm("Warenausgang löschen","Löschen", "diesen Warenausgang löschen möchten", "confirmDeleteCheckout",checkout._id );
-        }.bind(this);
-    }
-    
-    exports.confirmDeleteCheckout = function(checkout){    
-        client.deleteCheckout(this.props.params.id,checkout,function(){
-            delete this.state.item;
-            this.update();
+        client.createEquipmentIo({type:"checkout",project:this.props.params.id},function(err,id){
+            visit("/projects/"+this.props.params.id+"/checkouts/"+id);
         }.bind(this));
     }
     
     exports.createCheckin = function(){
-        visit("/projects/"+this.props.params.id+"/checkins/new");
+        client.createEquipmentIo({type:"checkin",project:this.props.params.id},function(err,id){
+            visit("/projects/"+this.props.params.id+"/checkins/"+id);
+        }.bind(this))
     }
     
-    exports.editCheckin = function(checkin){
+    exports.editIo = function(io){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/projects/"+this.props.params.id+"/checkins/"+checkin._id)
+            visit("/projects/"+this.props.params.id+"/"+io.type+"s/"+io._id)
         }.bind(this);
     }
     
-    exports.deleteCheckin = function(checkin){
+    exports.deleteIo = function(io){
         return function(){
-            this.confirm("Wareneingang löschen","Löschen","diesen Wareneingang löschen wollen","confirmDeleteCheckin",checkin._id);
+            this.confirm("Entwurf löschen","Löschen", "diesen Entwurf löschen möchten", "confirmDeleteIo",io._id );
         }.bind(this);
     }
-    exports.confirmDeleteCheckin = function(checkin){
-        client.deleteCheckin(this.props.params.id,checkin,function(){
-            delete this.state.item;
-            this.update();
+    
+    exports.confirmDeleteIo = function(io){    
+        client.deleteEquipmentIo(io,function(){
+            this.loadData();
         }.bind(this));
     }
-    
+      
     exports.finish = function(){
         client.finishProject(this.state.item._id,function(err){
             if(err) return;

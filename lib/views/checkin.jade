@@ -1,7 +1,6 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
     if this.state.data
         .container
             h2 Wareneingang
@@ -9,9 +8,9 @@ append body
                     button.btn.btn-default(onClick=this.cancel)
                         i.glyphicon.glyphicon-chevron-left
                         |  Abbrechen
-                    button.btn.btn-primary(onClick=this.save)
+                    button.btn.btn-primary(onClick=this.finish)
                         i.glyphicon.glyphicon-ok
-                        |  Speichern
+                        |  Abschliessen
             .row
                 .col-xs-12.col-md-8
                     h3.pull-left Equipment
@@ -43,13 +42,14 @@ append body
                 .col-md-4
                     .pull-left
                         h3 Verlauf
-                    .btn-toolbar.pull-right(style="marginTop:18px")
-                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
-                            each supplier in this.state.allsuppliers
-                                MenuItem(eventKey=supplier)
-                                    img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                        ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.state.supplier||"own")
-                        QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
+                    if this.state.data.draft
+                        .btn-toolbar.pull-right(style="marginTop:18px")
+                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
+                                each supplier in this.state.allsuppliers
+                                    MenuItem(eventKey=supplier)
+                                        img(src="/api/contacts/"+supplier+"/image" style="height:20px")
+                            ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.state.supplier||"own")
+                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
                     table.table.table-striped.table-hover
                         thead
                             th
@@ -63,8 +63,9 @@ append body
                                     td
                                         +renderLogEntry(entry,0)
                                     td
-                                        .btn.btn-xs.btn-default(onClick=this.remove(i))
-                                            .glyphicon.glyphicon-trash
+                                        if this.state.data.draft
+                                            .btn.btn-xs.btn-default(onClick=this.remove(i))
+                                                .glyphicon.glyphicon-trash
     - this.scanreceiver = null;
     if this.state.entry
         Modal
@@ -125,20 +126,21 @@ script.
         return state;
     }
     
-    exports.checkData = function(){
-        var self = this;
-        if(this.state.data === undefined){
-            client.getCheckin(this.props.params.project,this.props.params.checkin,function(err,data){
-                if(err) return;
-                self.state.data = data;
-                var suppliers = {};
-                for(var type in self.state.data.types){
-                    for(var supplier in self.state.data.types[type].suppliers) suppliers[supplier] = true;
-                }
-                self.state.suppliers = self.state.allsuppliers = Object.keys(suppliers);
-                self.update();
-            });
-        }
+    exports.componentDidMount = function(){
+        if(!this.state.data) this.loadData();
+    }
+    
+    exports.loadData = function(){
+        client.getCheckin(this.props.params.checkin,function(err,data){
+            if(err) return;
+            this.state.data = data;
+            var suppliers = {};
+            for(var type in this.state.data.types){
+                for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
+            }
+            this.state.suppliers = this.state.allsuppliers = Object.keys(suppliers);
+            this.update();
+        }.bind(this));
     }
     
     exports.onUnbookedChanged = function(e){
@@ -177,6 +179,7 @@ script.
     }
     
     exports.handleScan = function(code){
+        if(!this.state.data.draft) return;
         if(code.kind == "EQ" && this.state.data.types[code.type]){
             if(!code.supplier) code.supplier = this.state.supplier;
             var entry = {
@@ -333,6 +336,7 @@ script.
             this.playErrorSound();
         }
         this.update();
+        this.save();
     }
     
     exports.remove = function(index){
@@ -355,7 +359,8 @@ script.
                 this.state.data.types[type].count -= total[type].count;
                 if(!this.state.data.types[type].count) delete this.state.data.types[type].count
             }
-            this.update();            
+            this.update();
+            this.save();           
         }.bind(this);
     }
     
@@ -374,8 +379,6 @@ script.
             client.saveEquipment(entry.type,item,{contents:contents},function(){})
         }
     }
-    
-    
     
     exports.playErrorSound = function(){
         new Audio("/public/audio/error.wav").play();
@@ -403,8 +406,14 @@ script.
             }
         }
     
-        client.updateCheckin(this.props.params.project,this.props.params.checkin,{items:data,history:this.state.data.history},function(err){
+        client.updateEquipmentIo(this.props.params.checkin,{items:data,history:this.state.data.history},function(err){
             if(err) return true;
-            back(true);
+        });
+    }
+    
+    exports.finish = function(){
+        client.finishEquipmentIo(this.props.params.checkin,function(err){
+            if(err) return true;
+            history.back();
         });
     }

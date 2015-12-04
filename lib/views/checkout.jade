@@ -1,7 +1,6 @@
 extends ./base.jade
 
 append body
-    - this.checkData();
     if this.state.data
         .container
             h2 Warenausgang
@@ -9,9 +8,9 @@ append body
                     button.btn.btn-default(onClick=this.cancel)
                         i.glyphicon.glyphicon-chevron-left
                         |  Abbrechen
-                    button.btn.btn-primary(onClick=this.save)
+                    button.btn.btn-primary(onClick=this.finish)
                         i.glyphicon.glyphicon-ok
-                        |  Speichern
+                        |  Abschliessen
             .row
                 .col-xs-12.col-md-8
                     h3 Equipment
@@ -42,13 +41,14 @@ append body
                 .col-md-4
                     .pull-left
                         h3 Verlauf
-                    .btn-toolbar.pull-right(style="marginTop:18px")
-                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
-                            each supplier in this.state.allsuppliers
-                                MenuItem(eventKey=supplier)
-                                    img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                        ScanButton.pull-left(onScan=this.handleScan supplier=this.state.supplier ref="scanbutton")
-                        QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
+                    if this.state.data.draft
+                        .btn-toolbar.pull-right(style="marginTop:18px")
+                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
+                                each supplier in this.state.allsuppliers
+                                    MenuItem(eventKey=supplier)
+                                        img(src="/api/contacts/"+supplier+"/image" style="height:20px")
+                            ScanButton.pull-left(onScan=this.handleScan supplier=this.state.supplier ref="scanbutton")
+                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
                     table.table.table-striped.table-hover
                         thead
                             th
@@ -62,7 +62,8 @@ append body
                                     td
                                         +renderLogEntry(entry,0)
                                     td
-                                        .btn.btn-xs.btn-default(onClick=this.remove(i))
+                                        if this.state.data.draft
+                                            .btn.btn-xs.btn-default(onClick=this.remove(i))
                                             .glyphicon.glyphicon-trash
 mixin renderLogEntry(entry,level)
     if entry.items
@@ -92,32 +93,31 @@ script.
         return ["projects_read"];
     }
     
-    exports.checkData = function(){
-        var self = this;
-        if(this.state.data === undefined){
-            var opts = {};
-            if(this.state.reservation) opts.reservation = this.state.reservation;
-            client.getCheckout(this.props.params.project,this.props.params.checkout,opts,function(err,data){
-                if(err) return;
-                self.state.data = data;
-                self.calculateSuppliers();
-                var suppliers = {};
-                for(var type in self.state.data.types){
-                    for(var supplier in self.state.data.types[type].suppliers) suppliers[supplier] = true;
-                }
-                self.state.allsuppliers = Object.keys(suppliers);
-                self.state.supplier = "own";
-                data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-                for(var type in data.types){
-                    type = parseInt(type,10);
-                    var category = data.categories[data.types[type].category];
-                    if(!category.types) category.types = [];
-                    category.types.push(type);
-                }
+    exports.componentDidMount = function(){
+        if(!this.state.data) this.loadData();
+    }
+    
+    exports.loadData = function(){
+        client.getCheckout(this.props.params.checkout,function(err,data){
+            if(err) return;
+            this.state.data = data;
+            this.calculateSuppliers();
+            var suppliers = {};
+            for(var type in this.state.data.types){
+                for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
+            }
+            this.state.allsuppliers = Object.keys(suppliers);
+            this.state.supplier = "own";
+            data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+            for(var type in data.types){
+                type = parseInt(type,10);
+                var category = data.categories[data.types[type].category];
+                if(!category.types) category.types = [];
+                category.types.push(type);
+            }
 
-                self.update();
-            });
-        }
+            this.update();
+        }.bind(this));
     }
     
     exports.calculateSuppliers = function(){
@@ -146,6 +146,7 @@ script.
     }
     
     exports.handleScan = function(code){
+        if(!this.state.data.draft) return;
         if(code.kind == "EQ" && this.state.data.types[code.type]){
             if(!code.supplier) code.supplier = this.state.supplier;
             var entry = {
@@ -251,6 +252,7 @@ script.
             this.state.data.history.push(entry);
             this.calculateSuppliers();
             this.update();
+            this.save();
         }else{
             this.playErrorSound();
         }
@@ -277,13 +279,11 @@ script.
                 if(!this.state.data.types[type].count) delete this.state.data.types[type].count
             }
             this.calculateSuppliers();
-            this.update();            
+            this.update();
+            this.save();
         }.bind(this);
     }
     
-    
-
-        
     exports.playErrorSound = function(){
         new Audio("/public/audio/error.wav").play();
     }
@@ -291,7 +291,6 @@ script.
     exports.cancel = function(){
         history.back();
     }
-
 
     exports.save = function(){
         var data = {};
@@ -311,8 +310,14 @@ script.
             }
         }
     
-        client.updateCheckout(this.props.params.project,this.props.params.checkout,{items:data,history:this.state.data.history},this.state.reservation,function(err){
+        client.updateEquipmentIo(this.props.params.checkout,{items:data,history:this.state.data.history},function(err){
             if(err) return true;
-            back(true);
         });
+    }
+    
+    exports.finish = function(){
+        client.finishEquipmentIo(this.props.params.checkout,function(err){
+            if(err) return true;
+            history.back();
+        })
     }

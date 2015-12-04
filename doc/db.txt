@@ -1,20 +1,43 @@
-users
-{
-    firstname:      String,
-    lastname:       String,
-    email:          String,
-    password:       String,
-    ownedBy:        [
-        ObjectID
-    ]
-}
-
 contacts
 {
     _id:            ObjectID,
-    name:           String,
-    customer:       Bool,
-    supplier:       Bool
+    type:           String, //"club","company","person"
+    salutation:     String,
+    firstname:      String,
+    lastname:       String,
+    streetName:     String,
+    streetNr:       String,
+    zip:            String,
+    city:           String,
+
+    emails:         [{
+        type: String,
+        email: String,
+        standard: Boolean
+    }],
+    phones:         [{
+        type: String,
+        number: String,
+        standard: Boolean
+    }],
+    roles:[
+        String //customer,supplier,user
+    ],
+    contacts:[{
+        _id: ObjectID,
+        type: String //description of what kind of user it is (free text)
+    }],
+    comment: String,
+
+    //only present for users
+    password:       String,
+    pin:            String,
+    ownedBy:        [
+        ObjectID
+    ],
+    permissions: [
+        String
+    ]
 }
 
 projects
@@ -69,7 +92,12 @@ equipmentio
     _id:        ObjectID,
     project:    ObjectID,
     type:       String, //checkout, checkin
-    time:       Number,
+    draft:      Boolean,
+    reservation:ObjectID, //only available when it's a draft!
+    time:       Number, // only present when not a draft
+    user:       ObjectID, // only present when not a draft
+    person:     ObjectID, //person picking up or receiving / returning equipment
+    delivered:  Boolean, //out: true when deliviered, false when picked up by the customer, in: true when picked up by us, false when returned by the customer
     items:{
         TYPE:{
             count:  Number,
@@ -94,7 +122,6 @@ equipmentio
         }
     ]
 }
-
 
 equipmenttypes
 {

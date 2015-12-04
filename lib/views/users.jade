@@ -36,7 +36,7 @@ script.
         }.bind(this))
     }
     
-    exports.create = function(){
+    exports.create = function(id){
         client.createUser(id,function(err){
             if(err) return;
             visit("/users/"+id);
