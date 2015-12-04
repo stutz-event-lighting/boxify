@@ -78,7 +78,7 @@ append body
                                 th Benutzer
                                 th Objekte
                         tbody
-                            each io in this.state.io
+                            each io,i in this.state.io
                                 tr(onClick=this.editIo(io) className=io.draft?"warning":"")
                                     td
                                         div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
@@ -86,7 +86,7 @@ append body
                                     td= io.user?(this.state.users[io.user].firstname+" "+this.state.users[io.user].lastname):""
                                     td
                                         = io.count+" / "+io.total
-                                        if io.draft
+                                        if io.draft || i == this.state.io.length-1
                                             button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteIo(io):this.deleteIo(io)))
                                                 i.glyphicon.glyphicon-trash
                     if Object.keys(this.state.item.balance).length

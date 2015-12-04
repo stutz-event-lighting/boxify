@@ -122,7 +122,6 @@ script.
     exports.getInitialState = function(){
         var state = this._getInitialState();
         state.supplier = "own";
-        state.hideUnbooked = this.props.params.checkin != "new";
         return state;
     }
     
@@ -134,6 +133,7 @@ script.
         client.getCheckin(this.props.params.checkin,function(err,data){
             if(err) return;
             this.state.data = data;
+            this.state.hideUnbooked = !this.state.data.draft;
             var suppliers = {};
             for(var type in this.state.data.types){
                 for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
