@@ -1,0 +1,33 @@
+Select(value=this.getValue() asyncOptions=this.search onChange=this.onChange disabled=this.props.disabled)
+script.
+    var Select = require("react-select");
+    var client = require("../client.js");
+    
+    exports.getValue = function(){
+        if(!this.props.value) return null;
+        if(this.contact && this.contact.value == this.props.value){
+            return this.contact;
+        }
+        client.getContact(this.props.value,function(err,contact){
+            if(err) return;
+            this.contact = {value:contact._id,label:(contact.firstname?contact.firstname+" ":"")+(contact.lastname||"")};
+            this.forceUpdate();
+        }.bind(this));
+        return null;
+    }
+    
+    exports.search = function(input,cb){
+        if(typeof input == "object") return cb(null,{options:[]})
+        var query = {search:input||""};
+        if(this.props.role) query.role = this.props.role;
+        if(this.props.type) query.type = this.props.type;
+    
+        client.findContacts(query,function(err,contacts){
+            cb(err,{options:contacts.map(function(contacts){return {value:contacts._id,label:(contacts.firstname?contacts.firstname+" ":"")+(contacts.lastname||"")}})})
+        });
+    }
+    
+    exports.onChange = function(id,selection){
+        this.contact = id?selection[0]:null;
+        if(this.props.onChange) this.props.onChange(id);
+    }

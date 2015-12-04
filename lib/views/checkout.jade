@@ -12,6 +12,13 @@ append body
                         i.glyphicon.glyphicon-ok
                         |  Abschliessen
             .row
+                .col-xs-12
+                    .form-horizontal
+                        .form-group
+                            label.col-lg-2.control-label Person
+                            .col-lg-10
+                                ContactBox(value=this.state.data.person onChange=this.onPersonChanged type="person" disabled=!this.state.data.draft)
+            .row
                 .col-xs-12.col-md-8
                     h3 Equipment
                     table.table.table-striped.table-hover
@@ -88,6 +95,7 @@ script.
     var MenuItem = require("react-bootstrap/MenuItem");
     var QuaggaButton = require("./QuaggaButton.jade");
     var bs = require("../barcodescanner.js");
+    var ContactBox = require("./ContactBox.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -118,6 +126,11 @@ script.
 
             this.update();
         }.bind(this));
+    }
+    
+    exports.onPersonChanged = function(id){
+        this.state.data.person = id;
+        this.save();
     }
     
     exports.calculateSuppliers = function(){
@@ -310,7 +323,7 @@ script.
             }
         }
     
-        client.updateEquipmentIo(this.props.params.checkout,{items:data,history:this.state.data.history},function(err){
+        client.updateEquipmentIo(this.props.params.checkout,{person:this.state.data.person,items:data,history:this.state.data.history},function(err){
             if(err) return true;
         });
     }
