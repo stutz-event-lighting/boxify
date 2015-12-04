@@ -341,7 +341,7 @@ script.
     
     exports.remove = function(index){
         return function(){
-            var entry = this.state.data.history.splice(index,1)[0];
+            var entry = this.state.data.history.splice(this.state.data.history.length-1-index,1)[0];
             var total = this.calculateEntryTotal(entry);
             for(var type in total){
                 if(total[type].ids) {
