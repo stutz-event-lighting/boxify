@@ -89,6 +89,8 @@ append body
                                         if io.draft || i == this.state.io.length-1
                                             button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteIo(io):this.deleteIo(io)))
                                                 i.glyphicon.glyphicon-trash
+                                        a.btn.btn-default.btn-xs.pull-right(href="/api/equipmentio/"+io._id+"/pickupConfirmation.docx" target="_blank")
+                                            i.glyphicon.glyphicon-print
                     if Object.keys(this.state.item.balance).length
                         .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles Material vom Kunden zurückgekommen!
             .row
