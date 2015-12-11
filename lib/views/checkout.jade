@@ -72,6 +72,20 @@ append body
                                         if this.state.data.draft
                                             .btn.btn-xs.btn-default(onClick=this.remove(i))
                                                 .glyphicon.glyphicon-trash
+    if this.state.entry
+        Modal
+            .modal-header Bitte wählen
+            .modal-body
+                table.table.table-striped
+                    thead
+                        tr
+                            th(style="width:85%") Objekt
+                            th Menge
+                    tbody
+                        +renderEntry(this.state.entry,0)
+            .modal-footer
+                .btn.btn-default Abbrechen
+                .btn.btn-primary Bestätigen
 mixin renderLogEntry(entry,level)
     if entry.items
         each contents,item in entry.items
@@ -86,6 +100,25 @@ mixin renderLogEntry(entry,level)
             = this.state.data.types[entry.type].name
 mixin renderSupplierButtonTitle(supplier)
     img(src="/api/contacts/"+supplier+"/image" style="height:20px")
+mixin renderEntry(entry,level)
+    -console.log("omg")
+    if entry.items
+        each contents, item in entry.items
+            tr
+                td(style="paddingLeft:"+(level*20)+"px")
+                    = this.state.data.types[entry.type].name
+                    b= " # "+item
+                td
+                    input(type="checkbox")
+            each subentry in contents
+                +renderEntry(subentry,level+1)
+    else
+        tr
+            td(style="paddingLeft:"+(level*20)+"px")= this.state.data.types[entry.type].name
+            td
+                .input-group.input-group-sm
+                    input.form-control(type="text" value=entry.count)
+                    .input-group-addon="/ "+entry.count
 script.
     var client = require("../client.js");
     var async = require("async");
@@ -96,6 +129,7 @@ script.
     var QuaggaButton = require("./QuaggaButton.jade");
     var bs = require("../barcodescanner.js");
     var ContactBox = require("./ContactBox.jade");
+    var Modal = require("./Modal.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -171,7 +205,8 @@ script.
             if(code.item){                
                 this.getEntryContents(entry,[code.item],function(err){
                     if(err) return this.playErrorSound();
-                    this.add(entry);
+                    this.state.entry = entry;
+                    this.update();
                 }.bind(this));
             }else if(entry.supplier == "own" && this.state.data.types[entry.type].hasItems){
                 return this.playErrorSound();
@@ -334,3 +369,15 @@ script.
             history.back();
         })
     }
+    
+    exports.addCheckedInformation(entry){
+        if(entry.items){
+            entry.checked {};
+            for(var id in entry.items){
+                entry.checked[id] = true;
+                addCheckedInformation(entry.items[id]);
+            }
+        }
+    }
+    
+    exports.
