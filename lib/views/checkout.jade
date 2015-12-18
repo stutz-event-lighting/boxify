@@ -84,8 +84,8 @@ append body
                     tbody
                         +renderEntry(this.state.entry,0)
             .modal-footer
-                .btn.btn-default Abbrechen
-                .btn.btn-primary Bestätigen
+                .btn.btn-default(onClick=this.cancelAdd) Abbrechen
+                .btn.btn-primary(onClick=this.applyAdd) Bestätigen
 mixin renderLogEntry(entry,level)
     if entry.items
         each contents,item in entry.items
@@ -101,24 +101,25 @@ mixin renderLogEntry(entry,level)
 mixin renderSupplierButtonTitle(supplier)
     img(src="/api/contacts/"+supplier+"/image" style="height:20px")
 mixin renderEntry(entry,level)
-    -console.log("omg")
     if entry.items
         each contents, item in entry.items
             tr
                 td(style="paddingLeft:"+(level*20)+"px")
+                    input(type="checkbox" checked=entry.checked[item] onClick=this.onCheckedChanged(entry,item))
                     = this.state.data.types[entry.type].name
                     b= " # "+item
                 td
-                    input(type="checkbox")
             each subentry in contents
                 +renderEntry(subentry,level+1)
     else
         tr
-            td(style="paddingLeft:"+(level*20)+"px")= this.state.data.types[entry.type].name
+            td(style="paddingLeft:"+(level*20)+"px")
+                input(type="checkbox" checked=entry.checked onClick=this.onCheckedChanged(entry))
+                = this.state.data.types[entry.type].name
             td
                 .input-group.input-group-sm
-                    input.form-control(type="text" value=entry.count)
-                    .input-group-addon="/ "+entry.count
+                    Input.form-control(type="text" value=entry.count onChange=this.onCountChanged(entry) selectOnFocus=true)
+                    .input-group-addon="/ "+entry.max
 script.
     var client = require("../client.js");
     var async = require("async");
@@ -130,6 +131,7 @@ script.
     var bs = require("../barcodescanner.js");
     var ContactBox = require("./ContactBox.jade");
     var Modal = require("./Modal.jade");
+    var Input = require("./Input.jade");
     
     exports.getNeededPermissions = function(){
         return ["projects_read"];
@@ -202,10 +204,23 @@ script.
                 count:code.count||1
             };
             
-            if(code.item){                
+            if(this.state.entry){
+                var subentries = [this.state.entry];
+                var entries = this.findItem(subentries,code.type,code.item);
+                if(entries){
+                    var e = this.getEntryOfType(entries,code.type);
+                    this.setChecked(!this.getChecked(e,code.item),e,code.item);
+                    return this.update();
+                }else{
+                    this.applyAdd();
+                }
+            }
+            
+            if(code.item){
                 this.getEntryContents(entry,[code.item],function(err){
                     if(err) return this.playErrorSound();
                     this.state.entry = entry;
+                    this.addCheckedInformation(entry);
                     this.update();
                 }.bind(this));
             }else if(entry.supplier == "own" && this.state.data.types[entry.type].hasItems){
@@ -223,6 +238,7 @@ script.
                 item = item.item;
                 if(!entry.items) entry.items = {};
                 async.map(Object.keys(item.contents),function(type,cb){
+                    type = parseFloat(type);
                     var subentry = {
                         supplier:entry.supplier,
                         type:type,
@@ -370,14 +386,166 @@ script.
         })
     }
     
-    exports.addCheckedInformation(entry){
+    exports.addCheckedInformation = function(entry){
         if(entry.items){
-            entry.checked {};
+            entry.checked = {};
             for(var id in entry.items){
                 entry.checked[id] = true;
-                addCheckedInformation(entry.items[id]);
+                for(var i = 0; i < entry.items[id].length; i++){
+                    this.addCheckedInformation(entry.items[id][i]);
+                }                
+            }
+        }else{
+            entry.checked = true;
+            entry.max = entry.count;
+        }
+    }
+    exports.removeCheckedInformation = function(entries){
+        for(var i = 0; i < entries.length; i++){
+            var entry = entries[i];
+            var keep = true;
+            if(entry.items){
+                for(var id in entry.items){
+                    if(!entry.checked[id]){
+                        this.setSource(entry.items[id],entry.type,id);
+                        entries.push.apply(entries,entry.items[id]);
+                        delete entry.items[id];
+                    }else{
+                        entry.items[id] = this.removeCheckedInformation(entry.items[id]);
+                    }
+                }
+                entry.count = Object.keys(entry.items).length;
+                keep = entry.count;
+            }else{
+                keep = entry.checked
+            }
+            if(keep){
+                delete entry.checked;
+                delete entry.max;
+            }else{
+                entries.splice(i--,1);
+            }
+        }        
+        return entries;
+    }
+    
+    exports.setSource = function(entries,type,id){
+        for(var i = 0; i < entries.length; i++){
+            var entry = entries[i];
+            if(entry.items){
+                entries.splice(i,1);
+                for(var itemId in entry.items){
+                    var items = {};
+                    var checked = {};
+                    items[itemId] = entry.items[itemId];
+                    checked[itemId] = entry.checked[itemId];
+                    entries.splice(i++,0,{supplier:entry.supplier,type:entry.type,count:1,items:items,checked:checked})
+                }
+                i--;
+            }else{
+                entry.source = {type:type,item:parseFloat(id)};
             }
         }
     }
     
-    exports.
+    exports.onCheckedChanged = function(entry,id){
+        return function(e){
+            this.handleScan({kind:"EQ",type:parseFloat(entry.type),item:id});
+        }.bind(this)
+    }
+    
+    exports.getChecked = function(entry,id){
+        if(id){
+            return entry.checked[id];
+        }else{
+            return entry.checked;
+        }
+    }
+    
+    exports.setChecked = function(checked,entry,id){
+        if(id){
+            entry.checked[id] = checked
+            this.setEntriesChecked(checked,entry.items[id]);
+        }else{
+            entry.checked = checked;
+        }
+    }
+    
+    exports.setEntriesChecked = function(checked,entries){
+        for(var i = 0; i < entries.length; i++){
+            var entry = entries[i];
+            if(entry.items){
+                for(var id in entry.items){
+                    this.setChecked(checked,entry,id);
+                }
+            }else{
+                this.setChecked(checked,entry);
+            }
+        }
+    }
+    
+    exports.getEntryOfType = function(entries,type){
+        for(var i = 0; i < entries.length; i++){
+            var entry = entries[i];
+            if(entry.type+"" == type+"") return entry;
+        }
+    }
+    
+    exports.getSubEntries = function(entry){
+        return entry.items[Object.keys(entry.items)[0]];
+    }
+    
+    exports.onCountChanged = function(entry){
+        return function(e){
+            var val = parseInt(e.target.value,10);
+            if(isNaN(val)){
+            
+            }else if(val < 1){
+                entry.count = 1;
+            }else if(val > entry.max){
+                entry.count = entry.max;
+            }else{
+                entry.count = val;
+            }
+            this.update();
+        }.bind(this)
+    }
+    
+    exports.cancelAdd = function(){
+        delete this.state.entry;
+        this.update();
+    }
+    
+    exports.applyAdd = function(){
+        var entry = this.state.entry;
+        delete this.state.entry;
+        var entries = this.removeCheckedInformation([entry]);
+        entries.reverse().forEach(this.add.bind(this));
+    }
+    
+    exports.findItem = function(entries,type,id){
+        for(var i = 0; i < entries.length; i++){
+            var entry = entries[i];
+            if(entry.type+"" == type+"" && (!id || entry.items[id])) return entries;
+            if(entry.items){                
+                for(var itemId in entry.items){
+                    var subentries = this.findItem(entry.items[itemId],type,id);
+                    if(subentries) return subentries;
+                }
+            }
+        }   
+    }
+        
+    exports.allChecked = function(subentries){
+        for(var i = 0; i < subentries.length; i++){
+            var entry = subentries[i];
+            if(entry.items){
+                for(var id in entry.checked){
+                    if(!entry.checked[id]) return false;
+                }
+            }else{
+                if(!entry.checked) return false;
+            }
+        }
+        return true;
+    }
