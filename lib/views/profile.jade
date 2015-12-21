@@ -8,7 +8,7 @@ append container
             .btn-toolbar
                 .btn.btn-default(onClick=this.changePassword) Passwort ändern
                 .btn.btn-default(onClick=this.changePin) PIN ändern
-    if this.props.changepassword
+    if this.state.changepassword
         Modal
             .modal-header
                 h2 Passwort ändern
@@ -17,15 +17,15 @@ append container
                     .form-group
                         label.col-lg-2.control-label Neues Passwort
                         .col-lg-10
-                            input.form-control(type="password" value=this.props.changepassword.password onChange=this.onPasswordChanged)
+                            input.form-control(type="password" value=this.state.changepassword.password onChange=this.onPasswordChanged)
                     .form-group
                         label.col-lg-2.control-label Neues Passwort bestätigen
                         .col-lg-10
-                            input.form-control(type="password" value=this.props.changepassword.password2 onChange=this.onPassword2Changed)
+                            input.form-control(type="password" value=this.state.changepassword.password2 onChange=this.onPassword2Changed)
             .modal-footer
                 button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
                 button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
-    if this.props.changepin
+    if this.state.changepin
         Modal
             .modal-header
                 h2 PIN ändern
@@ -34,7 +34,7 @@ append container
                     .form-group
                         label.col-lg-2.control-label Neue PIN
                         .col-lg-10
-                            input.form-control(type="password" value=this.props.changepin.pin onChange=this.onPinChanged)
+                            input.form-control(type="password" value=this.state.changepin.pin onChange=this.onPinChanged)
             .modal-footer
                 button.btn.btn-default(onClick=this.cancelChangePin) Abbrechen
                 button.btn.btn-primary(onClick=this.confirmChangePin) Speichern
@@ -53,53 +53,53 @@ script.
     exports.hideBackButton = true;
     
     exports.changePassword = function(){
-        this.props.changepassword = {password:"",password2:""};
+        this.state.changepassword = {password:"",password2:""};
         this.update();
     }
     
     exports.onPasswordChanged = function(e){
-        this.props.changepassword.password = e.target.value;
+        this.state.changepassword.password = e.target.value;
         this.update();
     }
     
     exports.onPassword2Changed = function(e){
-        this.props.changepassword.password2 = e.target.value;
+        this.state.changepassword.password2 = e.target.value;
         this.update();
     }
     
     exports.cancelChangePassword = function(){
-        delete this.props.changepassword;
+        delete this.state.changepassword;
         this.update();
     }
     
     exports.confirmChangePassword = function(){
-        if(!this.props.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
-        if(this.props.changepassword.password != this.props.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
-        client.setPassword(this.getContactId(),this.props.changepassword.password,function(err){
-            delete this.props.changepassword;
+        if(!this.state.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
+        if(this.state.changepassword.password != this.state.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
+        client.setPassword(this.getContactId(),this.state.changepassword.password,function(err){
+            delete this.state.changepassword;
             this.update();
         }.bind(this))
     }
     
     exports.changePin = function(){
-        this.props.changepin = {pin:""};
+        this.state.changepin = {pin:""};
         this.update();
     }
     
     exports.onPinChanged = function(e){
-        this.props.changepin.pin = e.target.value;
+        this.state.changepin.pin = e.target.value;
         this.update();
     }
     
     exports.cancelChangePin = function(){
-        delete this.props.changepin;
+        delete this.state.changepin;
         this.update();
     }
     
     exports.confirmChangePin = function(){
-        if(!this.props.changepin.pin.length) return alert("Bitte geben Sie eine neue PIN ein");
-        client.setPin(this.getContactId(),this.props.changepin.pin,function(err){
-            delete this.props.changepin;
+        if(!this.state.changepin.pin.length) return alert("Bitte geben Sie eine neue PIN ein");
+        client.setPin(this.getContactId(),this.state.changepin.pin,function(err){
+            delete this.state.changepin;
             this.update();
         }.bind(this))
     }
