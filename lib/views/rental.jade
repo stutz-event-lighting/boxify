@@ -135,7 +135,7 @@ script.
     }
     
     exports.onSupplierChange = function(id,selection){
-        if(id.length){
+        if(id){
             this.state.data.rental.supplier = selection[0];
         }else{
             delete this.state.data.rental.supplier;
