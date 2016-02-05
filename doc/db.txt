@@ -171,3 +171,12 @@ equipmentlogs
     event:      String, //can be: added, broke, repaired, lost, found, maintenance, removed
     job:        Number
 }
+
+sessions
+{
+    _id:        ObjectID,
+    user:       Number,
+    permissions:[
+        String
+    ]
+}
