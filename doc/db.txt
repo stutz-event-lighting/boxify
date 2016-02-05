@@ -38,12 +38,16 @@ contacts
     permissions: [
         String
     ]
+
+    //only present for customers_read
+    lastProjectNumber: Number
 }
 
 projects
 {
     _id:        ObjectID,
     customer:   ObjectID,
+    projectNumber: Number,
     name:       String,
     start:      Number,
     end:        Number,
