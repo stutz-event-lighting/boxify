@@ -28,6 +28,7 @@
     "jszip": "^2.5.0",
     "moment": "~2.9.0",
     "mongodb": "~1.4.26",
+    "mongoose": "^4.4.5",
     "path-to-regexp": "~1.0.2",
     "react": "^0.14.0",
     "react-bootstrap": "~0.13.0",
