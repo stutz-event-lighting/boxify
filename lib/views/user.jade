@@ -9,11 +9,8 @@ append properties
                     label
                         input(type="checkbox" checked=permission.allowed onChange=this.togglePermission(permission))
                         = " "+permission.name
-        h4 Verwaltete Benutzer
-        Select(value=this.state.user.ownedUsers.map(function(user){return {value:user._id,label:user.name}}) asyncOptions=this.findUsers onChange=this.onUsersChanged multi=true)
 script.
     var client = require("../client.js");
-    var Select = require("react-select");
     
     exports.getNeededPermissions = function(){
         return ["users_read"];
@@ -53,21 +50,9 @@ script.
         }
         
         client.saveUser(this.state.user._id,{
-            permissions:permissions,
-            ownedUsers:this.state.user.ownedUsers.map(function(user){return user._id})
+            permissions:permissions
         },function(err){
             if(err) return true;
             history.back();
         });
-    }
-    
-    exports.findUsers = function(input,cb){
-        client.findUsers({input:input},function(err,users){
-            cb(err,{options:users.map(function(user){return {value:user._id,label:user.firstname+" "+user.lastname}})})
-        });
-    }
-    
-    exports.onUsersChanged = function(id,selection){
-        this.state.user.ownedUsers = selection.map(function(selection){return {_id:selection.value,name:selection.label}});
-        this.forceUpdate();
     }
