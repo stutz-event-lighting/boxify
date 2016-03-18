@@ -4,10 +4,11 @@ append properties
 append container
     .row
         .col-xs-12
-            h2 Passwort & PIN
+            h2 Passwort
             .btn-toolbar
                 .btn.btn-default(onClick=this.changePassword) Passwort ändern
-                .btn.btn-default(onClick=this.changePin) PIN ändern
+    each Section in this.extensionSections
+        Section(user=this.getContactId())
     if this.state.changepassword
         Modal
             .modal-header
@@ -25,22 +26,11 @@ append container
             .modal-footer
                 button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
                 button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
-    if this.state.changepin
-        Modal
-            .modal-header
-                h2 PIN ändern
-            .modal-body
-                .form-horizontal
-                    .form-group
-                        label.col-lg-2.control-label Neue PIN
-                        .col-lg-10
-                            input.form-control(type="password" value=this.state.changepin.pin onChange=this.onPinChanged)
-            .modal-footer
-                button.btn.btn-default(onClick=this.cancelChangePin) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmChangePin) Speichern
 script.
     var client = require("../client.js");
     var Modal = require("./Modal.jade");
+    
+    exports.extensionSections = [];
     
     exports.getNeededPermissions = function(){
         return [];
@@ -77,29 +67,6 @@ script.
         if(this.state.changepassword.password != this.state.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
         client.setPassword(this.getContactId(),this.state.changepassword.password,function(err){
             delete this.state.changepassword;
-            this.update();
-        }.bind(this))
-    }
-    
-    exports.changePin = function(){
-        this.state.changepin = {pin:""};
-        this.update();
-    }
-    
-    exports.onPinChanged = function(e){
-        this.state.changepin.pin = e.target.value;
-        this.update();
-    }
-    
-    exports.cancelChangePin = function(){
-        delete this.state.changepin;
-        this.update();
-    }
-    
-    exports.confirmChangePin = function(){
-        if(!this.state.changepin.pin.length) return alert("Bitte geben Sie eine neue PIN ein");
-        client.setPin(this.getContactId(),this.state.changepin.pin,function(err){
-            delete this.state.changepin;
             this.update();
         }.bind(this))
     }

@@ -15,15 +15,14 @@ script.
     var Button = require("react-bootstrap/Button");
     var client = require("../client.js");
     
-    var menu = {
+    var menu = exports.menu = {
         "Equipment":{url:"/equipment",permissions:["equipment_read"]},
         "Projekte":{url:"/projects",permissions:["projects_read"]},
         "Zumieten":{url:"/rentals",permissions:["rentals_read"]},
         "Kunden":{url:"/customers",permissions:["customers_read"]},
         "Zulieferer":{url:"/suppliers",permissions:["suppliers_read"]},
         "Benutzer":{url:"/users",permissions:["users_read"]},
-        "Profil":{url:"/profile",loggedIn:true},
-        "Elektronik":{url:"/electronic",loggedIn:true}
+        "Profil":{url:"/profile",loggedIn:true}
     }
     
     exports.brand = function(){

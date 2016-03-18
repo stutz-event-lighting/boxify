@@ -30,7 +30,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.comment onChange=this.onCommentChange)
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange)
             .row
                 .col-xs-12
                     h3
@@ -135,7 +135,7 @@ script.
     
     
     exports.onCommentChange = function(e){
-        this.state.item.comment = e.target.value;
+        this.state.item.remark = e.target.value;
         this.update();
     }    
     
@@ -234,7 +234,7 @@ script.
     }
 
     exports.save = function(){
-        client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,comment:this.state.item.comment||""},function(err){
+        client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,remark:this.state.item.remark||""},function(err){
             if(err) return true;
             back(true);
         });

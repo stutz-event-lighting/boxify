@@ -1,54 +1,10 @@
-contacts
-{
-    _id:            ObjectID,
-    type:           String, //"club","company","person"
-    salutation:     String,
-    firstname:      String,
-    lastname:       String,
-    streetName:     String,
-    streetNr:       String,
-    zip:            String,
-    city:           String,
-
-    emails:         [{
-        type: String,
-        email: String,
-        standard: Boolean
-    }],
-    phones:         [{
-        type: String,
-        number: String,
-        standard: Boolean
-    }],
-    roles:[
-        String //customer,supplier,user
-    ],
-    contacts:[{
-        _id: ObjectID,
-        type: String //description of what kind of user it is (free text)
-    }],
-    comment: String,
-
-    //only present for users
-    password:       String,
-    pin:            String,
-    ownedBy:        [
-        ObjectID
-    ],
-    permissions: [
-        String
-    ]
-
-    //only present for customers_read
-    lastProjectNumber: Number
-}
-
 projects
 {
     _id:        ObjectID,
     customer:   ObjectID,
     projectNumber: Number,
     name:       String,
+    remark:     String,
     start:      Number,
     end:        Number,
     status:     String //can be draft, offered, rejected,
@@ -152,7 +108,7 @@ equipment
 {
     _id:                Number,
     type:               Number,
-    comment:            String,
+    remark:            String,
     serialnumber:       String,
     status:             String, //can be: normal, defective, lost, deleted
     contents: {

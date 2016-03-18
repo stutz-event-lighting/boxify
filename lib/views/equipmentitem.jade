@@ -28,7 +28,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.comment onChange=this.onCommentChange)
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange)
                     .row
                         .col-md-4.col-xs-6
                             h4 Aktueller Standort
@@ -155,7 +155,7 @@ script.
     }
     
     exports.onCommentChange = function(e){
-        this.state.item.comment = e.target.value;
+        this.state.item.remark = e.target.value;
         this.update();
     }
 
@@ -253,7 +253,7 @@ script.
             }
         }
     
-        client.saveEquipment(this.state.item.type,this.state.item.id,{comment:this.state.item.comment,serialnumber:this.state.item.serialnumber||"",contents:contents},function(err){
+        client.saveEquipment(this.state.item.type,this.state.item.id,{remark:this.state.item.remark,serialnumber:this.state.item.serialnumber||"",contents:contents},function(err){
             if(err) return true;
             history.back();
         });

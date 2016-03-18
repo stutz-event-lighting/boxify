@@ -94,7 +94,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.comment onChange=this.setValue("comment"))
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.setValue("remark"))
 
                     block properties
             block container                
@@ -220,7 +220,7 @@ script.
             emails:this.state.item.emails,
             phones:this.state.item.phones,
             contacts:this.state.item.contacts,
-            comment:this.state.item.comment,
+            remark:this.state.item.remark,
         };
         client.updateContact(this.getContactId(),data,function(err,id){
             if(err) return;
