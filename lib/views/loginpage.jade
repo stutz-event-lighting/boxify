@@ -10,14 +10,14 @@
     input#inputPassword.form-control(type='password' placeholder='Passwort' value=this.state.password onChange=this.onPasswordChanged required='' style="border-top-left-radius:0px;border-top-left-radius:0px")
     .checkbox
       label
-        input(type='checkbox', value='remember-me' onChange=this.onRememberChanged checked=!localStorage.dontRememberEmail)
+        input(type='checkbox', value='remember-me' onChange=this.onRememberChanged checked=!getLs("dontRememberEmail"))
         |  E-Mail merken
     button.btn.btn-lg.btn-primary.btn-block(onClick=this.login) Einloggen
 script.
     var client = require("../client.js");
     
     exports.getInitialState = function(){
-        return {email:localStorage.email||"",password:""};
+        return {email:getLs("email")||"",password:""};
     }
         
     exports.onMailChanged = function(e){
@@ -32,16 +32,16 @@ script.
     
     exports.onRememberChanged = function(e){
         if(!e.target.checked){
-            delete localStorage.email;
-            localStorage.dontRememberEmail = 1;
+            removeLs("email");
+            setLs("dontRememberEmail",1);
         }else{
-            delete localStorage.dontRememberEmail;        
+            removeLs("dontRememberEmail");        
         } 
         this.forceUpdate();
     }
     
     exports.login = function(){
-        if(!localStorage.dontRememberEmail) localStorage.email = this.state.email;
+        if(!getLs("dontRememberEmail")) setLs("email",this.state.email);
         if(!this.state.email || !this.state.password) return;
         client.createSession({email:this.state.email,password:this.state.password},function(err,sessionid){
             if(err){
@@ -55,4 +55,21 @@ script.
     
     exports.checkEnter = function(e){
         if(e.keyCode == 13) this.login();
+    }
+    
+    function getLs(key){
+        try{
+            return localStorage.getItem(key);
+        }catch(e){}
+    }
+    function setLs(key,value){
+        try{
+            return localStorage.setItem(key,value);
+        }catch(e){}
+    }
+    
+    function removeLs(key){
+        try{
+            return localStorage.removeItem(key);
+        }catch(e){}
     }
