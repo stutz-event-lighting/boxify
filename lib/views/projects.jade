@@ -5,13 +5,13 @@ append body
         h1 Projekte
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.state.search||"")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="marginLeft:10px")
-                button.btn.btn-primary(onClick=this.create) Erfassen
+                button.btn.btn-primary(onClick=this.create.bind(this)) Erfassen
         label
-            input(type="checkbox" checked=this.state.finished onChange=this.changeFinishedFilter)
+            input(type="checkbox" checked=this.state.finished onChange=this.changeFinishedFilter.bind(this))
             |  Abgeschlossene Projekte anzeigen
         table.table.table-striped.table-hover
             thead
@@ -49,38 +49,37 @@ append body
                     .form-group
                         label.col-lg-2.control-label Kunde
                         .col-lg-10
-                            ContactBox(value=this.state.create.customer onChange=this.onCustomerChanged role="customer")
+                            ContactBox(value=this.state.create.customer onChange=this.onCustomerChanged.bind(this) role="customer")
                     .form-group
                         label.col-lg-2.control-label Beginn
                         .col-lg-10
-                            DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
+                            DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
                     .form-group
                         label.col-lg-2.control-label Ende
                         .col-lg-10
-                            DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
+                            DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmCreate) Erfassen
+                button.btn.btn-default(onClick=this.cancelCreate.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmCreate.bind(this)) Erfassen
     if this.state.delete
-        ConfirmDialog(title="Projekt löschen" action="Löschen" question=("\""+this.state.delete.name+"\" löschen möchten") onConfirm=this.confirmDelete onCancel=this.cancelDelete)
+        ConfirmDialog(title="Projekt löschen" action="Löschen" question=("\""+this.state.delete.name+"\" löschen möchten") onConfirm=this.confirmDelete.bind(this) onCancel=this.cancelDelete.bind(this))
 script.
     var client = require("../client.js");
-    var Select = require("react-select");
     var DatePicker = require("react-widgets").DateTimePicker;
     var moment = require("moment");
     var ConfirmDialog = require("./ConfirmDialog.jade");
     var Modal = require("./Modal.jade");
     var ContactBox = require("./ContactBox.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["projects_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         this.loadResults();
     }
     
-    exports.loadResults = function(){
+    loadResults(){
         client.findProjects({search:this.state.search||"",finished:this.state.finished||false},function(err,items){
             if(err) return;
             this.state.items = items;
@@ -88,12 +87,12 @@ script.
         }.bind(this));
     }
 
-    exports.search = function(e){
+    search(e){
         this.state.search = e.target.value;
         this.loadResults();
     }
     
-    exports.changeFinishedFilter = function(e){
+    changeFinishedFilter(e){
         if(e.target.checked){
             this.state.finished = true;
         }else{
@@ -102,35 +101,36 @@ script.
         this.loadResults();
     }
 
-    exports.create = function(){
+    create(){
         var self = this;
         this.state.create = {name:"",start:moment({hour:20}).toDate().getTime(),end:moment({hour:20}).add(1,"days").toDate().getTime()};
         this.update();
     }
-    exports.validateCreateName = function(e){
+    validateCreateName(e){
         this.state.create.name = e.target.value;
         this.update();
     }
     
-    exports.onCustomerChanged = function(id,selection){
+    onCustomerChanged(id){
         this.state.create.customer = id;
+        this.forceUpdate();
     }
     
-    exports.onStartChanged = function(time){
+    onStartChanged(time){
         this.state.create.start = time.getTime();
         this.update();
     }
     
-    exports.onEndChanged = function(time){
+    onEndChanged(time){
         this.state.create.end = time.getTime();
         this.update();
     }
     
-    exports.cancelCreate = function(){
+    cancelCreate(){
         delete this.state.create;
         this.update();
     }
-    exports.confirmCreate = function(){
+    confirmCreate(){
         var self = this;
         
         var create = self.state.create;
@@ -145,25 +145,26 @@ script.
         });
     }
 
-    exports.edit = function(item){
+    edit(item){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/projects/"+item._id)
         }        
     }
 
-    exports.delete = function(item){
+    delete(item){
         return function(){
             this.state.delete = item;
             this.update();
         }.bind(this)
     }
 
-    exports.cancelDelete = function(){
+    cancelDelete(){
         delete this.state.delete;
         this.update();
     }
-    exports.confirmDelete = function(){
+    
+    confirmDelete(){
         var self = this;
         var del = this.state.delete;
         delete this.state.delete;

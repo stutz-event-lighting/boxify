@@ -1,5 +1,5 @@
 .pull-right
-    DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.add)
+    DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.add.bind(this))
         MenuItem(eventKey="2") Von bestehendem Kontakt
         MenuItem(eventKey="1") Von neuem Kontakt
         
@@ -28,8 +28,8 @@
                             .col-lg-10
                                 input.form-control(placeholder="Name" value=this.state.new.firstname onChange=this.setValue("firstname"))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancel) Abbrechen
-                button.btn.btn-primary(onClick=this.create) Erfassen
+                button.btn.btn-default(onClick=this.cancel.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.create.bind(this)) Erfassen
     if this.state.existing
         Modal
             .modal-header
@@ -39,22 +39,24 @@
                     .form-group
                         label.col-lg-2.control-label Kontakt
                         .col-lg-10
-                            Select(value=this.state.existing.contact asyncOptions=this.findContacts onChange=this.onContactChanged)
+                            ContactBox(value=this.state.existing.contact onChange=this.onContactChanged.bind(this))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancel) Abbrechen
-                button.btn.btn-primary(onClick=this.pick) Erfassen
+                button.btn.btn-default(onClick=this.cancel.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.pick.bind(this)) Erfassen
 script.
     var client = require("../client.js");
-    var Select = require("react-select");
-    var DropdownButton = require("react-bootstrap/DropdownButton");
-    var MenuItem = require("react-bootstrap/MenuItem");
+    var Select = require("react-select").Async;
+    var DropdownButton = require("react-bootstrap/lib/DropdownButton");
+    var MenuItem = require("react-bootstrap/lib/MenuItem");
     var Modal = require("./Modal.jade");
-    
-    exports.getInitialState = function(){
-        return {};
+    var ContactBox = require("./ContactBox.jade");
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
     }
-    
-    exports.add = function(i){
+        
+    add(i){
         switch(i){
             case "1":
                 this.state.new = {
@@ -63,41 +65,33 @@ script.
                 };
                 break;
             case "2":
-                this.state.existing = {person:null}
+                this.state.existing = {contact:null}
                 break;
         }
         this.forceUpdate();
     }
     
-    exports.cancel = function(){
+    cancel(){
         delete this.state.existing;
         delete this.state.new;
         this.forceUpdate();
     }
 
     
-    exports.setValue = function(name,target){
+    setValue(name,target){
         return function(e){
             (target||this.state.new)[name] = e.target.value;
             this.forceUpdate();
         }.bind(this)
     }
     
-    exports.findContacts = function(input,cb){
-        client.findContacts({search:input},function(err,contacts){
-            if(err) return cb(err);
-            cb(null,{options:contacts.map(function(contact){
-                return {value:contact._id,label:(contact.firstname?contact.firstname+" ":"")+(contact.lastname||"")};
-            })});
-        })
-    }
-    
-    exports.onContactChanged = function(id,selection){
-        this.state.existing.contact = selection[0];
+    onContactChanged(id,name){
+        this.state.existing.contact = id;
+        this.state.existing.name = name;
         this.forceUpdate();
     }
     
-    exports.create = function(){
+    create(){
         client.createContact(this.state.new,function(err,id){
             if(err) return;
             this.props.callback(id,(this.state.new.firstname?this.state.new.firstname+" ":"")+(this.state.new.lastname||""));
@@ -105,7 +99,7 @@ script.
         }.bind(this))
     }
     
-    exports.pick = function(){
-        this.props.callback(this.state.existing.contact.value,this.state.existing.contact.label);
+    pick(){
+        this.props.callback(this.state.existing.contact,this.state.existing.name);
         this.cancel();
     }

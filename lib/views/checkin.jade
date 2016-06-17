@@ -5,10 +5,10 @@ append body
         .container
             h2 Wareneingang
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel)
+                    button.btn.btn-default(onClick=this.cancel.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Abbrechen
-                    button.btn.btn-primary(onClick=this.finish)
+                    button.btn.btn-primary(onClick=this.finish.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Abschliessen
             .row
@@ -17,13 +17,13 @@ append body
                         .form-group
                             label.col-lg-2.control-label Person
                             .col-lg-10
-                                ContactBox(value=this.state.data.person onChange=this.onPersonChanged type="person" disabled=!this.state.data.draft)
+                                ContactBox(value=this.state.data.person onChange=this.onPersonChanged.bind(this) type="person" disabled=!this.state.data.draft)
             .row
                 .col-xs-12.col-md-8
                     h3.pull-left Equipment
                     .pull-right.checkbox(style="paddingTop:20px")
                         label
-                            input(type="checkbox" checked=this.state.hideUnbooked onChange=this.onUnbookedChanged)
+                            input(type="checkbox" checked=this.state.hideUnbooked onChange=this.onUnbookedChanged.bind(this))
                             |  Ungebuchte ausblenden
                     table.table.table-striped.table-hover
                         thead
@@ -51,17 +51,18 @@ append body
                         h3 Verlauf
                     if this.state.data.draft
                         .btn-toolbar.pull-right(style="marginTop:18px")
-                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
+                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier.bind(this))        
                                 each supplier in this.state.allsuppliers
                                     MenuItem(eventKey=supplier)
                                         img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                            ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier=this.state.supplier||"own")
-                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
+                            ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier=this.state.supplier||"own")
+                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan.bind(this))
                     table.table.table-striped.table-hover
                         thead
-                            th
-                            th Name
-                            th
+                            tr
+                                th
+                                th Name
+                                th
                         tbody
                             each entry,i in this.state.data.history.slice().reverse()
                                 tr
@@ -81,8 +82,8 @@ append body
             .modal-body(style="maxHeight:500px;overflowY:auto")
                 +renderCaseEntry(this.state.entry,0)
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelEntry) Abbrechen
-                button.btn.btn-primary(onClick=this.finishEntry) Fertig
+                button.btn.btn-default(onClick=this.cancelEntry.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.finishEntry.bind(this)) Fertig
 mixin renderLogEntry(entry,level)
     if entry.items
         each contents,item in entry.items
@@ -116,28 +117,26 @@ script.
     var ScanButton = require("./ScanButton.jade");
     var Modal = require("./Modal.jade");
     var async = require("async");
-    var DropdownButton = require("react-bootstrap/DropdownButton");
-    var MenuItem = require("react-bootstrap/MenuItem");
+    var DropdownButton = require("react-bootstrap/lib/DropdownButton");
+    var MenuItem = require("react-bootstrap/lib/MenuItem");
     var QuaggaButton = require("./QuaggaButton.jade");
     var bs = require("../barcodescanner.js");
     var ContactBox = require("./ContactBox.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["projects_read"];
     }
     
-    exports._getInitialState = exports.getInitialState;
-    exports.getInitialState = function(){
-        var state = this._getInitialState();
-        state.supplier = "own";
-        return state;
+    constructor(props,context){
+        super(props,context);
+        this.state.supplier = "own";
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         if(!this.state.data) this.loadData();
     }
     
-    exports.loadData = function(){
+    loadData(){
         client.getCheckin(this.props.params.checkin,function(err,data){
             if(err) return;
             this.state.data = data;
@@ -151,21 +150,22 @@ script.
         }.bind(this));
     }   
     
-    exports.onPersonChanged = function(id){
+    onPersonChanged(id){
         this.state.data.person = id;
+        this.forceUpdate();
         this.save();
     }
     
-    exports.onUnbookedChanged = function(e){
+    onUnbookedChanged(e){
         this.state.hideUnbooked = e.target.checked;
         this.update();
     }
     
-    exports.select = function(e){
+    select(e){
         setTimeout(e.target.select.bind(e.target));;
     }
     
-    exports.onCountChanged = function(entry){
+    onCountChanged(entry){
         return function(e){
             var count = parseInt(e.target.value,10);
             if(!isNaN(count)){
@@ -175,23 +175,23 @@ script.
         }.bind(this);
     }
     
-    exports.setSupplier = function(supplier){
+    setSupplier(supplier){
         this.state.supplier = supplier;
         this.update();
     }
     
-    exports.startScan = function(type){
+    startScan(type){
         return function(){
             this.refs.scanbutton.scan();
-            this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.state.data.types[type].name}]);
+            this.refs.scanbutton.onEquipmenttypeChanged({value:type,label:this.state.data.types[type].name});
         }.bind(this)
     }
     
-    exports.onQuaggaScan = function(code){
+    onQuaggaScan(code){
         bs.parse(code);
     }
     
-    exports.handleScan = function(code){
+    handleScan(code){
         if(!this.state.data.draft) return;
         if(code.kind == "EQ" && this.state.data.types[code.type]){
             if(!code.supplier) code.supplier = this.state.supplier;
@@ -214,7 +214,7 @@ script.
         }
     }
     
-    exports.insertOrClose = function(entry,receiver){
+    insertOrClose(entry,receiver){
         var itemId = Object.keys(entry.items)[0];
         var item = entry.items[itemId];
         while(receiver != null){
@@ -246,18 +246,18 @@ script.
         }
     }
     
-    exports.finishEntry = function(){
+    finishEntry(){
         var entry = this.state.entry;
         delete this.state.entry;
         this.add(entry);
     }
     
-    exports.cancelEntry = function(){
+    cancelEntry(){
         delete this.state.entry;
         this.update();
     }
     
-    exports.getEntryContents = function(entry,item,cb){
+    getEntryContents(entry,item,cb){
         client.getEquipment(entry.type,item,function(err,data){
         
             var item = data.item;
@@ -287,7 +287,7 @@ script.
         }.bind(this))        
     }
     
-    exports.calculateEntryTotal = function(entry,total){
+    calculateEntryTotal(entry,total){
         total = total||{};
         if(!total[entry.type]) total[entry.type] = {count:0};
         total[entry.type].count += entry.count;
@@ -306,7 +306,7 @@ script.
         return total;
     }
     
-    exports.checkAvailability = function(supplier,total){
+    checkAvailability(supplier,total){
         for(var type in total){
             if(
                 !this.state.data.types[type].suppliers ||
@@ -329,7 +329,7 @@ script.
         return true;
     }
         
-    exports.add = function(entry){
+    add(entry){
         var total = this.calculateEntryTotal(entry);
         if(this.checkAvailability(entry.supplier,total)){
             for(var type in total){
@@ -352,7 +352,7 @@ script.
         this.save();
     }
     
-    exports.remove = function(index){
+    remove(index){
         return function(){
             var entry = this.state.data.history.splice(this.state.data.history.length-1-index,1)[0];
             var total = this.calculateEntryTotal(entry);
@@ -377,7 +377,7 @@ script.
         }.bind(this);
     }
     
-    exports.applyContents = function(entry){
+    applyContents(entry){
         for(var item in entry.items){
             item = parseInt(item,10);
             var contents = {};
@@ -393,15 +393,15 @@ script.
         }
     }
     
-    exports.playErrorSound = function(){
+    playErrorSound(){
         new Audio("/public/audio/error.wav").play();
     }
     
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
 
-    exports.save = function(){
+    save(){
         var data = {};
         for(var type in this.state.data.types){
             var t = this.state.data.types[type];
@@ -424,7 +424,7 @@ script.
         });
     }
     
-    exports.finish = function(){
+    finish(){
         client.finishEquipmentIo(this.props.params.checkin,function(err){
             if(err) return true;
             history.back();

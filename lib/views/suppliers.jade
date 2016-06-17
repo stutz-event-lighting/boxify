@@ -5,11 +5,11 @@ append body
         h1 Zulieferer
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.state.search||"")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="marginLeft:10px")
-                CreateContactButton(callback=this.create)
+                CreateContactButton(callback=this.create.bind(this))
         table.table.table-striped.table-hover
             thead
                 tr
@@ -28,8 +28,8 @@ append body
                 h2 Zulieferer löschen
             .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+                button.btn.btn-default(onClick=this.cancelDelete.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmDelete.bind(this)) Löschen
     if this.state.error
         Modal
             .modal-header
@@ -39,63 +39,64 @@ append body
                     when 601
                         .alert.alert-warning Dieser Kunde ist noch Objekten zugewiesen. 
             .modal-footer
-                button.btn.btn-primary(onClick=this.dismiss) Ich verstehe
+                button.btn.btn-primary(onClick=this.dismiss.bind(this)) Ich verstehe
 script.
     var client = require("../client.js");
     var CreateContactButton = require("./CreateContactButton.jade");
     var Modal = require("./Modal.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["suppliers_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         if(!this.state.items) this.findContacts();
     }
     
-    exports.findContacts = function(){
+    findContacts(){
         client.findSuppliers({search:this.state.search},function(err,items){
             this.state.items = items;
             this.update();
         }.bind(this));
     }
 
-    exports.search = function(e){
+    search(e){
         this.state.search = e.target.value;
         this.findContacts();
     }
     
-    exports.dismiss = function(){
+    dismiss(){
         delete this.state.error;
         this.update();
     }
 
-    exports.create = function(id){
+    create(id){
         client.createSupplier(id,function(err){
             if(err) return;
             visit("/suppliers/"+id);
         });
     }
 
-    exports.edit = function(item){
+    edit(item){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/suppliers/"+item._id)
         }        
     }
 
-    exports.delete = function(item){
+    delete(item){
         return function(){
             this.state.delete = item;
             this.update();
         }.bind(this)
     }
 
-    exports.cancelDelete = function(){
+    cancelDelete(){
         delete this.state.delete;
         this.update();
     }
-    exports.confirmDelete = function(){
+    
+    confirmDelete(){
         var self = this;
         var del = this.state.delete;
         delete this.state.delete;

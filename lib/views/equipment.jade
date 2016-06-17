@@ -6,11 +6,11 @@ append body
         h1 Equipment
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.state.search||"")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="marginLeft:10px")
-                button.btn.btn-primary(onClick=this.create) Erfassen
+                button.btn.btn-primary(onClick=this.create.bind(this)) Erfassen
         table.table.table-striped.table-hover
             thead
                 tr
@@ -47,22 +47,25 @@ append body
                         .col-lg-10
                             input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelCreate) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmCreate) Erstellen
+                button.btn.btn-default(onClick=this.cancelCreate.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmCreate.bind(this)) Erstellen
     if this.state.delete
         Modal
             .modal-header
                 h2 Equipmenttyp löschen
             .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+                button.btn.btn-default(onClick=this.cancelDelete.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmDelete.bind(this)) Löschen
 script.
     var client = require("../client.js");
     var async = require("async");
     var Modal = require("./Modal.jade");
-    
-    exports.checkData = function(){
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+    }
+    checkData(){
         var self = this;
         
         async.parallel([
@@ -90,37 +93,37 @@ script.
         })      
     }
     
-    exports.getNeededPermissions = function(){
+    getNeededPermissions(){
         return ["equipment_read"];
     }
     
-    exports.search = function(e){
+    search(e){
         this.state.search = e.target.value;
         delete this.state.items;
         this.update();
     }
 
-    exports.componentDidMount = function(){
+    componentDidMount(){
         this.checkData();
     }
 
-    exports.create = function(){
+    create(){
         var self = this;
         this.state.create = {_id:"",name:""};
         this.update();
         setTimeout(function(){
-            self.refs.createid.getDOMNode().focus();
+            self.refs.createid.focus();
         },1);
     }
-    exports.validateCreateName = function(e){
+    validateCreateName(e){
         this.state.create.name = e.target.value;
         this.update();
     }
-    exports.cancelCreate = function(){
+    cancelCreate(){
         delete this.state.create;
         this.update();
     }
-    exports.confirmCreate = function(){
+    confirmCreate(){
         var self = this;
         client.createEquipmentType(this.state.create,function(err,id){
             if(err) return;
@@ -132,25 +135,25 @@ script.
         });
     }
 
-    exports.edit = function(item){
+    edit(item){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/equipment/"+item._id)
         }
     }
     
-    exports.delete = function(item){
+    delete(item){
         return function(){
             this.state.delete = item;
             this.update();
         }.bind(this)
     }
     
-    exports.cancelDelete = function(){
+    cancelDelete(){
         delete this.state.delete;
         this.update();
     }
-    exports.confirmDelete = function(){
+    confirmDelete(){
         var self = this;
         var del = this.state.delete;
         delete this.state.delete;

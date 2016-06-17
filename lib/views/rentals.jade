@@ -9,7 +9,7 @@ append body
             .col-xs-12
                 h4 
                     | Anfragen
-                    button.btn.btn-primary.pull-right(onClick=this.createRequest) Neu
+                    button.btn.btn-primary.pull-right(onClick=this.createRequest.bind(this)) Neu
                 table.table.table-striped.table-hover
                     thead
                         tr
@@ -27,7 +27,7 @@ append body
             .col-xs-12
                 h4 
                     | Buchungen
-                    button.btn.btn-primary.pull-right(onClick=this.createBooking) Neu
+                    button.btn.btn-primary.pull-right(onClick=this.createBooking.bind(this)) Neu
                 table.table.table-striped.table-hover
                     thead
                         tr
@@ -45,7 +45,7 @@ append body
             .col-xs-12
                 h4 
                     | Mieten
-                    button.btn.btn-primary.pull-right(onClick=this.createRental) Neu
+                    button.btn.btn-primary.pull-right(onClick=this.createRental.bind(this)) Neu
                 table.table.table-striped.table-hover
                     thead
                         tr
@@ -73,12 +73,12 @@ mixin renderEntry(item)
 script.
     var client = require("../client.js");
     var moment = require("moment");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["rentals_read"];
     }
     
-    exports.checkData = function(){
+    checkData(){
         var self = this;
         if(!this.state.items){
             client.findRentals({search:this.state.search},function(err,items){
@@ -89,26 +89,26 @@ script.
         }
     }
     
-    exports.createRequest = function(){
+    createRequest(){
         visit("/rentals/newrequest");
     }
     
-    exports.createBooking = function(){
+    createBooking(){
         visit("/rentals/newbooking");
     }
     
-    exports.createRental = function(){
+    createRental(){
         visit("/rentals/newrental");
     }
     
-    exports.edit = function(item){
+    edit(item){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/rentals/"+item._id);
         };    
     }
     
-    exports.delete = function(item){
+    delete(item){
         var self = this;
         return function(e){
             client.deleteRental(item._id,function(err){

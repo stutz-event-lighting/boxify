@@ -1,17 +1,19 @@
-input&attributes(this.props)&attributes({value:this.state.value,onChange:this.onChange,onBlur:this.props.onChange,onFocus:this.onFocus})
+input&attributes(this.props)&attributes({value:this.state.value,onChange:this.onChange.bind(this),onBlur:this.props.onChange,onFocus:this.onFocus.bind(this)})
 script.
     var ReactDOM = require("react-dom");
-    exports.getInitialState = function(){
-        return {value:this.props.value}
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+        this.state = {value:this.props.value}
     }
-    exports.componentWillReceiveProps = function(props){
+    componentWillReceiveProps(props){
         this.state.value = props.value;
     }
-    exports.onChange = function(e){
+    onChange(e){
         this.state.value = e.target.value;
         this.forceUpdate();
     }
-    exports.onFocus = function(e){
+    onFocus(e){
         if(this.props.selectOnFocus){
             e.target.select();
         }

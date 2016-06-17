@@ -5,16 +5,16 @@ append body
         .container
             h2 Equipmenttyp bearbeiten
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=function(){this.cancel()}.bind(this))
+                    button.btn.btn-default(onClick=this.cancel.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Zurück
-                    button.btn.btn-primary(onClick=function(){this.save()}.bind(this))
+                    button.btn.btn-primary(onClick=this.save.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged editable)
+                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged.bind(this) editable)
                         br
                         img(src="/api/barcode/EQ-"+this.state.item._id+"/"+(this.state.item.manufacturer?(this.state.item.manufacturer+" "):"")+this.state.item.name width="100%")
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
@@ -28,17 +28,17 @@ append body
                             label.col-lg-2.control-label Kategorie
                             .col-lg-10
                                 .input-group
-                                    select.form-control(onChange=this.onCategoryChanged value=this.state.item.category||"null")
+                                    select.form-control(onChange=this.onCategoryChanged.bind(this) value=this.state.item.category||"null")
                                         option(value="null") Keine
                                         each category in this.state.categories
                                             option(value=category._id)= category.name
                                     span.input-group-btn
-                                        button.btn.btn-default(onClick=this.startEditCategories)
+                                        button.btn.btn-default(onClick=this.startEditCategories.bind(this))
                                             i.glyphicon.glyphicon-pencil
                         .form-group
                             label.col-lg-2.control-label Tags
                             .col-lg-10
-                                Select(value=(this.state.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) asyncOptions=this.findTags onChange=this.onTagsChanged multi=true)
+                                Select(value=(this.state.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) loadOptions=this.findTags.bind(this) onChange=this.onTagsChanged.bind(this) multi=true)
                         .form-group
                             label.col-lg-2.control-label Hersteller
                             .col-lg-10
@@ -54,52 +54,52 @@ append body
                         .form-group
                             label.col-lg-2.control-label Technische Beschreibung
                             .col-lg-10
-                                TextArea.form-control(placeholder="Technische Beschreibung" value=this.state.item.technicalDescription onChange=this.onTechnicalDescriptionChanged)
+                                TextArea.form-control(placeholder="Technische Beschreibung" value=this.state.item.technicalDescription onChange=this.onTechnicalDescriptionChanged.bind(this))
                         .form-group
                             label.col-lg-2.control-label Gewicht
                             div(className="col-lg-10 "+(!this.state.weightOk?"has-error":""))
                                 .input-group
-                                    input.form-control(type="text" placeholder="Gewicht" value=this.state.weight onChange=this.onWeightChange onBlur=this.onWeightBlur)
+                                    input.form-control(type="text" placeholder="Gewicht" value=this.state.weight onChange=this.onWeightChange.bind(this) onBlur=this.onWeightBlur.bind(this))
                                     span.input-group-addon kg
                         .form-group
                             label.col-lg-2.control-label Grösse
                             .col-lg-10(style="display:flex")
                                 div(className=!this.state.lengthOk?"has-error":"" style="flex:1")
                                     .input-group
-                                        input.form-control(type="text" placeholder="Länge" value=this.state.length onChange=this.onLengthChange onBlur=this.onLengthBlur)
+                                        input.form-control(type="text" placeholder="Länge" value=this.state.length onChange=this.onLengthChange.bind(this) onBlur=this.onLengthBlur.bind(this))
                                         span.input-group-addon cm
                                 div(className=!this.state.widthOk?"has-error":"" style="flex:1;marginLeft:10px")
                                     .input-group
-                                        input.form-control(type="text" placeholder="Breite" value=this.state.width onChange=this.onWidthChange onBlur=this.onWidthBlur)
+                                        input.form-control(type="text" placeholder="Breite" value=this.state.width onChange=this.onWidthChange.bind(this) onBlur=this.onWidthBlur.bind(this))
                                         span.input-group-addon cm
                                 div(className=!this.state.heightOk?"has-error":"" style="flex:1;marginLeft:10px")
                                     .input-group
-                                        input.form-control(type="text" placeholder="Höhe" value=this.state.height onChange=this.onHeightChange onBlur=this.onHeightBlur)
+                                        input.form-control(type="text" placeholder="Höhe" value=this.state.height onChange=this.onHeightChange.bind(this) onBlur=this.onHeightBlur.bind(this))
                                         span.input-group-addon cm
                         .form-group
                             label.col-lg-2.control-label Mietpreis
                             div(className="col-lg-10 "+(!this.state.rentOk?"has-error":""))
                                 .input-group
                                     span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Mietpreis" value=this.state.rent onChange=this.onRentChange onBlur=this.onRentBlur)
+                                    input.form-control(type="text" placeholder="Mietpreis" value=this.state.rent onChange=this.onRentChange.bind(this) onBlur=this.onRentBlur.bind(this))
                                     span.input-group-addon /Tag
                         .form-group
                             label.col-lg-2.control-label Neupreis
                             div(className="col-lg-10 "+(!this.state.factoryPriceOk?"has-error":""))
                                 .input-group
                                     span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Neupreis" value=this.state.factoryPrice onChange=this.onFactoryPriceChange onBlur=this.onFactoryPriceBlur)
+                                    input.form-control(type="text" placeholder="Neupreis" value=this.state.factoryPrice onChange=this.onFactoryPriceChange.bind(this) onBlur=this.onFactoryPriceBlur.bind(this))
                         .form-group
                             label.col-lg-2.control-label Inhalt
                             .col-lg-10
-                                select.form-control(value=this.state.item.contents?(this.state.item.contents=="*"?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange)
+                                select.form-control(value=this.state.item.contents?(this.state.item.contents=="*"?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange.bind(this))
                                     option(value="none") Kein
                                     option(value="specific") Spezifisch
                                     option(value="all") Universal
                         if this.state.item.contents instanceof Array
                             .form-group
                                 .col-lg-10.col-lg-offset-2
-                                    Select(value=this.state.item.contents.map(function(type){return {value:type._id,label:type.name}}) asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged multi=true)
+                                    Select(value=this.state.item.contents.map(function(type){return {value:type._id,label:type.name}}) loadOptions=this.findTypes.bind(this) onChange=this.onEquipmenttypeChanged.bind(this) multi=true)
             br
             br
             .row
@@ -109,10 +109,10 @@ append body
                         .btn-toolbar.pull-right
                             if this.state.stock
                                 if !this.state.item.hasItems
-                                    button.btn.btn-danger(onClick=this.decrease) Entfernen
-                                button.btn.btn-primary(onClick=this.state.items.length?this.createItem:this.increase) Hinzufügen
+                                    button.btn.btn-danger(onClick=this.decrease.bind(this)) Entfernen
+                                button.btn.btn-primary(onClick=this.state.items.length?this.createItem.bind(this):this.increase.bind(this)) Hinzufügen
                             else
-                                DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick)
+                                DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick.bind(this))
                                     MenuItem(eventKey="1") Menge
                                     MenuItem(eventKey="2") Einzelobjekt
                     if this.state.items.length
@@ -186,9 +186,9 @@ append body
                     h3
                         = "Graph "+moment(this.state.start).format("MMMM YYYY")
                         .btn-toolbar.pull-right
-                            .btn.btn-default(onClick=this.graphBackward)
+                            .btn.btn-default(onClick=this.graphBackward.bind(this))
                                 .glyphicon.glyphicon-chevron-left
-                            .btn.btn-default(onClick=this.graphForward)
+                            .btn.btn-default(onClick=this.graphForward.bind(this))
                                 .glyphicon.glyphicon-chevron-right
                     .graph(style="width:100%;height:300px;position:relative")
                         - var yAxisWidth = 50;
@@ -224,19 +224,28 @@ append body
                                 input.form-control(type="text" placeholder="Menge" value=this.state.increase.count onChange=function(e){this.state.increase.count=e.target.value;this.update()}.bind(this))
                                 span.input-group-addon Stk.
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelIncrease) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmIncrease)= this.state.increase.type=="add"?"Hinzufügen":"Entfernen"
+                button.btn.btn-default(onClick=this.cancelIncrease.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmIncrease.bind(this))= this.state.increase.type=="add"?"Hinzufügen":"Entfernen"
 script.
     var client = require("../client.js");
-    var DropdownButton = require("react-bootstrap/DropdownButton");
-    var MenuItem = require("react-bootstrap/MenuItem");
+    var DropdownButton = require("react-bootstrap/lib/DropdownButton");
+    var MenuItem = require("react-bootstrap/lib/MenuItem");
     var async = require("async");
-    var Select = require("react-select");
+    var Select = require("react-select").Async;
     var moment = require("moment");
-    var TextArea = require("react-textarea-autosize");
+    var TextArea = require("react-textarea-autosize").default;
     var ImageViewer = require("./ImageViewer.jade");
     var Modal = require("./Modal.jade");
-
+    
+    var caps = {
+        5:1,
+        10:2,
+        25:5,
+        50:10,
+        75:15,
+        100:20
+    }
+    
     function isInt(str){
         return /^[0-9]*$/.test(str)
     }
@@ -244,11 +253,12 @@ script.
         return /^[0-9]*[.]*[0-9]*$/.test(str)
     }
     
-    exports.getNeededPermissions = function(){
+script(section="body").
+    getNeededPermissions (){
         return ["equipment_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount (){
         this.state.start = moment().startOf("month").toDate().getTime();
         this.state.end = moment().endOf("month").toDate().getTime();
         if(!this.state.item) this.loadEquipmentType();
@@ -258,7 +268,7 @@ script.
         this.loadGraph();
     }
     
-    exports.loadEquipmentType = function(){
+    loadEquipmentType(){
         client.getEquipmentType(this.props.params.type,function(err,item){
             this.state.item = item;
             this.state.weight = (item.weight||"")+"";
@@ -277,7 +287,7 @@ script.
         }.bind(this));
     }
     
-    exports.loadItems = function(){
+    loadItems(){
         client.getEquipmentTypeItems(this.props.params.type,function(err,items){
             if(err) return;
             this.state.items = items;
@@ -285,7 +295,7 @@ script.
         }.bind(this));
     }
     
-    exports.loadStock = function(){
+    loadStock(){
         client.getEquipmentTypeStock(this.props.params.type,false,function(err,stock){
             if(err) return;
             this.state.stock = stock;
@@ -293,7 +303,7 @@ script.
         }.bind(this));
     }
     
-    exports.loadCategories = function(){
+    loadCategories(){
         client.getEquipmentCategories(function(err,categories){
             if(err) categories = [];
             this.state.categories = categories;
@@ -301,28 +311,28 @@ script.
         }.bind(this));
     }
     
-    exports.loadGraph = function(){
+    loadGraph(){
         client.getEquipmentTypeGraph(this.props.params.type,0,0,function(err,graph){
             this.state.graph = graph;
             this.update();
         }.bind(this))
     }
     
-    exports.getImagePath = function(){
+    getImagePath(){
         return this.state.item.image?this.state.item.image.url:"/api/equipment/"+this.state.item._id+"/image";
     }
     
-    exports.onImageChanged = function(image){
+    onImageChanged(image){
         this.state.item.image = image;
         this.update();
     }
     
-    exports.startEditCategories = function(){
+    startEditCategories(){
         this.update();
         visit("/equipment/categories");
     }
 
-    exports.onCategoryChanged = function(e){
+    onCategoryChanged(e){
         if(e.target.value=="null"){
             delete this.state.item.category;
         }else{
@@ -331,36 +341,36 @@ script.
         this.update();
     }
     
-    exports.onTechnicalDescriptionChanged = function(e){
+    onTechnicalDescriptionChanged(e){
         this.state.item.technicalDescription = e.target.value;
         this.update();
     }
     
-    exports.onLengthChange = function(e){
+    onLengthChange(e){
         this.state.length = e.target.value;
         this.update();
     }
-    exports.onWidthChange = function(e){
+    onWidthChange(e){
         this.state.width = e.target.value;
         this.update();
     }
-    exports.onHeightChange = function(e){
+    onHeightChange(e){
         this.state.height = e.target.value;
         this.update();
     }
-    exports.onWeightChange = function(e){
+    onWeightChange(e){
         this.state.weight = e.target.value;
         this.update();
     }
-    exports.onRentChange = function(e){
+    onRentChange(e){
         this.state.rent = e.target.value;
         this.update();
     }
-    exports.onFactoryPriceChange = function(e){
+    onFactoryPriceChange(e){
         this.state.factoryPrice = e.target.value;
         this.update();
     }
-    exports.onLengthBlur = function(){
+    onLengthBlur(){
         if(!isInt(this.state.length)){
             this.state.lengthOk = false;
         }else{
@@ -369,7 +379,7 @@ script.
         }
         this.update();
     }
-    exports.onWidthBlur = function(){
+    onWidthBlur(){
         if(!isInt(this.state.width)){
             this.state.widthOk = false;
         }else{
@@ -378,7 +388,7 @@ script.
         }
         this.update();
     }
-    exports.onHeightBlur = function(){
+    onHeightBlur(){
         if(!isInt(this.state.height)){
             this.state.heightOk = false;
         }else{
@@ -387,7 +397,7 @@ script.
         }
         this.update();
     }
-    exports.onWeightBlur = function(){
+    onWeightBlur(){
         if(!isFloat(this.state.weight)){
             this.state.weightOk = false;
         }else{
@@ -396,7 +406,7 @@ script.
         }
         this.update();
     }
-    exports.onRentBlur = function(){
+    onRentBlur(){
         if(!isFloat(this.state.rent)){
             this.state.rentOk = false;
         }else{
@@ -405,14 +415,14 @@ script.
         }
         this.update();
     }
-    exports.onFactoryPriceBlur = function(){
+    onFactoryPriceBlur(){
         if(this.state.factoryPriceOk = isFloat(this.state.factoryPrice)){
             this.state.item.factoryPrice = parseFloat(this.state.factoryPrice);
         }
         this.update();
     }
 
-    exports.onUniversalAddClick = function(i){
+    onUniversalAddClick(i){
         switch(i){
             case "1":
                 this.increase();
@@ -423,21 +433,21 @@ script.
         }
     }
 
-    exports.increase = function(){
+    increase(){
         this.state.increase = {type:"add",count:"",countOk:true}
         this.update();
     }
-    exports.decrease = function(){
+    decrease(){
         this.state.increase = {type:"remove",count:"",countOk:true}
         this.update();
     }
 
-    exports.cancelIncrease = function(){
+    cancelIncrease(){
         delete this.state.increase;
         this.update();
     }
 
-    exports.confirmIncrease = function(){
+    confirmIncrease(){
         var self = this;
         if(/^[0-9]+$/.test(this.state.increase.count) && (this.state.increase.type=="add" || parseInt(this.state.increase.count,10) <= this.state.stock)){
             client.increaseEquipmentCount(this.state.item._id,{type:this.state.increase.type,count:parseInt(this.state.increase.count,10)},function(err){
@@ -450,7 +460,7 @@ script.
         }
     }
 
-    exports.createItem = function(){
+    createItem(){
         var self = this;
         client.createEquipment(this.state.item._id,{},function(err,id){
             if(err) return;
@@ -458,14 +468,14 @@ script.
         });
     }
 
-    exports.editItem = function(equipment){
+    editItem(equipment){
         var self = this;
         return function(){
             visit("/equipment/"+self.state.item._id+"/"+equipment.id);
         }
     }
 
-    exports.deleteItem = function(item){
+    deleteItem(item){
         var self = this;
         return function(){
             client.deleteEquipment(self.state.item._id,item.id,function(err){
@@ -481,23 +491,23 @@ script.
         }
     }
     
-    exports.addContents = function(){
+    addContents(){
         this.state.addcontents = {type:null};
         this.update();
     }
     
-    exports.findTypes = function(input,cb){
+    findTypes(input,cb){
         client.findEquipmentTypes({search:input},function(err,types){
             cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
         });
     }
     
-    exports.onEquipmenttypeChanged = function(id,selection){
+    onEquipmenttypeChanged(id,selection){
         this.state.item.contents = selection.map(function(sel){return {_id:sel.value,name:sel.label}});
         this.update();
     }
     
-    exports.findTags = function(name,cb){
+    findTags(name,cb){
         client.findEquipmentTags(name,function(err,tags){
             var options = tags.map(function(tag){return {value:tag,label:tag}});
             if(name.length && tags.indexOf(name) < 0) options.push({value:name,label:"Tag '"+name+"' erstellen"});
@@ -505,14 +515,15 @@ script.
         });
     }
     
-    exports.onTagsChanged = function(id,tags){
+    onTagsChanged(tags){
+        console.log(tags);
         this.state.item.tags = tags.map(function(tag){
             return tag.value
         });
         this.update();
     }
     
-    exports.onContentsChange = function(e){
+    onContentsChange(e){
         switch(e.target.value){
             case "none":
                 this.state.item.contents = null;
@@ -527,7 +538,7 @@ script.
         this.update();
     }
     
-    exports.createAreaPath = function(cap,timeline,fill){
+    createAreaPath(cap,timeline,fill){
         var path = "";
         
         var start = 0;
@@ -547,17 +558,8 @@ script.
         }        
         return (fill?"M0,100L":"M")+"0,"+(100-start/cap.range*100)+" "+path+"100,"+(100-end/cap.range*100)+(fill?" 100,100Z":"");
     }
-    
-    var caps = {
-        5:1,
-        10:2,
-        25:5,
-        50:10,
-        75:15,
-        100:20
-    }
-    
-    exports.steps = function(cap){
+        
+    steps(cap){
         var steps = [];
         for(var i = cap.step; i <= cap.max; i+=cap.step){
             steps.push(i);
@@ -565,7 +567,7 @@ script.
         return steps;
     }
     
-    exports.days = function(){
+    days(){
         var day = 1000*60*60*24;
         var days = [];
         for(var i = this.state.start; i <= this.state.end; i+=day){
@@ -574,7 +576,7 @@ script.
         return days;
     }
     
-    exports.max = function(timeline){
+    max(timeline){
         var max = 0;
         for(var time in timeline){
             if(timeline[time] > max) max = timeline[time];
@@ -582,7 +584,7 @@ script.
         return max;
     }
     
-    exports.cap = function(graphs){
+    cap(graphs){
         var max = 0;
         for(var i = 0; i < graphs.length; i++){
             var m = this.max(graphs[i]);
@@ -595,24 +597,22 @@ script.
         }
     }
     
-    exports.graphForward = function(){
+    graphForward(){
         this.state.start = this.state.end+1;
         this.state.end = moment(this.state.start).endOf("month").toDate().getTime();
         this.update();
     }
-    exports.graphBackward = function(){
+    graphBackward(){
         this.state.end = this.state.start-1;
         this.state.start = moment(this.state.end).startOf("month").toDate().getTime();
         this.update();
     }
     
-    
-    
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
 
-    exports.save = function(){
+    save(){
         client.saveEquipmentType(this.state.item._id,{
             name:this.state.item.name,
             category:this.state.item.category,

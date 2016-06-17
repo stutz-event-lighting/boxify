@@ -6,10 +6,10 @@ append body
             h2
                 = this.state.item.name+" "+this.state.item.id
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=function(){this.cancel()}.bind(this))
+                    button.btn.btn-default(onClick=this.cancel.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Zurück
-                    button.btn.btn-primary(onClick=function(){this.save()}.bind(this))
+                    button.btn.btn-primary(onClick=this.save.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
@@ -24,11 +24,11 @@ append body
                         .form-group
                             label.col-lg-2.control-label Seriennummer
                             .col-lg-10
-                                input.form-control(placeholder="Seriennummer" value=this.state.item.serialnumber||"" onChange=this.onSerialNumberChange)
+                                input.form-control(placeholder="Seriennummer" value=this.state.item.serialnumber||"" onChange=this.onSerialNumberChange.bind(this))
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange)
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange.bind(this))
                     .row
                         .col-md-4.col-xs-6
                             h4 Aktueller Standort
@@ -82,11 +82,11 @@ append body
                         .pull-left
                             h3 Inhalt
                         .btn-toolbar.pull-right(style="marginTop:18px")
-                            ScanButton.pull-left(onScan=this.handleScan supplier="own")
+                            ScanButton.pull-left(onScan=this.handleScan.bind(this) supplier="own")
                             .btn-group.pull-left(style="marginLeft:10px")
-                                div(className="btn "+(this.state.remove?"btn-primary":"btn-default") onClick=this.toggleMode)
+                                div(className="btn "+(this.state.remove?"btn-primary":"btn-default") onClick=this.toggleMode.bind(this))
                                     i.glyphicon.glyphicon-minus
-                                div(className="btn "+(this.state.remove?"btn-default":"btn-primary") onClick=this.toggleMode)
+                                div(className="btn "+(this.state.remove?"btn-default":"btn-primary") onClick=this.toggleMode.bind(this))
                                     i.glyphicon.glyphicon-plus                                                            
                         table.table.table-striped.table-hover
                             thead
@@ -109,21 +109,21 @@ append body
                                                     a(href="/equipment/"+id+"/"+iid)= iid
 script.
     var client = require("../client.js");
-    var TextArea = require("react-textarea-autosize");
+    var TextArea = require("react-textarea-autosize").default;
     var moment = require("moment");
     var ScanButton = require("./ScanButton.jade");
     var ImageViewer = require("./ImageViewer.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["equipment_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         if(!this.state.item) this.loadItem();
         if(!this.state.type) this.loadType();
     }
     
-    exports.loadItem = function(){
+    loadItem(){
         var self = this;
         client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
             if(err) return;
@@ -141,7 +141,7 @@ script.
         });
     }
     
-    exports.loadType = function(){
+    loadType(){
         client.getEquipmentType(this.props.params.type,function(err,data){
             if(err) return;
             this.state.type = data;
@@ -149,17 +149,17 @@ script.
         }.bind(this));
     }
     
-    exports.onSerialNumberChange = function(e){
+    onSerialNumberChange(e){
         this.state.item.serialnumber = e.target.value;
         this.update();
     }
     
-    exports.onCommentChange = function(e){
+    onCommentChange(e){
         this.state.item.remark = e.target.value;
         this.update();
     }
 
-    exports.toggleMode = function(){
+    toggleMode(){
         if(this.state.remove){
             delete this.state.remove;
         }else{
@@ -168,7 +168,7 @@ script.
         this.update();
     }
     
-    exports.handleScan = function(code){
+    handleScan(code){
         if(!code.count) code.count = 1;
         if(this.state.remove){
             if(!this.state.item.contents[code.type]){
@@ -213,7 +213,7 @@ script.
         }
     }
     
-    exports.continueAddingItems = function(code){   
+    continueAddingItems(code){   
         if(!this.state.item.contents[code.type]){
             client.getEquipmentTypeName(code.type,function(err,name){
                 if(err) return this.playErrorSound();
@@ -233,15 +233,15 @@ script.
         };    
     }
     
-    exports.playErrorSound = function(){
+    playErrorSound(){
         new Audio("/public/audio/error.wav").play();
     }
     
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
 
-    exports.save = function(){    
+    save(){    
         var contents = {};
         for(var type in this.state.item.contents){
             var t = this.state.item.contents[type];

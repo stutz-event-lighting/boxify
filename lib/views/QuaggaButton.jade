@@ -1,20 +1,21 @@
-div(onClick=this.scan className="btn btn-default "+this.props.className)
+div(onClick=this.scan.bind(this) className="btn btn-default "+this.props.className)
     i.glyphicon.glyphicon-facetime-video
     if this.state.scan
-        Quagga(onScan=this.onScan)
+        Quagga(onScan=this.onScan.bind(this))
 script.
     var Quagga = require("./Quagga.jade")
-    
-    exports.getInitialState = function(){
-        return {};
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
     }
     
-    exports.scan = function(){
+    scan(){
         this.state.scan = true;
         this.forceUpdate();
     }
     
-    exports.onScan = function(code){
+    onScan(code){
         setTimeout(function(){
             this.state.scan = false;
             this.forceUpdate();

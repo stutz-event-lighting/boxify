@@ -4,7 +4,7 @@ append body
     .container
         h2
             | Benutzer
-            CreateContactButton(callback=this.create)
+            CreateContactButton(callback=this.create.bind(this))
         table.table.table-striped
             thead
                 tr
@@ -19,16 +19,16 @@ append body
 script.
     var client = require("../client.js");
     var CreateContactButton = require("./CreateContactButton.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["users_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         this.findUsers();
     }
     
-    exports.findUsers = function(){
+    findUsers(){
         client.findUsers({},function(err,users){
             if(err) return;
             this.state.users = users;
@@ -36,21 +36,21 @@ script.
         }.bind(this))
     }
     
-    exports.create = function(id){
+    create(id){
         client.createUser(id,function(err){
             if(err) return;
             visit("/users/"+id);
         });
     }
     
-    exports.edit = function(user){    
+    edit(user){    
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/users/"+user._id)
         }        
     }
     
-    exports.delete = function(user){
+    delete(user){
         var self = this;
         return function(){
             client.deleteUser(user._id,function(err){

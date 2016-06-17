@@ -6,11 +6,11 @@ append body
         h1 Kunden
         .searchbar(style="display:flex")
             .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search value=this.state.search||"")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
                 span.input-group-btn(style="display:inline-block;width:auto;")
                     button.btn.btn-default Suchen
             .btn-group(style="marginLeft:10px")
-                CreateContactButton(callback=this.create)
+                CreateContactButton(callback=this.create.bind(this))
         table.table.table-striped.table-hover
             thead
                 tr
@@ -29,8 +29,8 @@ append body
                 h2 Kunden löschen
             .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelDelete) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmDelete) Löschen
+                button.btn.btn-default(onClick=this.cancelDelete.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmDelete.bind(this)) Löschen
     if this.state.error
         Modal
             .modal-header
@@ -40,18 +40,17 @@ append body
                     when 601
                         .alert.alert-warning Dieser Kunde ist noch Objekten zugewiesen. 
             .modal-footer
-                button.btn.btn-primary(onClick=this.dismiss) Ich verstehe
+                button.btn.btn-primary(onClick=this.dismiss.bind(this)) Ich verstehe
 script.
     var client = require("../client.js");
-    var Select = require("react-select");
     var Modal = require("./Modal.jade");
     var CreateContactButton = require("./CreateContactButton.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["customers_read"];
     }
     
-    exports.checkData = function(){
+    checkData(){
         var self = this;
         if(!this.state.items){
             client.findCustomers({search:this.state.search},function(err,items){
@@ -61,45 +60,43 @@ script.
         }
     }
     
-    exports.create = function(id){
+    create(id){
         client.createCustomer(id,function(err){
             if(err) return;
             visit("/customers/"+id);
         });
     }
 
-    exports.search = function(e){
+    search(e){
         this.state.search = e.target.value;
         delete this.state.items;
         this.update();
     }
     
-    exports.dismiss = function(){
+    dismiss(){
         delete this.state.error;
         this.update();
     }
-
-
-
-    exports.edit = function(item){
+    
+    edit(item){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/customers/"+item._id)
         }        
     }
 
-    exports.delete = function(item){
+    delete(item){
         return function(){
             this.state.delete = item;
             this.update();
         }.bind(this)
     }
 
-    exports.cancelDelete = function(){
+    cancelDelete(){
         delete this.state.delete;
         this.update();
     }
-    exports.confirmDelete = function(){
+    confirmDelete(){
         var self = this;
         var del = this.state.delete;
         delete this.state.delete;

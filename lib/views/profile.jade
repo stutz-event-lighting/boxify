@@ -1,13 +1,12 @@
 extends ./contact.jade
 
-append properties
 append container
     .row
         .col-xs-12
             h2 Passwort
             .btn-toolbar
-                .btn.btn-default(onClick=this.changePassword) Passwort ändern
-    each Section in this.extensionSections
+                .btn.btn-default(onClick=this.changePassword.bind(this)) Passwort ändern
+    each Section in this.constructor.extensionSections
         Section(user=this.getContactId())
     if this.state.changepassword
         Modal
@@ -18,51 +17,48 @@ append container
                     .form-group
                         label.col-lg-2.control-label Neues Passwort
                         .col-lg-10
-                            input.form-control(type="password" value=this.state.changepassword.password onChange=this.onPasswordChanged)
+                            input.form-control(type="password" value=this.state.changepassword.password onChange=this.onPasswordChanged.bind(this))
                     .form-group
                         label.col-lg-2.control-label Neues Passwort bestätigen
                         .col-lg-10
-                            input.form-control(type="password" value=this.state.changepassword.password2 onChange=this.onPassword2Changed)
+                            input.form-control(type="password" value=this.state.changepassword.password2 onChange=this.onPassword2Changed.bind(this))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelChangePassword) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmChangePassword) Speichern
+                button.btn.btn-default(onClick=this.cancelChangePassword.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmChangePassword.bind(this)) Speichern
 script.
     var client = require("../client.js");
     var Modal = require("./Modal.jade");
-    
-    exports.extensionSections = [];
-    
-    exports.getNeededPermissions = function(){
+    Component.extensionSections = [];
+    Component.hideBackButton = true;
+script(section="body").
+    getNeededPermissions(){
         return [];
-    }
-    
-    exports.getContactId = function(){
+    }    
+    getContactId(){
         return client.session.user._id;
     }
     
-    exports.hideBackButton = true;
-    
-    exports.changePassword = function(){
+    changePassword(){
         this.state.changepassword = {password:"",password2:""};
         this.update();
     }
     
-    exports.onPasswordChanged = function(e){
+    onPasswordChanged(e){
         this.state.changepassword.password = e.target.value;
         this.update();
     }
     
-    exports.onPassword2Changed = function(e){
+    onPassword2Changed(e){
         this.state.changepassword.password2 = e.target.value;
         this.update();
     }
     
-    exports.cancelChangePassword = function(){
+    cancelChangePassword(){
         delete this.state.changepassword;
         this.update();
     }
     
-    exports.confirmChangePassword = function(){
+    confirmChangePassword(){
         if(!this.state.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
         if(this.state.changepassword.password != this.state.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
         client.setPassword(this.getContactId(),this.state.changepassword.password,function(err){
@@ -71,4 +67,4 @@ script.
         }.bind(this))
     }
     
-    exports.onSaved = function(){}
+    onSaved(){}

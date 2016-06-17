@@ -5,7 +5,7 @@ append body
     .container
         h2 Equipmentkategorien
             .btn-toolbar.pull-right
-                button.btn.btn-default(onClick=this.finish)
+                button.btn.btn-default(onClick=this.finish.bind(this))
                     i.glyphicon.glyphicon-chevron-left
                     |  Zurück
         
@@ -14,7 +14,7 @@ append body
                 tr
                     th
                         | Name
-                        button.btn.btn-primary.btn-xs.pull-right(onClick=this.addCategory)
+                        button.btn.btn-primary.btn-xs.pull-right(onClick=this.addCategory.bind(this))
                             i.glyphicon.glyphicon-plus
             tbody
                 if this.state.categories
@@ -33,10 +33,10 @@ append body
                     .form-group
                         label.col-lg-2.control-label Name
                         .col-lg-10
-                            input.form-control(type="text" placeholder="Name" value=this.state.category.name onChange=this.onCategoryNameChange)
+                            input.form-control(type="text" placeholder="Name" value=this.state.category.name onChange=this.onCategoryNameChange.bind(this))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancel) Abbrechen
-                button.btn.btn-primary(onClick=this.save) Speichern
+                button.btn.btn-default(onClick=this.cancel.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.save.bind(this)) Speichern
     if this.state.error
         Modal
             .modal-header
@@ -46,16 +46,16 @@ append body
                     when 601
                         .alert.alert-warning Diese Kategorie ist noch Objekten zugewiesen. 
             .modal-footer
-                button.btn.btn-primary(onClick=this.dismiss) Ich verstehe        
+                button.btn.btn-primary(onClick=this.dismiss.bind(this)) Ich verstehe
 script.
     var client = require("../client.js");
     var Modal = require("./Modal.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["equipment_read"];
     }
     
-    exports.checkData = function(){
+    checkData(){
         var self = this;
         if(!this.state.categories){
             client.getEquipmentCategories(function(err,categories){
@@ -66,22 +66,22 @@ script.
         }
     }
 
-    exports.addCategory = function(){
+    addCategory(){
         this.state.category = {name:""};
         this.update();
     }
     
-    exports.onCategoryNameChange = function(e){
+    onCategoryNameChange(e){
         this.state.category.name = e.target.value;
         this.update();
     }
     
-    exports.cancel = function(){
+    cancel(){
         delete this.state.category;
         this.update();
     }
     
-    exports.edit = function(category){        
+    edit(category){        
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             this.state.category = category;
@@ -89,11 +89,11 @@ script.
         }.bind(this);
     }
     
-    exports.dismiss = function(){
+    dismiss(){
         delete this.state.error;
         this.update();
     }
-    exports.delete = function(category){
+    delete(category){
         return function(){
             client.deleteEquipmentCategory(category._id,function(err){
                 if(err){
@@ -106,7 +106,7 @@ script.
         }.bind(this)
     }
     
-    exports.save = function(){
+    save(){
         if(this.state.category._id){
             client.updateEquipmentCategory(this.state.category._id,this.state.category.name,function(err){
                 delete this.state.category;
@@ -121,6 +121,6 @@ script.
         }
     }
     
-    exports.finish = function(){
+    finish(){
         back();
     }

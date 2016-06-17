@@ -6,16 +6,16 @@ append body
             h2 Kontakt bearbeiten
                 .btn-toolbar.pull-right
                     if !this.hideBackButton
-                        button.btn.btn-default(onClick=this.cancel)
+                        button.btn.btn-default(onClick=this.cancel.bind(this))
                             i.glyphicon.glyphicon-chevron-left
                             |  Zurück
-                    button.btn.btn-primary(onClick=this.save)
+                    button.btn.btn-primary(onClick=this.save.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
                 .col-lg-3.col-md-4.col-sm-6.col-xs-12
                     div.text-center
-                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged editable)
+                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged.bind(this) editable)
                 .col-lg-9.col-md-8.col-sm-6.col-xs-12
                     h3 Kontakt Daten
                     .form-horizontal
@@ -62,7 +62,7 @@ append body
                                         .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removeEmail(email))
                                             i.glyphicon.glyphicon-trash
                                 div(style="marginBottom:15px")
-                                    .btn.btn-default.pull-right(onClick=this.addEmail)
+                                    .btn.btn-default.pull-right(onClick=this.addEmail.bind(this))
                                         i.glyphicon.glyphicon-plus
                         .form-group
                             label.col-lg-2.control-label Telefon
@@ -76,7 +76,7 @@ append body
                                         .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removePhone(phone))
                                             i.glyphicon.glyphicon-trash
                                 div(style="marginBottom:15px")
-                                    .btn.btn-default.pull-right(onClick=this.addPhone)
+                                    .btn.btn-default.pull-right(onClick=this.addPhone.bind(this))
                                         i.glyphicon.glyphicon-plus
                         if this.state.item.type == "company" || this.state.item.type == "club"
                             .form-group
@@ -90,31 +90,29 @@ append body
                                             span.input-group-btn
                                                 .btn.btn-default(onClick=this.removeContact(contact))
                                                     i.glyphicon.glyphicon-trash
-                                    CreateContactButton(callback=this.addContact)
+                                    CreateContactButton(callback=this.addContact.bind(this))
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
                                 TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.setValue("remark"))
 
                     block properties
-            block container                
-append properties
-append container
+            block container
 script.
     var client = require("../client.js");
-    var TextArea = require("react-textarea-autosize");
+    var TextArea = require("react-textarea-autosize").default;
     var CreateContactButton = require("./CreateContactButton.jade");
     var ImageViewer = require("./ImageViewer.jade");
-    
-    exports.componentDidMount = function(){
+script(section="body").    
+    componentDidMount(){
         if(!this.state.item) this.loadContact();
     }
     
-    exports.getContactId = function(){
+    getContactId(){
         return this.props.params.contact;
     }
     
-    exports.loadContact = function(){
+    loadContact(){
         client.getContact(this.getContactId(),function(err,contact){
             if(err) return;
             this.state.item = contact;
@@ -122,30 +120,30 @@ script.
         }.bind(this));       
     }
     
-    exports.setValue = function(name,target){
+    setValue(name,target){
         return function(e){
             (target||this.state.item)[name] = e.target.value;
             this.update();
         }.bind(this)
     }
     
-    exports.getImagePath = function(){
+    getImagePath(){
         return this.state.item.image?this.state.item.image.url:"/api/contacts/"+this.state.item._id+"/image";
     }
     
-    exports.onImageChanged = function(image){
+    onImageChanged(image){
         this.state.item.image = image;
         this.update();
     }
     
-    exports.addEmail = function(){
+    addEmail(){
         var entry = {type:"",email:""};
         if(!this.state.item.emails.length) entry.standard = true;
         this.state.item.emails.push(entry);
         this.update();
     }
     
-    exports.removeEmail = function(email){
+    removeEmail(email){
         return function(){            
             this.state.item.emails.splice(this.state.item.emails.indexOf(email),1);
             if(email.standard && this.state.item.emails.length) this.state.item.emails[0].standard = true;
@@ -153,7 +151,7 @@ script.
         }.bind(this);
     }
     
-    exports.setEmailAsStandard = function(email){
+    setEmailAsStandard(email){
         return function(){
             var emails = this.state.item.emails;
             for(var i = 0; i < emails.length; i++) delete emails[i].standard;
@@ -162,14 +160,14 @@ script.
         }.bind(this);
     }
     
-    exports.addPhone = function(){
+    addPhone(){
         var entry = {type:"",number:""};
         if(!this.state.item.phones.length) entry.standard = true;
         this.state.item.phones.push(entry);
         this.update();
     }
     
-    exports.removePhone = function(phone){
+    removePhone(phone){
         return function(){            
             this.state.item.phones.splice(this.state.item.phones.indexOf(phone),1);
             if(phone.standard && this.state.item.phones.length) this.state.item.phones[0].standard = true;
@@ -177,7 +175,7 @@ script.
         }.bind(this);
     }
     
-    exports.setPhoneAsStandard = function(phone){
+    setPhoneAsStandard(phone){
         return function(){
             var phones = this.state.item.phones;
             for(var i = 0; i < phones.length; i++) delete phones[i].standard;
@@ -186,7 +184,7 @@ script.
         }.bind(this);
     }
     
-    exports.addContact = function(id,name){
+    addContact(id,name){
         if(!this.state.item.contacts) this.state.item.contacts = [];
         this.state.item.contacts.push({
             id:id,
@@ -196,18 +194,18 @@ script.
         this.update();
     }
     
-    exports.removeContact = function(contact){
+    removeContact(contact){
         return function(){            
             this.state.item.contacts.splice(this.state.item.contacts.indexOf(contact),1);
             this.update();
         }.bind(this);
     }
     
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
     
-    exports.save = function(){
+    save(){
         var data = {
             type:this.state.item.type,
             salutation:this.state.item.salutation,
@@ -237,7 +235,7 @@ script.
         }.bind(this));        
     }
     
-    exports.onSaved = function(){
+    onSaved(){
         history.back();
     }
     

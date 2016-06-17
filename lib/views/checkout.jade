@@ -5,10 +5,10 @@ append body
         .container
             h2 Warenausgang
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel)
+                    button.btn.btn-default(onClick=this.cancel.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Abbrechen
-                    button.btn.btn-primary(onClick=this.finish)
+                    button.btn.btn-primary(onClick=this.finish.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Abschliessen
             .row
@@ -17,7 +17,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Person
                             .col-lg-10
-                                ContactBox(value=this.state.data.person onChange=this.onPersonChanged type="person" disabled=!this.state.data.draft)
+                                ContactBox(value=this.state.data.person onChange=this.onPersonChanged.bind(this) type="person" disabled=!this.state.data.draft)
             .row
                 .col-xs-12.col-md-8
                     h3 Equipment
@@ -50,12 +50,12 @@ append body
                         h3 Verlauf
                     if this.state.data.draft
                         .btn-toolbar.pull-right(style="marginTop:18px")
-                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier)        
+                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier.bind(this))        
                                 each supplier in this.state.allsuppliers
                                     MenuItem(eventKey=supplier)
                                         img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                            ScanButton.pull-left(onScan=this.handleScan supplier=this.state.supplier ref="scanbutton")
-                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan)
+                            ScanButton.pull-left(onScan=this.handleScan.bind(this) supplier=this.state.supplier ref="scanbutton")
+                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan.bind(this))
                     table.table.table-striped.table-hover
                         thead
                             th
@@ -84,8 +84,8 @@ append body
                     tbody
                         +renderEntry(this.state.entry,0)
             .modal-footer
-                .btn.btn-default(onClick=this.cancelAdd) Abbrechen
-                .btn.btn-primary(onClick=this.applyAdd) Bestätigen
+                .btn.btn-default(onClick=this.cancelAdd.bind(this)) Abbrechen
+                .btn.btn-primary(onClick=this.applyAdd.bind(this)) Bestätigen
 mixin renderLogEntry(entry,level)
     if entry.items
         each contents,item in entry.items
@@ -125,23 +125,23 @@ script.
     var async = require("async");
     var ScanButton = require("./ScanButton.jade");
     var async = require("async");
-    var DropdownButton = require("react-bootstrap/DropdownButton");
-    var MenuItem = require("react-bootstrap/MenuItem");
+    var DropdownButton = require("react-bootstrap/lib/DropdownButton");
+    var MenuItem = require("react-bootstrap/lib/MenuItem");
     var QuaggaButton = require("./QuaggaButton.jade");
     var bs = require("../barcodescanner.js");
     var ContactBox = require("./ContactBox.jade");
     var Modal = require("./Modal.jade");
     var Input = require("./Input.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").
+    getNeededPermissions(){
         return ["projects_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         if(!this.state.data) this.loadData();
     }
     
-    exports.loadData = function(){
+    loadData(){
         client.getCheckout(this.props.params.checkout,function(err,data){
             if(err) return;
             this.state.data = data;
@@ -164,12 +164,13 @@ script.
         }.bind(this));
     }
     
-    exports.onPersonChanged = function(id){
+    onPersonChanged(id){
         this.state.data.person = id;
+        this.forceUpdate();
         this.save();
     }
     
-    exports.calculateSuppliers = function(){
+    calculateSuppliers(){
         var suppliers = {};
         for(var type in this.state.data.types){
             if(this.state.data.types[type].count || this.state.data.types[type].needed)
@@ -178,23 +179,23 @@ script.
         this.state.suppliers = Object.keys(suppliers);
     }
     
-    exports.setSupplier = function(supplier){
+    setSupplier(supplier){
         this.state.supplier = supplier;
         this.update();
     }
     
-    exports.startScan = function(type){
+    startScan(type){
         return function(){
             this.refs.scanbutton.scan();
-            this.refs.scanbutton.onEquipmenttypeChanged(type,[{value:type,label:this.state.data.types[type].name}]);
+            this.refs.scanbutton.onEquipmenttypeChanged({value:type,label:this.state.data.types[type].name});
         }.bind(this)
     }
         
-    exports.onQuaggaScan = function(code){
+    onQuaggaScan(code){
         bs.parse(code);
     }
     
-    exports.handleScan = function(code){
+    handleScan(code){
         if(!this.state.data.draft) return;
         if(code.kind == "EQ" && this.state.data.types[code.type]){
             if(!code.supplier) code.supplier = this.state.supplier;
@@ -231,7 +232,7 @@ script.
         }
     }
     
-    exports.getEntryContents = function(entry,items,cb){
+    getEntryContents(entry,items,cb){
         async.each(items,function(item,cb){
             client.getEquipment(entry.type,item,function(err,item){
                 if(err) return cb(err);
@@ -261,7 +262,7 @@ script.
         }.bind(this),cb);
     }
     
-    exports.calculateEntryTotal = function(entry,total){
+    calculateEntryTotal(entry,total){
         total = total||{};
         if(!total[entry.type]) total[entry.type] = {count:0};
         total[entry.type].count += entry.count;
@@ -276,7 +277,7 @@ script.
         return total;
     }
     
-    exports.checkAvailability = function(supplier,total){
+    checkAvailability(supplier,total){
         for(var type in total){
             if(
                 !this.state.data.types[type].suppliers ||
@@ -299,7 +300,7 @@ script.
         return true;
     }
         
-    exports.add = function(entry){
+    add(entry){
         var total = this.calculateEntryTotal(entry);
         if(this.checkAvailability(entry.supplier,total)){
             for(var type in total){
@@ -322,7 +323,7 @@ script.
         }
     }
     
-    exports.remove = function(index){
+    remove(index){
         return function(){
             var entry = this.state.data.history.splice(this.state.data.history.length-1-index,1)[0];
             var total = this.calculateEntryTotal(entry);
@@ -348,15 +349,15 @@ script.
         }.bind(this);
     }
     
-    exports.playErrorSound = function(){
+    playErrorSound(){
         new Audio("/public/audio/error.wav").play();
     }
 
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
 
-    exports.save = function(){
+    save(){
         var data = {};
         for(var type in this.state.data.types){
             var t = this.state.data.types[type];
@@ -379,14 +380,14 @@ script.
         });
     }
     
-    exports.finish = function(){
+    finish(){
         client.finishEquipmentIo(this.props.params.checkout,function(err){
             if(err) return true;
             history.back();
         })
     }
     
-    exports.addCheckedInformation = function(entry){
+    addCheckedInformation(entry){
         if(entry.items){
             entry.checked = {};
             for(var id in entry.items){
@@ -400,7 +401,7 @@ script.
             entry.max = entry.count;
         }
     }
-    exports.removeCheckedInformation = function(entries){
+    removeCheckedInformation(entries){
         for(var i = 0; i < entries.length; i++){
             var entry = entries[i];
             var keep = true;
@@ -429,7 +430,7 @@ script.
         return entries;
     }
     
-    exports.setSource = function(entries,type,id){
+    setSource(entries,type,id){
         for(var i = 0; i < entries.length; i++){
             var entry = entries[i];
             if(entry.items){
@@ -448,13 +449,13 @@ script.
         }
     }
     
-    exports.onCheckedChanged = function(entry,id){
+    onCheckedChanged(entry,id){
         return function(e){
             this.handleScan({kind:"EQ",type:parseFloat(entry.type),item:id});
         }.bind(this)
     }
     
-    exports.getChecked = function(entry,id){
+    getChecked(entry,id){
         if(id){
             return entry.checked[id];
         }else{
@@ -462,7 +463,7 @@ script.
         }
     }
     
-    exports.setChecked = function(checked,entry,id){
+    setChecked(checked,entry,id){
         if(id){
             entry.checked[id] = checked
             this.setEntriesChecked(checked,entry.items[id]);
@@ -471,7 +472,7 @@ script.
         }
     }
     
-    exports.setEntriesChecked = function(checked,entries){
+    setEntriesChecked(checked,entries){
         for(var i = 0; i < entries.length; i++){
             var entry = entries[i];
             if(entry.items){
@@ -484,18 +485,18 @@ script.
         }
     }
     
-    exports.getEntryOfType = function(entries,type){
+    getEntryOfType(entries,type){
         for(var i = 0; i < entries.length; i++){
             var entry = entries[i];
             if(entry.type+"" == type+"") return entry;
         }
     }
     
-    exports.getSubEntries = function(entry){
+    getSubEntries(entry){
         return entry.items[Object.keys(entry.items)[0]];
     }
     
-    exports.onCountChanged = function(entry){
+    onCountChanged(entry){
         return function(e){
             var val = parseInt(e.target.value,10);
             if(isNaN(val)){
@@ -511,19 +512,19 @@ script.
         }.bind(this)
     }
     
-    exports.cancelAdd = function(){
+    cancelAdd(){
         delete this.state.entry;
         this.update();
     }
     
-    exports.applyAdd = function(){
+    applyAdd(){
         var entry = this.state.entry;
         delete this.state.entry;
         var entries = this.removeCheckedInformation([entry]);
         entries.reverse().forEach(this.add.bind(this));
     }
     
-    exports.findItem = function(entries,type,id){
+    findItem(entries,type,id){
         for(var i = 0; i < entries.length; i++){
             var entry = entries[i];
             if(entry.type+"" == type+"" && (!id || entry.items[id])) return entries;
@@ -536,7 +537,7 @@ script.
         }   
     }
         
-    exports.allChecked = function(subentries){
+    allChecked(subentries){
         for(var i = 0; i < subentries.length; i++){
             var entry = subentries[i];
             if(entry.items){

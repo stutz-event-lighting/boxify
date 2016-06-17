@@ -5,10 +5,10 @@ append body
         .container
             h2 Projekt
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel)
+                    button.btn.btn-default(onClick=this.cancel.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Zurück
-                    button.btn.btn-primary(onClick=this.save)
+                    button.btn.btn-primary(onClick=this.save.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
@@ -18,25 +18,25 @@ append body
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10
-                                input.form-control(placeholder="Kommentar" value=this.state.item.name onChange=this.onNameChange)
+                                input.form-control(placeholder="Kommentar" value=this.state.item.name onChange=this.onNameChange.bind(this))
                         .form-group
                             label.col-lg-2.control-label Beginn
                             .col-lg-10
-                                DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged)
+                                DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
                         .form-group
                             label.col-lg-2.control-label Ende
                             .col-lg-10
-                                DatePicker(value=new Date(this.state.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged)
+                                DatePicker(value=new Date(this.state.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
                         .form-group
                             label.col-lg-2.control-label Kommentar
                             .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange)
+                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange.bind(this))
             .row
                 .col-xs-12
                     h3
                         | Reservationen
                         if this.state.item.status == "ongoing"
-                            .btn.btn-primary.pull-right(onClick=this.createReservation) Neu
+                            .btn.btn-primary.pull-right(onClick=this.createReservation.bind(this)) Neu
                     table.table.table-striped.table-hover
                         thead
                             tr
@@ -57,17 +57,17 @@ append body
                                             button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
                                                 i.glyphicon.glyphicon-log-out
                     if this.state.needsRental
-                        .alert.alert-warning(onClick=this.createRental) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
+                        .alert.alert-warning(onClick=this.createRental.bind(this)) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
             .row
                 .col-xs-12
                     h3
                         | Aus- und Eingänge
                         if this.state.item.status == "ongoing"
                             .btn-toolbar.pull-right
-                                .btn.btn-primary(onClick=this.createCheckout) 
+                                .btn.btn-primary(onClick=this.createCheckout.bind(this)) 
                                     .glyphicon.glyphicon-log-out
                                     |  Neuer Ausgang
-                                .btn.btn-primary(onClick=this.createCheckin)
+                                .btn.btn-primary(onClick=this.createCheckin.bind(this))
                                     .glyphicon.glyphicon-log-in
                                     |  Neuer Eingang
                     table.table.table-striped
@@ -92,31 +92,31 @@ append body
                                         a.btn.btn-default.btn-xs.pull-right(href="/api/equipmentio/"+io._id+"/pickupConfirmation.docx" target="_blank")
                                             i.glyphicon.glyphicon-print
                     if Object.keys(this.state.item.balance).length
-                        .alert.alert-warning(onClick=this.createCheckin) Es ist noch nicht alles Material vom Kunden zurückgekommen!
+                        .alert.alert-warning(onClick=this.createCheckin.bind(this)) Es ist noch nicht alles Material vom Kunden zurückgekommen!
             .row
                 .col-xs-12
                     h3 Aktionen
                         .btn-toolbar.pull-right
                             if this.state.item.status == "ongoing"
-                                .btn.btn-primary(onClick=this.finish disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
+                                .btn.btn-primary(onClick=this.finish.bind(this) disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
     if this.state.confirm
         = this.createConfirmDialog(this.state.confirm)
 script.
     var client = require("../client.js");
     var moment = require("moment");
-    var TextArea = require("react-textarea-autosize");
+    var TextArea = require("react-textarea-autosize").default;
     var ConfirmDialog = React.createFactory(require("./ConfirmDialog.jade"));
     var DatePicker = require("react-widgets").DateTimePicker;
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["projects_read"];
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         this.loadData();
     }
     
-    exports.loadData = function(){
+    loadData(){
         client.getProject(this.props.params.id,function(err,data){
             if(err) return;
             if(!this.state.item) this.state.item = data.project;
@@ -128,36 +128,34 @@ script.
         }.bind(this));
     }
 
-    exports.onNameChange = function(e){
+    onNameChange(e){
         this.state.item.name = e.target.value;
         this.update();
-    }
+    }    
     
-    
-    exports.onCommentChange = function(e){
+    onCommentChange(e){
         this.state.item.remark = e.target.value;
         this.update();
     }    
     
-    exports.onStartChanged = function(time){
+    onStartChanged(time){
         if(time) this.state.item.start = time.getTime();
         this.update();
     }
     
-    exports.onEndChanged = function(time){
+    onEndChanged(time){
         if(time) this.state.item.end = time.getTime();
         this.update();
     }
 
-    exports.createReservation = function(){
+    createReservation(){
         client.createReservation(this.props.params.id,function(err,id){
             if(err) return;
             visit("/projects/"+this.props.params.id+"/reservations/"+id);
         }.bind(this));
     }
-
-
-    exports.openReservation = function(reservation){
+    
+    openReservation(reservation){
         var self = this;
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
@@ -165,7 +163,7 @@ script.
         }
     }
 
-    exports.checkoutReservation = function(reservation){
+    checkoutReservation(reservation){
         return function(){
             client.createEquipmentIo({type:"checkout",project:this.props.params.id,reservation:reservation._id},function(err,id){
                 visit("/projects/"+this.props.params.id+"/checkouts/"+id);
@@ -173,54 +171,54 @@ script.
         }.bind(this)
     }
 
-    exports.deleteReservation = function(reservation){
+    deleteReservation(reservation){
         return function(){
             this.confirm("Reservation löschen","Löschen","diese Reservation löschen möchten","confirmDeleteReservation",reservation._id);
         }.bind(this)        
     }
     
-    exports.confirmDeleteReservation = function(reservation){
+    confirmDeleteReservation(reservation){
         client.deleteReservation(this.props.params.id,reservation,function(){
             this.loadData();
         }.bind(this));
     }
     
-    exports.createRental = function(){
+    createRental(){
         visit("/rentals/newrequest",{project:this.props.params.id});
     }
     
-    exports.createCheckout = function(){
+    createCheckout(){
         client.createEquipmentIo({type:"checkout",project:this.props.params.id},function(err,id){
             visit("/projects/"+this.props.params.id+"/checkouts/"+id);
         }.bind(this));
     }
     
-    exports.createCheckin = function(){
+    createCheckin(){
         client.createEquipmentIo({type:"checkin",project:this.props.params.id},function(err,id){
             visit("/projects/"+this.props.params.id+"/checkins/"+id);
         }.bind(this))
     }
     
-    exports.editIo = function(io){
+    editIo(io){
         return function(e){
             if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
             visit("/projects/"+this.props.params.id+"/"+io.type+"s/"+io._id)
         }.bind(this);
     }
     
-    exports.deleteIo = function(io){
+    deleteIo(io){
         return function(){
             this.confirm("Entwurf löschen","Löschen", "diesen Entwurf löschen möchten", "confirmDeleteIo",io._id );
         }.bind(this);
     }
     
-    exports.confirmDeleteIo = function(io){    
+    confirmDeleteIo(io){    
         client.deleteEquipmentIo(io,function(){
             this.loadData();
         }.bind(this));
     }
       
-    exports.finish = function(){
+    finish(){
         client.finishProject(this.state.item._id,function(err){
             if(err) return;
             this.state.item.status = "finished";
@@ -228,19 +226,18 @@ script.
         }.bind(this));
     }
 
-
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
 
-    exports.save = function(){
+    save(){
         client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,remark:this.state.item.remark||""},function(err){
             if(err) return true;
             back(true);
         });
     }    
     
-    exports.createConfirmDialog = function(opts){
+    createConfirmDialog(opts){
         return ConfirmDialog({
             title:opts.title,
             action:opts.action,
@@ -253,7 +250,7 @@ script.
         });
     }
     
-    exports.confirm = function(title,action,question,cb,data){
+    confirm(title,action,question,cb,data){
         this.state.confirm = {
             title:title,
             action:action,

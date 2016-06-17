@@ -2,24 +2,19 @@
     Menu
     div(style="paddingTop:60px")
     if this.needsLogin()
-        LoginPage(onLogin=this.update)
+        LoginPage(onLogin=this.update.bind(this))
     else
         block body
-script.
-    var Menu = require("./menu.jade")
-    var client = require("../client.js");
-    var LoginPage = require("./loginpage.jade");
-    
-    exports.getInitialState = function(){
-        return this.props.state;
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
     }
-    
-    exports.update = function(){
+    update(){
         history.replaceState(this.state,undefined,location.pathname);
         this.forceUpdate();
     }
-    
-    exports.needsLogin = function(){
+    needsLogin(){
         var needed = this.getNeededPermissions();
         if(needed && !client.session) return true;
         for(var i = 0; i < needed.length; i++){
@@ -27,7 +22,12 @@ script.
         }
         return false;
     }
-    
-    exports.getNeededPermissions = function(){
+    getNeededPermissions(){
         return [];
     }
+script.
+    var Menu = require("./menu.jade")
+    var client = require("../client.js");
+    var LoginPage = require("./loginpage.jade");
+    
+    

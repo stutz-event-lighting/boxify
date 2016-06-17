@@ -1,6 +1,6 @@
 #interactive.viewport(style="position:fixed;top:0px;bottom:0px;right:0px;left:0px;backgroundColor:rgba(0,0,0,0.7);zIndex:2000")
-script.
-    exports.componentDidMount = function(){    
+script(section="body").
+    componentDidMount(){    
         var self = this;
         Quagga.init({
             inputStream: {

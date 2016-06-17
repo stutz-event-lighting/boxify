@@ -11,20 +11,19 @@ append properties
                         = " "+permission.name
 script.
     var client = require("../client.js");
+    Component.hideBackButton = false;
     
-    exports.getNeededPermissions = function(){
+script(section="body").
+    getNeededPermissions(){
         return ["users_read"];
     }
     
-    exports.getContactId = function(){
+    getContactId(){
         return this.props.params.user;
     }    
-    
-    exports.hideBackButton = false;
-    exports._loadContact = exports.loadContact;
-    
-    exports.loadContact = function(){
-        this._loadContact();
+        
+    loadContact(){
+        super.loadContact();
         client.getUser(this.getContactId(),function(err,user){
             if(err) return;
             this.state.user = user;
@@ -32,18 +31,18 @@ script.
         }.bind(this));
     }
     
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
     
-    exports.togglePermission = function(permission){
+    togglePermission(permission){
         return function(e){
             permission.allowed = e.target.checked;
             this.update();
         }.bind(this);        
     }
     
-    exports.onSaved = function(){
+    onSaved(){
         var permissions = {};
         for(var permission in this.state.user.permissions){
             permissions[permission] = this.state.user.permissions[permission].allowed;

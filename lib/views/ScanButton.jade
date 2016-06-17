@@ -1,5 +1,5 @@
 div(style="display:inline-block" className=this.props.className)
-    .btn.btn-default( onClick=this.scan)
+    .btn.btn-default(onClick=this.scan.bind(this))
         .glyphicon.glyphicon-barcode
     if this.state.type !== undefined
         Modal
@@ -10,60 +10,60 @@ div(style="display:inline-block" className=this.props.className)
                     .form-group
                         label.col-lg-2.control-label Typ
                         .col-lg-10
-                            Select(ref="typefield" searchable value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null asyncOptions=this.findTypes onChange=this.onEquipmenttypeChanged)
+                            Select(ref="typefield" searchable value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null loadOptions=this.findTypes.bind(this) onChange=this.onEquipmenttypeChanged.bind(this))
                     if this.state.type
                         .form-group
                             if this.state.type.stock.length && this.props.supplier == "own"
                                 label.col-lg-2.control-label Objekt
                                 .col-lg-10
-                                    select.form-control(value=this.state.type.value onChange=this.onValueChanged ref="countfield")
+                                    select.form-control(value=this.state.type.value onChange=this.onValueChanged.bind(this) ref="countfield")
                                         each item in this.state.type.stock
                                             option(value=item.id)= this.state.type.name+" "+item.id
                             else
                                 label.col-lg-2.control-label Menge
                                 .col-lg-10
-                                    input.form-control(type="text" value=this.state.type.value ref="countfield" onChange=this.onValueChanged)
+                                    input.form-control(type="text" value=this.state.type.value ref="countfield" onChange=this.onValueChanged.bind(this))
             .modal-footer
-                button.btn.btn-default(onClick=this.cancelScan) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmScan disabled=(!this.state.type || (typeof this.state.type.value == "string" && isNaN(parseInt(this.state.type.value,10))))) Scannen
+                button.btn.btn-default(onClick=this.cancelScan.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmScan.bind(this) disabled=(!this.state.type || (typeof this.state.type.value == "string" && isNaN(parseInt(this.state.type.value,10))))) Scannen
 script.
-    var OverlayTrigger = require("react-bootstrap/OverlayTrigger");
-    var Popover = require("react-bootstrap/Popover");
-    var Select = require("react-select");
+    var OverlayTrigger = require("react-bootstrap/lib/OverlayTrigger");
+    var Popover = require("react-bootstrap/lib/Popover");
+    var Select = require("react-select").Async;
     var client = require("../client.js");
     var Modal = require("./Modal.jade");
-    
-    
-    exports.getInitialState = function(){
-        return {};
+script(section="body").   
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
     }
     
-    exports.componentDidMount = function(){
+    componentDidMount(){
         document.addEventListener("keydown",this.onKeyDown = function(e){
             if(this.state.type !== undefined && e.keyCode == 13) this.confirmScan();
         }.bind(this))
     }
     
-    exports.componentWillUnmount = function(){
+    componentWillUnmount(){
         document.removeEventListener("keydown",this.onKeyDown);
     }
     
-    exports.scan = function(){
+    scan(){
         this.state.type = null;
         this.forceUpdate();
         this.focusTypeField();
     }
     
-    exports.findTypes = function(input,cb){
+    findTypes(input,cb){
         client.findEquipmentTypes({search:input},function(err,types){
             cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
         });
     }
     
-    exports.onEquipmenttypeChanged = function(id,selection){
-        if(this.state.type && this.state.type._id == id) return;
-        client.getEquipmentTypeItems(id,function(err,stock){
-            var type = this.state.type = {_id:id,name:selection[0].label,stock:stock}
+    onEquipmenttypeChanged(value){
+        if(this.state.type && this.state.type._id == value.value) return;
+        client.getEquipmentTypeItems(value.value,function(err,stock){
+            var type = this.state.type = {_id:value.value,name:value.label,stock:stock}
             if(type.stock.length && this.props.supplier == "own"){
                 type.value = type.stock[0].id;
             }else{
@@ -74,17 +74,17 @@ script.
         }.bind(this))
     }
     
-    exports.onValueChanged = function(e){
+    onValueChanged(e){
         this.state.type.value = parseFloat(e.target.value)||0;
         this.forceUpdate();
     }
     
-    exports.cancelScan = function(){
+    cancelScan(){
         delete this.state.type;
         this.forceUpdate();
     }
     
-    exports.confirmScan = function(){
+    confirmScan(){
         var scan = {kind:"EQ",type:this.state.type._id};
         if(!this.state.type.stock.length || this.props.supplier != "own"){
             scan.count = parseFloat(this.state.type.value);
@@ -96,14 +96,14 @@ script.
         this.forceUpdate(); 
     }
     
-    exports.focusTypeField = function(){
+    focusTypeField(){
         setTimeout(function(){
-            this.refs.typefield.getDOMNode().getElementsByClassName("Select-input")[0].childNodes[0].select();
+            this.refs.typefield.focus();
         }.bind(this),100)
     }
     
-    exports.focusCountField = function(){
+    focusCountField(){
         setTimeout(function(){
-            this.refs.countfield.getDOMNode().select();
+            this.refs.countfield.select();
         }.bind(this),100)
     }

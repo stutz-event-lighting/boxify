@@ -6,10 +6,10 @@ append body
         .container
             h2 Reservation
                 .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel)
+                    button.btn.btn-default(onClick=this.cancel.bind(this))
                         i.glyphicon.glyphicon-chevron-left
                         |  Zurück
-                    button.btn.btn-primary(onClick=this.save)
+                    button.btn.btn-primary(onClick=this.save.bind(this))
                         i.glyphicon.glyphicon-ok
                         |  Speichern
             .row
@@ -17,8 +17,8 @@ append body
                     .pull-left
                         h3 Equipment
                     .btn-toolbar.pull-right(style="marginTop:18px")
-                        .btn.btn-primary.pull-right(onClick=this.add) Hinzufügen
-                        ScanButton.pull-left(onScan=this.handleScan ref="scanbutton" supplier="none")
+                        .btn.btn-primary.pull-right(onClick=this.add.bind(this)) Hinzufügen
+                        ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier="none")
                     table.table.table-striped.table-hover
                         thead
                             tr
@@ -33,7 +33,7 @@ append body
                                         td= type._id
                                         td= this.state.data.types[type._id].name
                                         td(style="paddingTop:2px;paddingBottom:2px")
-                                            input.form-control.input-sm(value=this.state.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount)
+                                            input.form-control.input-sm(value=this.state.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
                                         td
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
                                                 i.glyphicon.glyphicon-trash
@@ -54,16 +54,16 @@ append body
                                             tr
                                                 td(onClick=this.addItem(type))= this.state.data.types[type].name
                     .modal-footer
-                        button.btn.btn-primary(onClick=this.done) Fertig
+                        button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
 script.
     var client = require("../client.js");
     var ScanButton = require("./ScanButton.jade");
-    
-    exports.getNeededPermissions = function(){
+script(section="body").    
+    getNeededPermissions(){
         return ["projects_read"];
     }
     
-    exports.checkData = function(){
+    checkData(){
         var self = this;
         if(this.state.data === undefined){
             client.getReservation(this.props.params.project,this.props.params.reservation,function(err,data){
@@ -81,28 +81,28 @@ script.
         }
     }
     
-    exports.add = function(){
+    add(){
         this.state.add = true;
         this.update();
     }
     
-    exports.done = function(){
+    done(){
         delete this.state.add;
         this.update();
     }
     
-    exports.addItem = function(type,count){
+    addItem(type,count){
         return function(){
             this.state.data.reservation.items[type] = count||0;
             this.update();
         }.bind(this);
     }
     
-    exports.handleScan = function(code){
+    handleScan(code){
         this.addItem(code.type,code.count)();        
     }
     
-    exports.changeItem = function(type){
+    changeItem(type){
         return function(e){
             if(/^[0-9]+$/.test(e.target.value)) this.state.data.reservation.items[type] = parseInt(e.target.value,10);
             if(e.target.value.length == 0) this.state.data.reservation.items[type] = 0;            
@@ -110,22 +110,22 @@ script.
         }.bind(this);
     }
     
-    exports.selectCount = function(e){
+    selectCount(e){
         setTimeout(e.target.select.bind(e.target))
     }
     
-    exports.removeItem = function(type){
+    removeItem(type){
         return function(){
             delete this.state.data.reservation.items[type];
             this.update();
         }.bind(this);
     }
 
-    exports.cancel = function(){
+    cancel(){
         history.back();
     }
 
-    exports.save = function(){
+    save(){
         client.updateReservation(this.props.params.project,this.props.params.reservation,this.state.data.reservation.items,function(err){
             if(err) return true;
             back(true);

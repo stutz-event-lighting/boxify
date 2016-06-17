@@ -1,6 +1,5 @@
 extends ./contact.jade
-
-script.
-    exports.getContactId = function(){
+script(section="body").
+    getContactId(){
         return this.props.params.supplier;
     }
