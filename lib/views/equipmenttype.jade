@@ -92,7 +92,7 @@ append body
                         .form-group
                             label.col-lg-2.control-label Inhalt
                             .col-lg-10
-                                select.form-control(value=this.state.item.contents?(this.state.item.contents=="*"?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange.bind(this))
+                                select.form-control(value=this.state.item.contents!==undefined?(this.state.item.contents===null?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange.bind(this))
                                     option(value="none") Kein
                                     option(value="specific") Spezifisch
                                     option(value="all") Universal
@@ -526,13 +526,13 @@ script(section="body").
     onContentsChange(e){
         switch(e.target.value){
             case "none":
-                this.state.item.contents = null;
+                delete this.state.item.contents;
                 break;
             case "specific":
                 this.state.item.contents = [];
                 break;
             case "all":
-                this.state.item.contents = "*";
+                this.state.item.contents = null;
                 break;
         }
         this.update();
@@ -628,7 +628,7 @@ script(section="body").
             rent:this.state.item.rent,
             factoryPrice:this.state.item.factoryPrice,
             image:this.state.item.image?this.state.item.image.url:undefined,
-            contents:this.state.item.contents?(this.state.item.contents instanceof Array?this.state.item.contents.map(function(type){return type._id}):"*"):null
+            contents:this.state.item.contents!==undefined?(this.state.item.contents instanceof Array?this.state.item.contents.map(function(type){return type._id}):null):undefined
         },function(err){
             if(err) return true;
             back(true);

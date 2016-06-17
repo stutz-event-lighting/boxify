@@ -230,7 +230,7 @@ script(section="body").
                 }
             }
             var type = this.state.data.types[receiver.entry.type];
-            if(type.contents == "*"){
+            if(type.contents === null){
                 receiver.contents.push(entry);
                 this.update();
                 return;
@@ -239,7 +239,7 @@ script(section="body").
         }
         if(this.state.entry) this.finishEntry();
         this.state.entry = entry;
-        if(!entry.items[itemId].length && this.state.data.types[entry.type].contents != "*"){
+        if(!entry.items[itemId].length && this.state.data.types[entry.type].contents !== null){
             this.finishEntry();
         }else{
             this.update();
