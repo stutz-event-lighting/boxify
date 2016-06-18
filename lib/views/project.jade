@@ -83,7 +83,7 @@ append body
                                     td
                                         div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
                                     td= !io.draft?moment(io.time).format("LLL"):"Entwurf"
-                                    td= io.user?(this.state.users[io.user].firstname+" "+this.state.users[io.user].lastname):""
+                                    td= io.user?(io.user.firstname+" "+io.user.lastname):""
                                     td
                                         = io.count+" / "+io.total
                                         if io.draft || i == this.state.io.length-1
@@ -123,7 +123,6 @@ script(section="body").
             this.state.reservations = data.reservations;
             this.state.needsRental = data.needsRental;
             this.state.io = data.io;
-            this.state.users = data.users;
             this.update();
         }.bind(this));
     }

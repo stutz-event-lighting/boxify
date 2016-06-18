@@ -30,7 +30,7 @@ append body
                     - over = isOver
                     tr(onClick=this.edit(item))
                         td= item.name
-                        td= item.customer
+                        td= item.customer.firstname+(item.customer.lastname?(" "+item.customer.lastname):"")
                         td= moment(item.start).format("LLL")
                         td
                             = moment(item.end).format("LLL")
