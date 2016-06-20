@@ -1,0 +1,119 @@
+extends ./base
+
+append body
+    - this.checkData();
+    .container
+        h2 Zumieten
+        
+        .row
+            .col-xs-12
+                h4 
+                    | Anfragen
+                    button.btn.btn-primary.pull-right(onClick=this.createRequest.bind(this)) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Name
+                            th Zulieferer
+                            th Projekte
+                            th Erhalt
+                            th Rückgabe
+                            th Objekte
+                    tbody
+                        each item in this.state.items
+                            if item.status == "requested"
+                                +renderEntry(item)
+        .row
+            .col-xs-12
+                h4 
+                    | Buchungen
+                    button.btn.btn-primary.pull-right(onClick=this.createBooking.bind(this)) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Name
+                            th Zulieferer
+                            th Projekte
+                            th Erhalt
+                            th Rückgabe
+                            th Objekte
+                    tbody
+                        each item in this.state.items
+                            if item.status == "booked"
+                                +renderEntry(item)
+        .row
+            .col-xs-12
+                h4 
+                    | Mieten
+                    button.btn.btn-primary.pull-right(onClick=this.createRental.bind(this)) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Name
+                            th Zulieferer
+                            th Projekte
+                            th Erhalt
+                            th Rückgabe
+                            th Objekte
+                    tbody
+                        each item in this.state.items
+                            if item.status == "received"
+                                +renderEntry(item)
+mixin renderEntry(item)
+    tr(onClick=this.edit(item))
+        td= item.name
+        td= item.supplier.firstname+(item.supplier.lastname?(" "+item.supplier.lastname):"")
+        td= item.projects.map(function(project){return project.name}).join(", ")
+        td= moment(item.delivery).format("LLL")
+        td= moment(item.return).format("LLL")
+        td
+            =item.objects
+            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
+                i.glyphicon.glyphicon-trash
+script.
+    var client = require("../client");
+    var moment = require("moment");
+script(section="body").    
+    getNeededPermissions(){
+        return ["rentals_read"];
+    }
+    
+    checkData(){
+        var self = this;
+        if(!this.state.items){
+            client.findRentals({search:this.state.search},function(err,items){
+                if(err) return;
+                self.state.items = items;
+                self.update();
+            });
+        }
+    }
+    
+    createRequest(){
+        visit("/rentals/newrequest");
+    }
+    
+    createBooking(){
+        visit("/rentals/newbooking");
+    }
+    
+    createRental(){
+        visit("/rentals/newrental");
+    }
+    
+    edit(item){
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/rentals/"+item._id);
+        };    
+    }
+    
+    delete(item){
+        var self = this;
+        return function(e){
+            client.deleteRental(item._id,function(err){
+                delete self.state.items;
+                self.update();
+            })
+        };
+    }

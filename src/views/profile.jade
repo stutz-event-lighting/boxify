@@ -1,0 +1,70 @@
+extends ./contact
+
+append container
+    .row
+        .col-xs-12
+            h2 Passwort
+            .btn-toolbar
+                .btn.btn-default(onClick=this.changePassword.bind(this)) Passwort ändern
+    each Section in this.constructor.extensionSections
+        Section(user=this.getContactId())
+    if this.state.changepassword
+        Modal
+            .modal-header
+                h2 Passwort ändern
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Neues Passwort
+                        .col-lg-10
+                            input.form-control(type="password" value=this.state.changepassword.password onChange=this.onPasswordChanged.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Neues Passwort bestätigen
+                        .col-lg-10
+                            input.form-control(type="password" value=this.state.changepassword.password2 onChange=this.onPassword2Changed.bind(this))
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelChangePassword.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmChangePassword.bind(this)) Speichern
+script.
+    var client = require("../client");
+    var Modal = require("./Modal");
+    Component.extensionSections = [];
+    Component.hideBackButton = true;
+script(section="body").
+    getNeededPermissions(){
+        return [];
+    }    
+    getContactId(){
+        return client.session.user._id;
+    }
+    
+    changePassword(){
+        this.state.changepassword = {password:"",password2:""};
+        this.update();
+    }
+    
+    onPasswordChanged(e){
+        this.state.changepassword.password = e.target.value;
+        this.update();
+    }
+    
+    onPassword2Changed(e){
+        this.state.changepassword.password2 = e.target.value;
+        this.update();
+    }
+    
+    cancelChangePassword(){
+        delete this.state.changepassword;
+        this.update();
+    }
+    
+    confirmChangePassword(){
+        if(!this.state.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
+        if(this.state.changepassword.password != this.state.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
+        client.setPassword(this.getContactId(),this.state.changepassword.password,function(err){
+            delete this.state.changepassword;
+            this.update();
+        }.bind(this))
+    }
+    
+    onSaved(){}

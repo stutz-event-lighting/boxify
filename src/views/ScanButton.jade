@@ -1,0 +1,109 @@
+div(style="display:inline-block" className=this.props.className)
+    .btn.btn-default(onClick=this.scan.bind(this))
+        .glyphicon.glyphicon-barcode
+    if this.state.type !== undefined
+        Modal
+            .modal-header
+                h2 Equipment scannen
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Typ
+                        .col-lg-10
+                            Select(ref="typefield" searchable value=this.state.type?{value:this.state.type._id,label:this.state.type.name}:null loadOptions=this.findTypes.bind(this) onChange=this.onEquipmenttypeChanged.bind(this))
+                    if this.state.type
+                        .form-group
+                            if this.state.type.stock.length && this.props.supplier == "own"
+                                label.col-lg-2.control-label Objekt
+                                .col-lg-10
+                                    select.form-control(value=this.state.type.value onChange=this.onValueChanged.bind(this) ref="countfield")
+                                        each item in this.state.type.stock
+                                            option(value=item.id)= this.state.type.name+" "+item.id
+                            else
+                                label.col-lg-2.control-label Menge
+                                .col-lg-10
+                                    input.form-control(type="text" value=this.state.type.value ref="countfield" onChange=this.onValueChanged.bind(this))
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelScan.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmScan.bind(this) disabled=(!this.state.type || (typeof this.state.type.value == "string" && isNaN(parseInt(this.state.type.value,10))))) Scannen
+script.
+    var OverlayTrigger = require("react-bootstrap/lib/OverlayTrigger");
+    var Popover = require("react-bootstrap/lib/Popover");
+    var Select = require("react-select").Async;
+    var client = require("../client");
+    var Modal = require("./Modal");
+script(section="body").   
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
+    }
+    
+    componentDidMount(){
+        document.addEventListener("keydown",this.onKeyDown = function(e){
+            if(this.state.type !== undefined && e.keyCode == 13) this.confirmScan();
+        }.bind(this))
+    }
+    
+    componentWillUnmount(){
+        document.removeEventListener("keydown",this.onKeyDown);
+    }
+    
+    scan(){
+        this.state.type = null;
+        this.forceUpdate();
+        this.focusTypeField();
+    }
+    
+    findTypes(input,cb){
+        client.findEquipmentTypes({search:input},function(err,types){
+            cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
+        });
+    }
+    
+    onEquipmenttypeChanged(value){
+        if(this.state.type && this.state.type._id == value.value) return;
+        client.getEquipmentTypeItems(value.value,function(err,stock){
+            var type = this.state.type = {_id:value.value,name:value.label,stock:stock}
+            if(type.stock.length && this.props.supplier == "own"){
+                type.value = type.stock[0].id;
+            }else{
+                type.value = "1";
+            }
+            this.forceUpdate();
+            this.focusCountField();
+        }.bind(this))
+    }
+    
+    onValueChanged(e){
+        this.state.type.value = parseFloat(e.target.value)||0;
+        this.forceUpdate();
+    }
+    
+    cancelScan(){
+        delete this.state.type;
+        this.forceUpdate();
+    }
+    
+    confirmScan(){
+        var scan = {kind:"EQ",type:this.state.type._id};
+        if(!this.state.type.stock.length || this.props.supplier != "own"){
+            scan.count = parseFloat(this.state.type.value);
+        }else{
+            scan.item = this.state.type.value;
+        }
+        this.props.onScan(scan);
+        delete this.state.type;
+        this.forceUpdate(); 
+    }
+    
+    focusTypeField(){
+        setTimeout(function(){
+            this.refs.typefield.focus();
+        }.bind(this),100)
+    }
+    
+    focusCountField(){
+        setTimeout(function(){
+            this.refs.countfield.select();
+        }.bind(this),100)
+    }

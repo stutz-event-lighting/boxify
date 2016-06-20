@@ -1,0 +1,33 @@
+#sel
+    Menu
+    div(style="paddingTop:60px")
+    if this.needsLogin()
+        LoginPage(onLogin=this.update.bind(this))
+    else
+        block body
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
+    }
+    update(){
+        history.replaceState(this.state,undefined,location.pathname);
+        this.forceUpdate();
+    }
+    needsLogin(){
+        var needed = this.getNeededPermissions();
+        if(needed && !client.session) return true;
+        for(var i = 0; i < needed.length; i++){
+            if(!client.hasPermission(needed[i])) return true;
+        }
+        return false;
+    }
+    getNeededPermissions(){
+        return [];
+    }
+script.
+    var Menu = require("./menu")
+    var client = require("../client");
+    var LoginPage = require("./loginpage");
+    
+    

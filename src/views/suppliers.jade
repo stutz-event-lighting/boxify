@@ -1,0 +1,112 @@
+extends ./base
+
+append body
+    .container
+        h1 Zulieferer
+        .searchbar(style="display:flex")
+            .input-group(style="flex:1;display:flex;width:auto;")
+                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
+                span.input-group-btn(style="display:inline-block;width:auto;")
+                    button.btn.btn-default Suchen
+            .btn-group(style="marginLeft:10px")
+                CreateContactButton(callback=this.create.bind(this))
+        table.table.table-striped.table-hover
+            thead
+                tr
+                    th Name
+                    th
+            tbody
+                each item in this.state.items
+                    tr(onClick=this.edit(item))
+                        td= (item.firstname?item.firstname+" ":"")+(item.lastname||"")
+                        td
+                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
+                                i.glyphicon.glyphicon-trash
+    if this.state.delete
+        Modal
+            .modal-header
+                h2 Zulieferer löschen
+            .modal-body= "Sind sie sicher, dass sie \""+this.state.delete.name+"\" löschen möchten?"
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelDelete.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmDelete.bind(this)) Löschen
+    if this.state.error
+        Modal
+            .modal-header
+                h2 Ups!
+            .modal-body                        
+                case this.state.error
+                    when 601
+                        .alert.alert-warning Dieser Kunde ist noch Objekten zugewiesen. 
+            .modal-footer
+                button.btn.btn-primary(onClick=this.dismiss.bind(this)) Ich verstehe
+script.
+    var client = require("../client");
+    var CreateContactButton = require("./CreateContactButton");
+    var Modal = require("./Modal");
+script(section="body").    
+    getNeededPermissions(){
+        return ["suppliers_read"];
+    }
+    
+    componentDidMount(){
+        if(!this.state.items) this.findContacts();
+    }
+    
+    findContacts(){
+        client.findSuppliers({search:this.state.search},function(err,items){
+            this.state.items = items;
+            this.update();
+        }.bind(this));
+    }
+
+    search(e){
+        this.state.search = e.target.value;
+        this.findContacts();
+    }
+    
+    dismiss(){
+        delete this.state.error;
+        this.update();
+    }
+
+    create(id){
+        client.createSupplier(id,function(err){
+            if(err) return;
+            visit("/suppliers/"+id);
+        });
+    }
+
+    edit(item){
+        return function(e){
+            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+            visit("/suppliers/"+item._id)
+        }        
+    }
+
+    delete(item){
+        return function(){
+            this.state.delete = item;
+            this.update();
+        }.bind(this)
+    }
+
+    cancelDelete(){
+        delete this.state.delete;
+        this.update();
+    }
+    
+    confirmDelete(){
+        var self = this;
+        var del = this.state.delete;
+        delete this.state.delete;
+        client.deleteSupplier(del._id,function(err){
+            if(err){
+                self.state.error = err.code;
+            }else{
+                delete self.state.items;
+            }
+            self.update();
+            self.findContacts();
+        })
+    }
