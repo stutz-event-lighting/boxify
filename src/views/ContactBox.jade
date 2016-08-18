@@ -4,16 +4,13 @@ script.
     var client = require("../client");
 script(section="body").
     getValue(){
-        console.log("getting value");
         if(!this.props.value) return undefined;
         if(this.contact && this.contact.value == this.props.value){
             return this.contact;
         }
-        console.log(this.contact&&this.contact.value,this.props.value)
         client.getContact(this.props.value,function(err,contact){
             if(err) return;
             this.contact = {value:contact._id,label:(contact.firstname?contact.firstname+" ":"")+(contact.lastname||"")};
-            console.log("updating...");
             this.forceUpdate();
         }.bind(this));
         return undefined;

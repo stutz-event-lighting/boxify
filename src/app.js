@@ -12,7 +12,9 @@ moment.locale("de-CH");
 globalize.culture("de-CH");
 localize(globalize);
 
-client.getSession(function(){
-    var component = React.createFactory(Router)(data);
-    ReactDOM.render(component,document.body)
-});
+window.onload = function(){
+    client.getSession(function(){
+        var component = React.createFactory(Router)({});
+        ReactDOM.render(component,document.body)
+    });
+}

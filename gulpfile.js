@@ -1,5 +1,6 @@
 var gulp = require("gulp");
 var fs = require("fs");
+var path = require("path");
 var rimraf = require("rimraf").sync;
 var browserify = require("browserify");
 var replaceExt = require("gulp-ext-replace");
@@ -26,8 +27,8 @@ gulp.task("copyJs",["clean"],function(){
 })
 
 gulp.task("buildClient",["compileJade","copyJs"],function(cb){
-	var bundle = browserify();
-	bundle.add(require.resolve("./lib/app"));
+	var bundle = browserify({basedir:path.resolve(__dirname,"../"),exposeAll:true});
+	bundle.require(require.resolve("./lib/app"));
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);
 		fs.writeFileSync("./lib/main.js",build);

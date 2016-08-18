@@ -516,7 +516,6 @@ script(section="body").
     }
     
     onTagsChanged(tags){
-        console.log(tags);
         this.state.item.tags = tags.map(function(tag){
             return tag.value
         });
