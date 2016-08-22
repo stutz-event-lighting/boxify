@@ -9,5 +9,5 @@ module.exports = router
     .post("/:id",ensurePermission("projects_write"),require("./update"))
     .get("/:id/finish",ensurePermission("projects_write"),require("./finish"))
     .get("/:id/delete",ensurePermission("projects_write"),require("./delete"))
-    .all("/:project/reservations",require("./reservations"))
+    .all("/:project/reservations/*",require("./reservations"))
     .routes();
