@@ -8,7 +8,7 @@
 script(section="body").
     constructor(props,context){
         super(props,context);
-        this.state = {};
+        this.state = this.props.state||{};
     }
     update(){
         history.replaceState(this.state,undefined,location.pathname);
