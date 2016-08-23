@@ -45,27 +45,30 @@ append body
                                 .btn.btn-primary(onClick=this.receive.bind(this)) Ware erhalten
                             else
                                 .btn.btn-primary(onClick=this.doreturn.bind(this)) Ware zurückgeben
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th ID
-                                th Name
-                                th Anzahl
-                                th
-                        tbody
-                            each type in this.state.data.types
-                                if this.state.data.types[type._id].count !== undefined || this.state.data.types[type._id].available < 0
+                    each category in this.state.data.categories
+                        - var types = Object.keys(this.state.data.types).map(id=>this.state.data.types[id]).filter(type=> (this.state.data.types[type._id].count !== undefined || this.state.data.types[type._id].available < 0) &&type.category == category._id);
+                        if types.length
+                            h4= category.name
+                            table.table.table-striped.table-hover
+                                thead
                                     tr
-                                        td= type._id
-                                        td= this.state.data.types[type._id].name
-                                        td(style="paddingTop:2px;paddingBottom:2px")
-                                            if this.props.params.rental.indexOf("new") == 0
-                                                input.form-control.input-sm(value=(this.state.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
-                                            else
-                                                = this.state.data.types[type._id].count||0
-                                        td
-                                            .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
-                                                i.glyphicon.glyphicon-trash
+                                        th ID
+                                        th Name
+                                        th Anzahl
+                                        th
+                                tbody
+                                    each type in types
+                                        tr
+                                            td= type._id
+                                            td= this.state.data.types[type._id].name
+                                            td(style="paddingTop:2px;paddingBottom:2px")
+                                                if this.props.params.rental.indexOf("new") == 0
+                                                    input.form-control.input-sm(value=(this.state.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
+                                                else
+                                                    = this.state.data.types[type._id].count||0
+                                            td
+                                                .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
+                                                    i.glyphicon.glyphicon-trash
     if this.state.add
         Modal
             .modal-header
