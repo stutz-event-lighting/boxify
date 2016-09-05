@@ -7,6 +7,7 @@ var replaceExt = require("gulp-ext-replace");
 var transform = require("gulp-transform");
 var jade2react = require("jade2react");
 var cp = require("child_process");
+var babelify = require("babelify");
 
 gulp.task("clean",function(){
 	rimraf("./lib");
@@ -29,6 +30,9 @@ gulp.task("copyJs",["clean"],function(){
 gulp.task("buildClient",["compileJade","copyJs"],function(cb){
 	var bundle = browserify({basedir:path.resolve(__dirname,"../"),exposeAll:true});
 	bundle.require(require.resolve("./lib/app"));
+	bundle.transform(babelify.configure({
+		presets:["es2015"]
+	}))
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);
 		fs.writeFileSync("./lib/main.js",build);
