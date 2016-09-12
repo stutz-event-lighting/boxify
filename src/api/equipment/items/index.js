@@ -10,10 +10,10 @@ router
 .get("/:item/container",ensurePermission("equipment_read"),require("./container"))
 .get("/:id/delete",ensurePermission("equipment_write"),require("./delete"))
 
-module.exports = function*(next){
-	var prev = this.path;
-	this.path = this.path.slice(("/"+this.params.type).length);
-	yield router.routes();
-	this.path = prev;
-	yield next;
+module.exports = async function(ctx,next){
+	var prev = ctx.path;
+	ctx.path = ctx.path.slice(("/"+ctx.params.type).length);
+	await router.routes();
+	ctx.path = prev;
+	await next();
 }

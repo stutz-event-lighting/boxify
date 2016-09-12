@@ -3,22 +3,22 @@ var mongo = require("mongodb");
 var calcBalance = require("../projects/calculatebalance");
 var calcReservations = require("../projects/calculatereserved");
 
-module.exports = function*(){
-    var io = yield this.app.db.EquipmentIo.findOne({_id:mongo.ObjectID(this.params.io)}).select("project items reservation history");
+module.exports = async function(ctx){
+    var io = await ctx.app.db.EquipmentIo.findOne({_id:mongo.ObjectID(ctx.params.io)}).select("project items reservation history");
     if(io.reservation){
-        var reservation = yield this.app.db.EquipmentReservation.findOne({_id:io.reservation}).select("items")
+        var reservation = await ctx.app.db.EquipmentReservation.findOne({_id:io.reservation}).select("items")
 
         for(var type in reservation.items){
             if(io.items[type]) reservation.items[type] -= (io.items[type].count||0);
             if(reservation.items[type] <= 0) delete reservation.items[type];
         }
         if(Object.keys(reservation.items).length){
-            yield this.app.db.EquipmentReservation.update({_id:io.reservation},{$set:{items:reservation.items}});
+            await ctx.app.db.EquipmentReservation.update({_id:io.reservation},{$set:{items:reservation.items}});
         }else{
-            yield this.app.db.EquipmentReservation.remove({_id:io.reservation});
+            await ctx.app.db.EquipmentReservation.remove({_id:io.reservation});
         }
     }
-    yield io.history.map(function*(entry){
+    await Promise.all(io.history.map(async function(entry){
         if(io.type != "checkout") return;
         var query = {};
 
@@ -30,7 +30,7 @@ module.exports = function*(){
             query["contents."+entry.type+".ids"] = id;
         }
 
-        var item = yield this.app.db.EquipmentItem.findOne(query).select("contents");
+        var item = await ctx.app.db.EquipmentItem.findOne(query).select("contents");
         if(item.contents[entry.type].count - entry.count > 0){
             var op = {$inc:{}};
             op.$inc["contents."+entry.type+".count"] = -entry.count;
@@ -42,15 +42,15 @@ module.exports = function*(){
             var op = {$unset:{}}
             op.$unset["contents."+entry.type] = true;
         }
-        yield this.app.db.EquipmentItem.update(query,op);
-    }.bind(this));
+        await ctx.app.db.EquipmentItem.update(query,op);
+    }));
 
-    yield this.app.db.EquipmentIo.update({_id:io._id},{$set:{user:this.session.user,time:new Date().getTime()},$unset:{draft:true,reservation:true}});
+    await ctx.app.db.EquipmentIo.update({_id:io._id},{$set:{user:ctx.session.user,time:new Date().getTime()},$unset:{draft:true,reservation:true}});
 
-    yield [
-        calcBalance(this.app.db,io.project),
-        calcReservations(this.app.db,io.project)
-    ];
+    await Promise.all([
+        calcBalance(ctx.app.db,io.project),
+        calcReservations(ctx.app.db,io.project)
+    ]);
 
-    this.status = 200;
+    ctx.status = 200;
 }

@@ -1,5 +1,5 @@
 var findContact = require("../contacts/find");
 
-module.exports = function*(){
-    yield findContact.call(this,"supplier");
+module.exports = async function(ctx){
+    await findContact(ctx,"supplier");
 }

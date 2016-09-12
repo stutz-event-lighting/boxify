@@ -1,11 +1,11 @@
 var util = require("../../util");
 
-module.exports = function*(db){
-    var results = yield [
+module.exports = async function(db){
+    var results = await Promise.all([
         db.EquipmentType.find({}).select("count"),
         db.Project.find({balance:{$ne:{}}}).select("balance"),
         db.EquipmentRental.find({status:"received"}).select("items supplier")
-    ]
+    ])
     var types = util.createIndex(JSON.parse(JSON.stringify(results[0])),"_id");
     var projects = results[1];
     var rentals = results[2];

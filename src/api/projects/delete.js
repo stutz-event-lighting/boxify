@@ -1,11 +1,11 @@
 var mongo = require("mongodb");
 
-module.exports = function*(){
-    var id = mongo.ObjectID(this.params.id);
-    yield [
-        this.app.db.collection("equipmentreservations").remove({project:id}),
-        this.app.db.collection("equipmentio").remove({project:id}),
-        this.app.db.collection("projects").remove({_id:id})
-    ];
-    this.status = 200;
+module.exports = async function(ctx){
+    var id = mongo.ObjectID(ctx.params.id);
+    await Promise.all([
+        ctx.app.db.collection("equipmentreservations").remove({project:id}),
+        ctx.app.db.collection("equipmentio").remove({project:id}),
+        ctx.app.db.collection("projects").remove({_id:id})
+    ]);
+    ctx.status = 200;
 }

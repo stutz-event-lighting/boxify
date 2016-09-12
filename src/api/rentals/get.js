@@ -2,26 +2,26 @@ var mongo = require("mongodb");
 var util = require("../../util");
 var calcNeeded = require("../projects/calculateneeded");
 
-module.exports = function*(){
-    var results = yield [
-        this.app.db.EquipmentType.find({}).select("name category"),
-        this.app.db.EquipmentCategory.find({}).select("name"),
-        function*(){
-            if(["newrequest","newbooking","newrental"].indexOf(this.params.rental) >= 0) return;
-            return yield this.app.db.EquipmentRental.findOne({_id:mongo.ObjectID(this.params.rental)}).select("name items status supplier");
-        }.bind(this),
-        function*(){
-            if(!this.query.project) return;
+module.exports = async function(ctx){
+    var results = await Promise.all([
+        ctx.app.db.EquipmentType.find({}).select("name category"),
+        ctx.app.db.EquipmentCategory.find({}).select("name"),
+        async function(){
+            if(["newrequest","newbooking","newrental"].indexOf(ctx.params.rental) >= 0) return;
+            return await ctx.app.db.EquipmentRental.findOne({_id:mongo.ObjectID(ctx.params.rental)}).select("name items status supplier");
+        }.call(ctx),
+        async function(){
+            if(!ctx.query.project) return;
 
-            var results = yield [
-                this.app.db.Project.findOne({_id:mongo.ObjectID(this.query.project)}).select("start end"),
-                calcNeeded(this.app.db,mongo.ObjectID(this.query.project))
-            ];
+            var results = await Promise.all([
+                ctx.app.db.Project.findOne({_id:mongo.ObjectID(ctx.query.project)}).select("start end"),
+                calcNeeded(ctx.app.db,mongo.ObjectID(ctx.query.project))
+            ]);
             var project = JSON.parse(JSON.stringify(results[0]));
             project.needed = results[1];
             return project;
-        }.bind(this)
-    ];
+        }.call(ctx)
+    ]);
 
     var types = util.createIndex(JSON.parse(JSON.stringify(results[0])),"_id");
     var categories = util.createIndex(results[1],"_id");
@@ -48,10 +48,10 @@ module.exports = function*(){
     }
 
     //implement a logic where the 'count' property gets calculated for every type,
-    //if there is a 'project' parameter given to this route
+    //if there is a 'project' parameter given to ctx route
 
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify({
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify({
         types:types,
         categories:categories,
         rental:rental

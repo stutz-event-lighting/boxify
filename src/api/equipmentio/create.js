@@ -1,7 +1,7 @@
 var mongo = require("mongodb");
 var parse = require("co-body");
-module.exports = function*(){
-    var body = yield parse.json(this);
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
     body.project = mongo.ObjectID(body.project);
     var io = {
         _id: mongo.ObjectID(),
@@ -15,6 +15,6 @@ module.exports = function*(){
     if(body.reservation){
         io.reservation = mongo.ObjectID(body.reservation);
     }
-    yield this.app.db.EquipmentIo.create(io);
-    this.body = io._id+"";
+    await ctx.app.db.EquipmentIo.create(io);
+    ctx.body = io._id+"";
 }

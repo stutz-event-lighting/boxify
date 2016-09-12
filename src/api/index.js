@@ -13,10 +13,10 @@ module.exports = compose([
 	mount("/projects",require("./projects")),
 	mount("/equipmentio",require("./equipmentio")),
 	mount("/rentals",require("./rentals")),
-	route.get("/barcode/:code/*",function*(code,text){
+	route.get("/barcode/:code/*",async function(ctx,code,text){
 		var generator = new Barc();
 		var buf = generator.code128(code,1200,240,text||"");
-		this.set("Content-Type","image/png");
-		this.body = buf;
+		ctx.set("Content-Type","image/png");
+		ctx.body = buf;
 	})
 ]);

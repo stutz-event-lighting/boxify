@@ -1,23 +1,23 @@
 var mongo = require("mongodb");
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
-    var type = parseFloat(this.params.type);
-    var results = yield [
-        this.app.db.EquipmentType.findOne({_id:type}).select("count"),
-        function*(){
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
+    var type = parseFloat(ctx.params.type);
+    var results = await Promise.all([
+        ctx.app.db.EquipmentType.findOne({_id:type}).select("count"),
+        async function(){
             if(!body.loose) return [];
             var query = {};
             query["contents."+type] = {$exists:true};
-            return yield this.app.db.EquipmentType.find(query).select("contents")
-        }.bind(this)
-    ]
+            return await ctx.app.db.EquipmentType.find(query).select("contents")
+        }.call(ctx)
+    ])
     var type = results[0];
     var items = results[1];
     for(var i = 0; i < items.length; i++){
         type.count -= items[i].contents[type._id+""].count;
     }
-    this.set("Content-Type","application/json");
-    this.body = type.count+"";
+    ctx.set("Content-Type","application/json");
+    ctx.body = type.count+"";
 }

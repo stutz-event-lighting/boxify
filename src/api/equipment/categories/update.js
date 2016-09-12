@@ -1,7 +1,7 @@
 var mongo = require("mongodb");
 var parse = require("co-body");
-module.exports = function*(){
-    var body = yield parse.json(this);
-    yield this.app.db.EquipmentCategory.update({_id:mongo.ObjectID(this.params.id)},{$set:{name:body.name}});
-    this.status = 200;
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
+    await ctx.app.db.EquipmentCategory.update({_id:mongo.ObjectID(ctx.params.id)},{$set:{name:body.name}});
+    ctx.status = 200;
 }

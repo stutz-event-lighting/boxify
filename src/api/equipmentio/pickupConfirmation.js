@@ -4,9 +4,9 @@ var Template = require("docxtemplater");
 var fs = require("fs-promise");
 var path = require("path");
 
-module.exports = function*(){
-    var _id = mongo.ObjectID(this.params.io);
-    var checkout = yield this.app.db.EquipmentIo
+module.exports = async function(ctx){
+    var _id = mongo.ObjectID(ctx.params.io);
+    var checkout = await ctx.app.db.EquipmentIo
         .findOne({_id:_id})
         .select("project time items history person")
         .populate("project","projectNumber customer name start end")
@@ -14,7 +14,7 @@ module.exports = function*(){
         .populate("customer","type salutation firstname lastname streetName streetNr zip city emails phones")
     var articleIds = Object.keys(checkout.items).map(function(id){return parseFloat(id)});
 
-    var articles = yield this.app.db.EquipmentType.find({_id:{$in:articleIds}});
+    var articles = await ctx.app.db.EquipmentType.find({_id:{$in:articleIds}});
     var project = checkout.project;
     var person = checkout.person;
     var customer = checkout.customer;
@@ -64,12 +64,12 @@ module.exports = function*(){
     }
     data.totalVolume = (data.totalVolume/1000).toFixed(2)
     data.totalWeight = data.totalWeight.toFixed(2);
-    var tempalate = yield fs.readFile(path.resolve(__dirname,"../../../word_templates/pickup_confirmation.docx"));
+    var tempalate = await fs.readFile(path.resolve(__dirname,"../../../word_templates/pickup_confirmation.docx"));
     doc = new Template(template);
     doc.setData(data);
     doc.render();
-    this.set("Content-Type","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-    this.body = doc.getZip().generate({type:"nodebuffer"});
+    ctx.set("Content-Type","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    ctx.body = doc.getZip().generate({type:"nodebuffer"});
 }
 
 function getStandard(entries){

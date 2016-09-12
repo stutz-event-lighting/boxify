@@ -1,5 +1,5 @@
 var mongo = require("mongodb");
-module.exports = function*(){
-    yield this.app.db.Project.update({_id:mongo.ObjectID(this.params.id)},{$set:{status:"finished"}});
-    this.status = 200;
+module.exports = async function(ctx){
+    await ctx.app.db.Project.update({_id:mongo.ObjectID(ctx.params.id)},{$set:{status:"finished"}});
+    ctx.status = 200;
 }

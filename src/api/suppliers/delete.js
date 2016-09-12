@@ -1,5 +1,5 @@
-module.exports = function*(){
-    var id = parseFloat(this.params.id);
-    yield this.app.db.Contact.update({_id:id},{$pull:{roles:"supplier"}});
-    this.status = 200;
+module.exports = async function(ctx){
+    var id = parseFloat(ctx.params.id);
+    await ctx.app.db.Contact.update({_id:id},{$pull:{roles:"supplier"}});
+    ctx.status = 200;
 }

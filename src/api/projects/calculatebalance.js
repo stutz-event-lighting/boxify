@@ -1,5 +1,5 @@
-module.exports = function*(db,project){
-    var entries = yield db.EquipmentIo.find({project:project,draft:{$ne:true}}).select("items type");
+module.exports = async function(db,project){
+    var entries = await db.EquipmentIo.find({project:project,draft:{$ne:true}}).select("items type");
     var balance = {};
     for(var i = 0; i < entries.length; i++){
     	var entry = entries[i];
@@ -36,6 +36,6 @@ module.exports = function*(db,project){
     	}
     }
 
-    yield db.Project.update({_id:project},{$set:{balance:balance}});
+    await db.Project.update({_id:project},{$set:{balance:balance}});
     return balance;
 }

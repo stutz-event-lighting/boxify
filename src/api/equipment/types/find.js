@@ -1,7 +1,7 @@
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
 
     var query = {};
     if(body.search){
@@ -21,7 +21,7 @@ module.exports = function*(){
             query.$and = needed;
         }
     }
-    var items = yield this.app.db.EquipmentType.find(query).select("name manufacturer category count weight height width length");
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify(items);
+    var items = await ctx.app.db.EquipmentType.find(query).select("name manufacturer category count weight height width length");
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify(items);
 }

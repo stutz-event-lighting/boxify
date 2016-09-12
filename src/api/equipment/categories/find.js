@@ -1,5 +1,5 @@
-module.exports = function*(){
-    var categories = yield this.app.db.EquipmentCategory.find({},{_id:true,name:true})
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify(categories);
+module.exports = async function(ctx){
+    var categories = await ctx.app.db.EquipmentCategory.find({},{_id:true,name:true})
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify(categories);
 }

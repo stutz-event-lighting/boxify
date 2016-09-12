@@ -2,14 +2,14 @@ var mongo = require("mongodb");
 var util = require("../../util");
 var calcNeeded = require("./calculateneeded");
 
-module.exports = function*(){
-    var id = mongo.ObjectID(this.params.id);
-    var results = yield [
-        this.app.db.Project.findOne({_id:id}).select("name customer start end balance remark status"),
-        this.app.db.EquipmentReservation.find({project:id}).select("items"),
-        calcNeeded(this.app.db,id),
-        this.app.db.EquipmentIo.find({project:id}).select("type time items user draft").populate("user","firstname lastname").sort({time:1})
-    ]
+module.exports = async function(ctx){
+    var id = mongo.ObjectID(ctx.params.id);
+    var results = await Promise.all([
+        ctx.app.db.Project.findOne({_id:id}).select("name customer start end balance remark status"),
+        ctx.app.db.EquipmentReservation.find({project:id}).select("items"),
+        calcNeeded(ctx.app.db,id),
+        ctx.app.db.EquipmentIo.find({project:id}).select("type time items user draft").populate("user","firstname lastname").sort({time:1})
+    ])
     var reservations = JSON.parse(JSON.stringify(results[1]));
     for(var i = 0; i < reservations.length; i++){
         var reservation = reservations[i];
@@ -35,8 +35,8 @@ module.exports = function*(){
         delete io.items;
     }
 
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify({
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify({
         project:results[0],
         reservations:reservations,
         needsRental:needsRental,

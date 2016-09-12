@@ -1,25 +1,25 @@
 var mongo = require("mongodb");
 
-module.exports = function*(){
-    var type = parseInt(this.params.type,10);
-    var results = yield [
-        this.app.db.EquipmentLog.find({type:type,event:{$in:["added","removed"]}}).select("time count id event").sort({time:-1}),
-        function*(){
+module.exports = async function(ctx){
+    var type = parseInt(ctx.params.type,10);
+    var results = await Promise.all([
+        ctx.app.db.EquipmentLog.find({type:type,event:{$in:["added","removed"]}}).select("time count id event").sort({time:-1}),
+        async function(){
             var query = {draft:{$ne:true}};
             query["items."+type] = {$exists:true};
-            return yield this.app.db.EquipmentIo.find(query).select("project type time items").sort({time:-1})
-        }.bind(this),
-        function*(){
+            return await ctx.app.db.EquipmentIo.find(query).select("project type time items").sort({time:-1})
+        }.call(ctx),
+        async function(){
             var query = {};
             query["items."+type] = {$exists:true};
-            return yield this.app.db.EquipmentReservation.find(query).select("project status delivery return items").sort({delivery:-1})
-        }.bind(this),
-        function*(){
+            return await ctx.app.db.EquipmentReservation.find(query).select("project status delivery return items").sort({delivery:-1})
+        }.call(ctx),
+        async function(){
             var query = {};
             query["items."+type] = {$exists:true};
-            return yield this.app.db.EquipmentRental.find(query).select("status delivery return items").sort({delivery:-1})
-        }
-    ]
+            return await ctx.app.db.EquipmentRental.find(query).select("status delivery return items").sort({delivery:-1})
+        }.call(ctx)
+    ])
 
     var logs = results[0];
     var ios = results[1];
@@ -59,7 +59,7 @@ module.exports = function*(){
     Object.keys(iosbyproject).concat(Object.keys(reservationsbyproject)).forEach(function(entry){projects[entry] = true});
     projects = Object.keys(projects).map(function(project){return mongo.ObjectID(project)});
 
-    var projects = yield this.app.db.Project.find({_id:{$in:projects}}).select("start end balance");
+    var projects = await ctx.app.db.Project.find({_id:{$in:projects}}).select("start end balance");
 
     for(var i = 0; i < projects.length; i++){
         var p = projects[i];
@@ -95,6 +95,6 @@ module.exports = function*(){
         demandtimeline[demand.time] = currentdemand += demand.count;
     }
 
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify({supply:supplytimeline,ownsupply:ownsupplytimeline,demand:demandtimeline});
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify({supply:supplytimeline,ownsupply:ownsupplytimeline,demand:demandtimeline});
 }

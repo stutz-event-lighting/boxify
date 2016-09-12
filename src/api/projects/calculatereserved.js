@@ -1,5 +1,5 @@
-module.exports = function*(db,project){
-    var reservations = yield db.EquipmentReservation.find({project:project}).select("items");
+module.exports = async function(db,project){
+    var reservations = await db.EquipmentReservation.find({project:project}).select("items");
     var types = {};
     for(var i = 0; i < reservations.length; i++){
         var reservation = reservations[i];
@@ -8,6 +8,6 @@ module.exports = function*(db,project){
             types[type] += reservation.items[type];
         }
     }
-    yield db.Project.update({_id:project},{$set:{reserved:types}});
+    await db.Project.update({_id:project},{$set:{reserved:types}});
     return types;
 }

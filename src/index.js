@@ -15,6 +15,7 @@ var serve = require("koa-static");
 var send = require("koa-send");
 var pug = require("pug");
 var routes = require("./routes");
+require("babel-polyfill")
 
 var page = pug.compile(fs.readFileSync(path.resolve(__dirname,"../views/page.jade")));
 
@@ -22,23 +23,23 @@ var Boxify = module.exports = function Boxify(config){
     var self = this;
 
     this.config = config;
-    this.app = koa();
+    this.app = new koa();
     this.modules = {};
     this.moduleclients = [];
     this.permissions = {};
     this.db = null;
 
     this.app.app = this;
-    this.app.use(function*(next){
+    this.app.use(async function(ctx,next){
         try{
-            yield next;
+            await next();
         }catch(e){
             if(e.status){
-                this.status = e.status;
-                this.message = e.message;
+                ctx.status = e.status;
+                ctx.message = e.message;
             }else{
-                this.status = 500;
-                this.body = e.message+e.stack;
+                ctx.status = 500;
+                ctx.body = e.message+e.stack;
             }
         }
     })
@@ -47,13 +48,13 @@ var Boxify = module.exports = function Boxify(config){
     this.app.use(mount("/public/bootstrap",serve(path.resolve(__dirname,"../node_modules/bootstrap/dist"))));
     this.app.use(mount("/public/react-widgets",serve(path.resolve(__dirname,"../node_modules/react-widgets/dist"))));
     this.app.use(mount("/public/react-select",serve(path.resolve(__dirname,"../node_modules/react-select/dist"))));
-    this.app.use(route.get("/main.js",function*(){
-        yield send(this,"lib/main.js");
+    this.app.use(route.get("/main.js",async function(ctx){
+        await send(ctx,"lib/main.js");
     }));
 
-    this.app.use(function*(next){
-        this.app = self;
-        yield next;
+    this.app.use(async function(ctx,next){
+        ctx.app = self;
+        await next();
     });
 
     this.app.use(mount("/api",require("./api")));
@@ -76,8 +77,8 @@ var Boxify = module.exports = function Boxify(config){
     for(var module in config.modules){
         this.modules[module] = require(module+"/lib/server")(this,config.modules[module]);
         this.moduleclients.push(module);
-        this.app.use(route.get("/modules/"+module+".js",function*(){
-            yield send(this,"build.js",{root:path.dirname(require.resolve(module+"/lib/build.js"))});
+        this.app.use(route.get("/modules/"+module+".js",async function(ctx){
+            await send(ctx,"build.js",{root:path.dirname(require.resolve(module+"/lib/build.js"))});
         }))
     }
 
@@ -88,9 +89,9 @@ var Boxify = module.exports = function Boxify(config){
 
 Boxify.prototype.addRoute = function(path,componentPath){
     var self = this;
-    this.app.use(route.get(path,function*(){
-        this.set("Content-Type","text/html");
-        this.body = page({modules:self.moduleclients});
+    this.app.use(route.get(path,async function(ctx){
+        ctx.set("Content-Type","text/html");
+        ctx.body = page({modules:self.moduleclients});
     }));
 }
 
@@ -98,35 +99,35 @@ Boxify.prototype.addPermission = function(id,name){
     this.permissions[id] = name;
 }
 
-Boxify.prototype.start = co.wrap(function*(){
+Boxify.prototype.start = async function(){
     var con = mongoose.connect("mongodb://"+this.config.dbpath+"/boxify");
     var db = con.connection;
-    yield con;
+    await con;
     require("./models")(db);
     this.db = db;
     this.app.db = db;
 
-    yield this.update();
+    await this.update();
 
     for(var module in this.modules){
-        yield this.modules[module].start();
+        await this.modules[module].start();
     }
 
     this.app.listen(this.config.port||80);
-})
+}
 
-Boxify.prototype.update = co.wrap(function*(cb){
-    var patches = yield fsp.readdir(path.resolve(__dirname,"./patches"));
-    var settings = yield this.db.MainSettings.findOne({_id:"main"});
+Boxify.prototype.update = async function(cb){
+    var patches = await fsp.readdir(path.resolve(__dirname,"./patches"));
+    var settings = await this.db.MainSettings.findOne({_id:"main"});
 
     if(!settings){
         settings = new this.db.MainSettings({_id:"main"});
-        yield settings.save();
+        await settings.save();
     }
 
     if(!settings.version){
         settings.version = "0.0.0";
-        yield settings.save();
+        await settings.save();
     }
     var lastversion = "0.0.0";
 
@@ -134,15 +135,15 @@ Boxify.prototype.update = co.wrap(function*(cb){
         version = patches[version].replace(".js","");
         if(semver.gte(settings.version,version)) continue;
         for(var module in this.modules){
-            if(this.modules[module].beforeUpdate) yield this.modules[module].beforeUpdate(version);
+            if(this.modules[module].beforeUpdate) await this.modules[module].beforeUpdate(version);
         }
         console.log("applying patch for version",version);
-        yield require("./patches/"+version).call(this);
+        await require("./patches/"+version).call(this);
         for(var module in this.modules){
-            if(this.modules[module].afterUpdate) yield this.modules[module].afterUpdate(version);
+            if(this.modules[module].afterUpdate) await this.modules[module].afterUpdate(version);
         }
         settings.version = version;
-        yield settings.save();
+        await settings.save();
     }
     console.log("boxify is now at version",version);
-});
+};

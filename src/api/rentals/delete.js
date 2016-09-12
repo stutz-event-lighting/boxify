@@ -1,6 +1,6 @@
 var mongo = require("mongodb");
 
-module.exports = function*(){
-    yield this.app.db.EquipmentRental.remove({_id:mongo.ObjectID(this.params.rental)});
-    this.status = 200;
+module.exports = async function(ctx){
+    await ctx.app.db.EquipmentRental.remove({_id:mongo.ObjectID(ctx.params.rental)});
+    ctx.status = 200;
 }

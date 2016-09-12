@@ -1,11 +1,11 @@
 var mongo = require("mongodb");
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this,{limit:"10mb"});
-    var id = parseInt(this.params.id,10);
-    var results = yield[
-        function*(){
+module.exports = async function(ctx){
+    var body = await parse.json(ctx,{limit:"10mb"});
+    var id = parseInt(ctx.params.id,10);
+    var results = await Promise.all([
+        async function(){
             var query = {$set:{
                 name:body.name
             },$unset:{}};
@@ -79,19 +79,19 @@ module.exports = function*(){
 
             if(!Object.keys(query.$unset).length) delete query.$unset;
 
-            return yield this.app.db.EquipmentType.findOneAndUpdate({_id:id},query);
-        }.bind(this),
-        function*(){
+            return await ctx.app.db.EquipmentType.findOneAndUpdate({_id:id},query);
+        }.call(ctx),
+        async function(){
             if(!body.image) return;
             var parts = body.image.split(",");
             var mime = parts[0].substring(5,parts[0].length-7);
             var data = new Buffer(parts[1],"base64");
 
-            var store = new mongo.GridStore(this.app.db.db,parseFloat(this.params.id),parseFloat(this.params.id),"w",{root:"equipmentimages",content_type:mime});
-            yield store.open();
-            yield store.write(data,true);
-        }.bind(this)
-    ];
+            var store = new mongo.GridStore(ctx.app.db.db,parseFloat(ctx.params.id),parseFloat(ctx.params.id),"w",{root:"equipmentimages",content_type:mime});
+            await store.open();
+            await store.write(data,true);
+        }.call(ctx)
+    ]);
 
 
     var old = results[0];
@@ -100,26 +100,24 @@ module.exports = function*(){
     var create = after.filter(function(tag){return before.indexOf(tag) < 0});
     var del = before.filter(function(tag){return after.indexOf(tag) < 0});
 
-    yield [
-        createTags(this.app.db,create),
-        deleteTags(this.app.db,del)
-    ];
+    await Promise.all([
+        createTags(ctx.app.db,create),
+        deleteTags(ctx.app.db,del)
+    ]);
 
-    this.status = 200;
+    ctx.status = 200;
 }
 
-function* createTags(db,tags){
-    yield tags.map(function(tag){
+async function createTags(db,tags){
+    await Promise.all(tags.map(function(tag){
         return db.EquipmentTag.update({_id:tag},{$set:{_id:tag}},{upsert:true});
-    });
+    }));
 }
 
-function* deleteTags(db,tags){
-    yield tags.map(function(tag){
-        return function*(){
-            if(!(yield db.EquipmentType.findOne({tags:tag}))){
-                yield db.EquipmentTag.remove({_id:tag});
-            }
+async function deleteTags(db,tags){
+    await Promise.all(tags.map(async function(tag){
+        if(!(await db.EquipmentType.findOne({tags:tag}))){
+            await db.EquipmentTag.remove({_id:tag});
         }
-    });
+    }));
 }

@@ -7,10 +7,10 @@ router
 .post("/:reservation",ensurePermission("projects_write"),require("./update"))
 .get("/:reservation/delete",ensurePermission("projects_write"),require("./delete"));
 
-module.exports = function*(next){
-    var prev = this.path;
-    this.path = this.path.slice(("/"+this.params.project+"/reservations").length);
-    yield router.routes();
-    this.path = prev;
-    yield next;
+module.exports = async function(ctx, next){
+    var prev = ctx.path;
+    ctx.path = ctx.path.slice(("/"+ctx.params.project+"/reservations").length);
+    await router.routes();
+    ctx.path = prev;
+    await next();
 }

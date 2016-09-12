@@ -1,9 +1,9 @@
 var mongo = require("mongodb");
 
-module.exports = function*(){
+module.exports = async function(ctx){
     var query = {};
-    query["contents."+this.params.type+".ids"] = this.params.item;
-    var item = yield this.app.db.EquipmentItem.findOne(query);
-    this.set("Content-Type","application/json");
-    this.body = item?(item._id+""):"null";
+    query["contents."+ctx.params.type+".ids"] = ctx.params.item;
+    var item = await ctx.app.db.EquipmentItem.findOne(query);
+    ctx.set("Content-Type","application/json");
+    ctx.body = item?(item._id+""):"null";
 }

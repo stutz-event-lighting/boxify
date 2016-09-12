@@ -1,10 +1,10 @@
 var mongo = require("mongodb");
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
-    if(this.params.rental.length != 24) this.params.rental = mongo.ObjectID()+"";
-    yield this.app.db.EquipmentRental.update({_id:mongo.ObjectID(this.params.rental)},{$set:{
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
+    if(ctx.params.rental.length != 24) ctx.params.rental = mongo.ObjectID()+"";
+    await ctx.app.db.EquipmentRental.update({_id:mongo.ObjectID(ctx.params.rental)},{$set:{
         name:body.name,
         supplier:parseFloat(body.supplier),
         delivery:body.delivery,
@@ -13,5 +13,5 @@ module.exports = function*(){
         items:body.items,
         projects:body.projects||[]
     }},{upsert:true});
-    this.status = 200;
+    ctx.status = 200;
 }

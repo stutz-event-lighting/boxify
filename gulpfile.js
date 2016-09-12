@@ -7,7 +7,7 @@ var replaceExt = require("gulp-ext-replace");
 var transform = require("gulp-transform");
 var jade2react = require("jade2react");
 var cp = require("child_process");
-var babelify = require("babelify");
+var babel = require("gulp-babel");
 
 gulp.task("clean",function(){
 	rimraf("./lib");
@@ -19,21 +19,25 @@ gulp.task("compileJade",["clean"],function(){
 		.src("src/**/*.jade")
 		.pipe(replaceExt(".js"))
 		.pipe(transform((code)=>jade2react.compile(code.toString("utf8"))))
+		.pipe(babel({
+			presets:["es2015"],
+			plugins:["syntax-async-functions","transform-regenerator"]
+		}))
 		.pipe(gulp.dest("lib"));
 });
 gulp.task("copyJs",["clean"],function(){
 	return gulp
 		.src("src/**/*.js")
+		.pipe(babel({
+			presets:["es2015"],
+			plugins:["syntax-async-functions","transform-regenerator"]
+		}))
 		.pipe(gulp.dest("lib"));
-})
+});
 
 gulp.task("buildClient",["compileJade","copyJs"],function(cb){
 	var bundle = browserify({basedir:path.resolve(__dirname,"../"),exposeAll:true});
 	bundle.require(require.resolve("./lib/app"));
-	bundle.transform(babelify.configure({
-		presets:["es2015"],
-		plugins:["syntax-async-functions","transform-regenerator"]
-	}))
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);
 		fs.writeFileSync("./lib/main.js",build);

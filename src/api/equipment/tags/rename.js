@@ -1,7 +1,7 @@
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
-    yield this.app.db.EquipmentTag.update({_id:this.params.tag},{$set:{_id:body.tag}});
-    this.status = 200;
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
+    await ctx.app.db.EquipmentTag.update({_id:ctx.params.tag},{$set:{_id:body.tag}});
+    ctx.status = 200;
 }

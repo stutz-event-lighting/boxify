@@ -1,6 +1,6 @@
-module.exports = function*(db){
-    var rentals = yield db.EquipmentRental.find({status:"received"}).select("supplier items");
-    var types {};
+module.exports = async function(db){
+    var rentals = await db.EquipmentRental.find({status:"received"}).select("supplier items");
+    var types = {};
     for(var i = 0; i < rentals.length; i++){
         var rental = rentals[i];
         for(var type in rental.items){

@@ -1,7 +1,7 @@
 var mongo = require("mongodb");
 var parse = require("co-body");
-module.exports = function*(){
-    var body = yield parse.json(this);
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
     var query = {};
     if(body.search){
         query.name = {$regex:"^"+body.search.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),$options:"i"};
@@ -9,12 +9,12 @@ module.exports = function*(){
     if(body.finished !== true){
         query.status = "ongoing";
     }
-    var projects = yield this.app.db.Project
+    var projects = await ctx.app.db.Project
         .find(query)
         .select("name customer start end status")
         .populate("customer","firstname lastname")
         .sort({start:1});
 
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify(projects);
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify(projects);
 }

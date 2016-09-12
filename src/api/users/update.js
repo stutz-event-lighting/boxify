@@ -1,25 +1,25 @@
 var parse = require("co-body");
 
-module.exports = function*(){
+module.exports = async function(ctx){
 
-    var body = yield parse.json(this);
+    var body = await parse.json(ctx);
 
-    var id = parseFloat(this.params.id);
-    if(this.session.user != id && this.session.permissions.indexOf("users_write") < 0) this.throw(403);
+    var id = parseFloat(ctx.params.id);
+    if(ctx.session.user != id && ctx.session.permissions.indexOf("users_write") < 0) ctx.throw(403);
     var pull = [];
     var add = [];
     for(var permission in body.permissions){
-        if(this.session.permissions.indexOf(permission) >= 0) (body.permissions[permission]?add:pull).push(permission);
+        if(ctx.session.permissions.indexOf(permission) >= 0) (body.permissions[permission]?add:pull).push(permission);
     }
-    yield [
-        function*(){
+    await Promise.all([
+        async function(){
             if(!pull.length) return;
-            yield this.app.db.Contact.update({_id:id},{$pullAll:{"permissions":pull}})
-        }.bind(this),
-        function*(){
+            await ctx.app.db.Contact.update({_id:id},{$pullAll:{"permissions":pull}})
+        }.call(ctx),
+        async function(){
             if(!add.length) return;
-            yield this.app.db.Contact.update({_id:id},{$addToSet:{"permissions":{$each:add}}})
-        }.bind(this)
-    ]
-    this.status = 200;
+            await ctx.app.db.Contact.update({_id:id},{$addToSet:{"permissions":{$each:add}}})
+        }.call(ctx)
+    ])
+    ctx.status = 200;
 }

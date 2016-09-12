@@ -1,8 +1,8 @@
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
-    var id = parseInt(this.params.type);
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
+    var id = parseInt(ctx.params.type);
 
     var query = {};
     switch(body.type){
@@ -16,9 +16,9 @@ module.exports = function*(){
             return res.fail(601,"Invalid type");
     }
 
-    yield [
-        this.app.db.EquipmentType.update({_id:id},query),
-        this.app.db.EquipmentLog.create({time:new Date().getTime(),type:id,count:body.count,event:body.type=="add"?"added":"removed"})
-    ]
-    this.status = 200;
+    await Promise.all([
+        ctx.app.db.EquipmentType.update({_id:id},query),
+        ctx.app.db.EquipmentLog.create({time:new Date().getTime(),type:id,count:body.count,event:body.type=="add"?"added":"removed"})
+    ])
+    ctx.status = 200;
 }

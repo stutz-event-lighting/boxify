@@ -1,12 +1,12 @@
 var calcEquipmentBalance = require("../equipment/calculatebalance");
 
-module.exports = function*(db,project){
-    var project = yield db.Project.findOne({_id:project}).select("start end reserved");
+module.exports = async function(db,project){
+    var project = await db.Project.findOne({_id:project}).select("start end reserved");
     if(!project) throw new Error("Project does not exist");
-    var results = yield [
+    var results = await Promise.all([
         calcEquipmentBalance(db),
         db.EquipmentRental.find({return:{$gte:project.start},delivery:{$lte:project.end},status:{$in:["requested","booked"]}}).select("delivery return items")
-    ];
+    ]);
 
     var needed = results[0];
     var rentals = results[1];

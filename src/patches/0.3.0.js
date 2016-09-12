@@ -1,4 +1,4 @@
-module.exports = function*(){
+module.exports = async function(){
     var db = this.db;
-    yield db.collection("equipmenttypes").update({contents:"*"},{$set:{contents:null}},{multi:true});
+    await db.collection("equipmenttypes").update({contents:"*"},{$set:{contents:null}},{multi:true});
 }

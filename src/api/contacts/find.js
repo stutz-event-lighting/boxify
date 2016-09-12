@@ -1,6 +1,6 @@
 var parse = require("co-body");
-module.exports = function*(role){
-    var body = yield parse.json(this);
+module.exports = async function(ctx,role){
+    var body = await parse.json(ctx);
     var query = {};
     if(body.search){
         var words = body.search.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&").replace(/\s\s+/g," ").split(" ");
@@ -26,7 +26,7 @@ module.exports = function*(role){
     if(typeof role == "string"){
         query.roles = role;
     }
-    var items = yield this.app.db.Contact.find(query,"firstname lastname");
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify(items);
+    var items = await ctx.app.db.Contact.find(query,"firstname lastname");
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify(items);
 }

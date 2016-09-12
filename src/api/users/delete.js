@@ -1,9 +1,9 @@
-module.exports = function*(){
-    var id = parseFloat(this.params.user);
-    if(this.session.user != id && this.session.permissions.indexOf("users_write") < 0) this.throw(403);
-    yield [
-        this.app.db.Contact.update({_id:id},{$pull:{roles:"user"}}),
-        this.app.db.Session.remove({user:id})
-    ]
-    this.status = 200;
+module.exports = async function(ctx){
+    var id = parseFloat(ctx.params.user);
+    if(ctx.session.user != id && ctx.session.permissions.indexOf("users_write") < 0) ctx.throw(403);
+    await Promise.all([
+        ctx.app.db.Contact.update({_id:id},{$pull:{roles:"user"}}),
+        ctx.app.db.Session.remove({user:id})
+    ])
+    ctx.status = 200;
 }

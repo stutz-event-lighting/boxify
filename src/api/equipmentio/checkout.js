@@ -2,13 +2,13 @@ var mongo = require("mongodb");
 var util = require("../../util");
 var calcBalance = require("../equipment/calculatebalance");
 
-module.exports = function*(){
-    var results = yield [
-        this.app.db.EquipmentCategory.find({}).select("name"),
-        this.app.db.EquipmentType.find({}).select("name category"),
-        calcBalance(this.app.db),
-        this.app.db.EquipmentIo.findOne({_id:mongo.ObjectID(this.params.io)}).select("person project items history draft reservation").populate("project","balance").populate("reservation","items")
-    ];
+module.exports = async function(ctx){
+    var results = await Promise.all([
+        ctx.app.db.EquipmentCategory.find({}).select("name"),
+        ctx.app.db.EquipmentType.find({}).select("name category"),
+        calcBalance(ctx.app.db),
+        ctx.app.db.EquipmentIo.findOne({_id:mongo.ObjectID(ctx.params.io)}).select("person project items history draft reservation").populate("project","balance").populate("reservation","items")
+    ]);
     var categories = util.createIndex(results[0],"_id");
     var types = util.createIndex(JSON.parse(JSON.stringify(results[1])),"_id");
     var balance = results[2];
@@ -44,8 +44,8 @@ module.exports = function*(){
         }
     }
 
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify({
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify({
         person:checkout.person,
         draft:checkout.draft,
         categories:categories,

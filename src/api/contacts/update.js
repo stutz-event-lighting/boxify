@@ -1,7 +1,7 @@
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
     var query = {$set:{},$unset:{}};
 
     var types = ["person","company","club"];
@@ -88,14 +88,14 @@ module.exports = function*(){
 
     if(!Object.keys(query.$unset).length) delete query.$unset;
 
-    var select = {_id:parseFloat(this.params.contact)};
-    if(this.params.contact != this.session.user+""&&this.session.permissions.indexOf("contacts_write") < 0){
+    var select = {_id:parseFloat(ctx.params.contact)};
+    if(ctx.params.contact != ctx.session.user+""&&ctx.session.permissions.indexOf("contacts_write") < 0){
         var roles = [];
-        if(this.session.permissions.indexOf("users_write")>=0) roles.push("user");
-        if(this.session.permissions.indexOf("customers_write")>=0) roles.push("customer");
-        if(this.session.permissions.indexOf("suppliers_write")>=0) roles.push("supplier");
+        if(ctx.session.permissions.indexOf("users_write")>=0) roles.push("user");
+        if(ctx.session.permissions.indexOf("customers_write")>=0) roles.push("customer");
+        if(ctx.session.permissions.indexOf("suppliers_write")>=0) roles.push("supplier");
         if(roles.length) select.roles = {$in:roles};
     }
-    yield this.app.db.Contact.update(select,query,{upsert:true});
-    this.status = 200;
+    await ctx.app.db.Contact.update(select,query,{upsert:true});
+    ctx.status = 200;
 }

@@ -1,16 +1,16 @@
 var mongo = require("mongodb");
 
-module.exports = function*(){
-    var store = new mongo.GridStore(this.app.db,parseFloat(this.params.id),parseFloat(this.params.id),"r",{root:"equipmentimages"});
+module.exports = async function(ctx){
+    var store = new mongo.GridStore(ctx.app.db,parseFloat(ctx.params.id),parseFloat(ctx.params.id),"r",{root:"equipmentimages"});
     try{
-        yield store.open();
-        var data = yield store.read();
-        yield store.close();
+        await store.open();
+        var data = await store.read();
+        await store.close();
     }catch(e){
-        this.status = 302;
-        this.set("Location","http://placehold.it/350x250");
+        ctx.status = 302;
+        ctx.set("Location","http://placehold.it/350x250");
         return;
     }
-    this.set("Content-Type","image/jpeg");
-    this.body = data;
+    ctx.set("Content-Type","image/jpeg");
+    ctx.body = data;
 }

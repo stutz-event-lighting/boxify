@@ -1,10 +1,10 @@
 var mongo = require("mongodb");
-module.exports = function*(){
+module.exports = async function(ctx){
     var id = mongo.ObjectID();
-    yield this.app.db.EquipmentReservation.create({
+    await ctx.app.db.EquipmentReservation.create({
         _id:id,
-        project:mongo.ObjectID(this.params.project),
+        project:mongo.ObjectID(ctx.params.project),
         items:{}
     });
-    this.body = id+"";
+    ctx.body = id+"";
 }

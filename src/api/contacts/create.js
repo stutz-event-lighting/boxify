@@ -1,7 +1,7 @@
 var parse = require("co-body");
 
-module.exports = function*(){
-    var body = yield parse.json(this);
+module.exports = async function(ctx){
+    var body = await parse.json(ctx);
 
     var contact = {};
     var types = ["person","company","club"];
@@ -20,9 +20,9 @@ module.exports = function*(){
     contact.phones = [];
     contact.contacts = [];
 
-    var settings = yield this.app.db.MainSettings.findByIdAndUpdate("main",{$inc:{nextContactId:1}},{select:"nextContactId"});
+    var settings = await ctx.app.db.MainSettings.findByIdAndUpdate("main",{$inc:{nextContactId:1}},{select:"nextContactId"});
     contact._id = settings.nextContactId||0;
 
-    yield this.app.db.Contact.create(contact);
-    this.body = contact._id+"";
+    await ctx.app.db.Contact.create(contact);
+    ctx.body = contact._id+"";
 }

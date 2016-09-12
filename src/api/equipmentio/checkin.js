@@ -1,11 +1,11 @@
 var mongo = require("mongodb");
 var util = require("../../util");
 
-module.exports = function*(){
-    var results = yield[
-        this.app.db.EquipmentType.find({}).select("name hasItems contents"),
-        this.app.db.EquipmentIo.findOne({_id:mongo.ObjectID(this.params.io)}).select("person project items history draft").populate("project","balance")
-    ]
+module.exports = async function(ctx){
+    var results = await Promise.all([
+        ctx.app.db.EquipmentType.find({}).select("name hasItems contents"),
+        ctx.app.db.EquipmentIo.findOne({_id:mongo.ObjectID(ctx.params.io)}).select("person project items history draft").populate("project","balance")
+    ])
     var types = util.createIndex(JSON.parse(JSON.stringify(results[0])),"_id");
     var checkin = results[1];
     var items = checkin.items;
@@ -34,8 +34,8 @@ module.exports = function*(){
             }
         }
     }
-    this.set("Content-Type","application/json");
-    this.body = JSON.stringify({
+    ctx.set("Content-Type","application/json");
+    ctx.body = JSON.stringify({
         person:checkin.person,
         draft:checkin.draft,
         types:types,
