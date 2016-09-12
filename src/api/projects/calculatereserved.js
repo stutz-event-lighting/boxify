@@ -1,7 +1,7 @@
 var async = require("async");
 
 module.exports = function*(db,project){
-    var reservations = yield db.EquipmentReservation.find({project:project}).select("item");
+    var reservations = yield db.EquipmentReservation.find({project:project}).select("items");
     var types = {};
     for(var i = 0; i < reservations.length; i++){
         var reservation = reservations[i];
