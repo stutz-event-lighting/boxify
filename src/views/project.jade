@@ -20,6 +20,10 @@ append body
                             .col-lg-10
                                 input.form-control(placeholder="Kommentar" value=this.state.item.name onChange=this.onNameChange.bind(this))
                         .form-group
+                            label.col-lg-2.control-label Kunde
+                            .col-lg-10
+                                ContactBox(value=this.state.item.customer disabled=true)
+                        .form-group
                             label.col-lg-2.control-label Beginn
                             .col-lg-10
                                 DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
@@ -107,6 +111,7 @@ script.
     var TextArea = require("react-textarea-autosize").default;
     var ConfirmDialog = React.createFactory(require("./ConfirmDialog"));
     var DatePicker = require("react-widgets").DateTimePicker;
+    var ContactBox = require("./ContactBox");
 script(section="body").    
     getNeededPermissions(){
         return ["projects_read"];

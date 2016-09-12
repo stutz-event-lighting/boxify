@@ -31,7 +31,8 @@ gulp.task("buildClient",["compileJade","copyJs"],function(cb){
 	var bundle = browserify({basedir:path.resolve(__dirname,"../"),exposeAll:true});
 	bundle.require(require.resolve("./lib/app"));
 	bundle.transform(babelify.configure({
-		presets:["es2015"]
+		presets:["es2015"],
+		plugins:["syntax-async-functions","transform-regenerator"]
 	}))
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);

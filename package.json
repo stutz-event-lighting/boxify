@@ -13,6 +13,8 @@
   "license": "proprietary",
   "dependencies": {
     "async": "~0.9.0",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-regenerator": "^6.14.0",
     "babel-runtime": "^6.11.6",
     "barcode-generator": "git://github.com/VanCoding/node-barcode-generator",
     "bootstrap": "^3.3.5",
