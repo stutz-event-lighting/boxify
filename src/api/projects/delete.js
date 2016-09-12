@@ -1,5 +1,4 @@
 var mongo = require("mongodb");
-var async = require("async");
 
 module.exports = function*(){
     var id = mongo.ObjectID(this.params.id);

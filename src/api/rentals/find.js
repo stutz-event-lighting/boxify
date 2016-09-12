@@ -1,5 +1,4 @@
 var mongo = require("mongodb");
-var async = require("async");
 var parse = require("co-body");
 
 module.exports = function*(){

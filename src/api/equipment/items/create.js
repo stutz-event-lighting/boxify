@@ -1,4 +1,3 @@
-var async = require("async");
 var parse = require("co-body");
 var mongo = require("mongodb");
 

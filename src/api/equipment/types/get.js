@@ -1,4 +1,3 @@
-var async = require("async");
 module.exports = function*(){
     var id = parseInt(this.params.id,10);
     var d = yield [

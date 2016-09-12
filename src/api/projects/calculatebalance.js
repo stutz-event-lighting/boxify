@@ -1,5 +1,3 @@
-var async = require("async");
-
 module.exports = function*(db,project){
     var entries = yield db.EquipmentIo.find({project:project,draft:{$ne:true}}).select("items type");
     var balance = {};

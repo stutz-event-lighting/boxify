@@ -1,4 +1,3 @@
-var async = require("async");
 var mongo = require("mongodb");
 var moment = require("moment");
 var Template = require("docxtemplater");

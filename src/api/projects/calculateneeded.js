@@ -1,5 +1,3 @@
-var async = require("async");
-
 var calcEquipmentBalance = require("../equipment/calculatebalance");
 
 module.exports = function*(db,project){

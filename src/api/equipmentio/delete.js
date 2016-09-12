@@ -1,5 +1,4 @@
 var mongo = require("mongodb");
-var async = require("async");
 var calculateBalance = require("../projects/calculatebalance");
 
 module.exports = function*(){

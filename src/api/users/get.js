@@ -1,4 +1,3 @@
-var async = require("async");
 module.exports = function*(){
     var id = parseFloat(this.params.id);
     if(this.session.permissions.indexOf("users_read") < 0 && id != this.session.user) this.throw(403);

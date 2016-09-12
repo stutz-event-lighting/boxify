@@ -1,4 +1,3 @@
-var async = require("async");
 module.exports = function*(){
     var id = parseFloat(this.params.id);
     yield [

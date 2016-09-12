@@ -1,7 +1,6 @@
 var fs = require("fs");
 var crypto = require("crypto");
 var path = require("path");
-var async = require("async");
 var semver = require("semver");
 var mongo = require("mongodb");
 var mongoose = require("mongoose");
