@@ -13,7 +13,8 @@ router
 module.exports = async function(ctx,next){
 	var prev = ctx.path;
 	ctx.path = ctx.path.slice(("/"+ctx.params.type).length);
-	await router.routes();
-	ctx.path = prev;
-	await next();
+	await router.routes()(ctx,async function(){
+		ctx.path = prev;
+		await next();
+	});	
 }
