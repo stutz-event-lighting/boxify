@@ -130,7 +130,6 @@ script.
     var ContactBox = require("./ContactBox");
     var Modal = require("./Modal");
     var Input = require("./Input");
-    var async = require("async");
 script(section="body").
     getNeededPermissions(){
         return ["projects_read"];
@@ -217,11 +216,12 @@ script(section="body").
             }
             
             if(code.item){
-                this.getEntryContents(entry,[code.item],function(err){
-                    if(err) return this.playErrorSound();
+                this.getEntryContents(entry,[code.item]).then(function(){
                     this.state.entry = entry;
                     this.addCheckedInformation(entry);
                     this.update();
+                }.bind(this)).catch(function(err){
+                    this.playErrorSound();
                 }.bind(this));
             }else if(entry.supplier == "own" && this.state.data.types[entry.type].hasItems){
                 return this.playErrorSound();
@@ -231,34 +231,29 @@ script(section="body").
         }
     }
     
-    getEntryContents(entry,items,cb){
-        async.each(items,function(item,cb){
-            client.getEquipment(entry.type,item,function(err,item){
-                if(err) return cb(err);
-                item = item.item;
-                if(!entry.items) entry.items = {};
-                async.map(Object.keys(item.contents),function(type,cb){
-                    type = parseFloat(type);
-                    var subentry = {
-                        supplier:entry.supplier,
-                        type:type,
-                        count:item.contents[type].count
-                    };
-                    if(item.contents[type].ids){
-                        this.getEntryContents(subentry,item.contents[type].ids,function(err){
-                            if(err) return cb(err);
-                            cb(null,subentry);
-                        }.bind(this));
-                    }else{
-                        cb(null,subentry);
-                    }
-                }.bind(this),function(err,items){
-                    if(err) return cb(err);
-                    entry.items[item.id] = items;
-                    cb();
-                }.bind(this))
-            }.bind(this))
-        }.bind(this),cb);
+    async getEntryContents(entry,items,cb){
+        return await Promise.all(items.map(async function(item){
+            item = await new Promise(function(s,e){
+                client.getEquipment(entry.type,item,function(err,item){
+                    if(err) return e(err);
+                    s(item.item);
+                });
+            });
+            
+            if(!entry.items) entry.items = {};
+            
+            items = Promise.all(Object.keys(item.contents).map(async function(type){
+                type = parseFloat(type);
+                var subentry = {
+                    supplier:entry.supplier,
+                    type:type,
+                    count:item.contents[type].count
+                };
+                if(item.contents[type].ids) await this.getEntryContents(subentry,item.contents[type].ids);
+                return subentry;                
+            }.bind(this)))
+            entry.items[item.id] = items;
+        }.bind(this)));            
     }
     
     calculateEntryTotal(entry,total){

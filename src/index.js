@@ -5,7 +5,6 @@ var semver = require("semver");
 var mongo = require("mongodb");
 var mongoose = require("mongoose");
 var fsp = require("fs-promise");
-var co = require("co");
 var koa = require("koa");
 var compose = require("koa-compose");
 var mount = require("koa-mount");

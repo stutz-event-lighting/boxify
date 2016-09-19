@@ -1,7 +1,6 @@
 extends ./base
 
 append body
-    - this.checkData();
     .container
         h1 Equipment
         .searchbar(style="display:flex")
@@ -60,37 +59,35 @@ append body
 script.
     var client = require("../client");
     var Modal = require("./Modal");
-    var async = require("async");
 script(section="body").
     constructor(props,context){
         super(props,context);
+        this.loadCategories();
+        this.searchTypes();
     }
-    checkData(){
-        var self = this;
-        
-        async.parallel([
-            function(cb){
-                if(self.state.items) return cb();
-                client.findEquipmentTypes({search:self.state.search},function(err,items){
-                    self.state.items = items;
-                    cb(true);
-                });
-            },
-            function(cb){
-                if(self.state.categories) return cb();
-                client.getEquipmentCategories(function(err,categories){
-                    if(err) return cb();
-                    self.state.categories = categories;
-                    self.state.categoriesbyid = {};
-                    categories.forEach(function(category){
-                        self.state.categoriesbyid[category._id] = category.name;
-                    })
-                    cb(true);
-                })
-            }
-        ],function(update){
-            if(update) self.update();
-        })      
+    
+    async searchTypes(){
+        this.state.items = await new Promise(function(s,e){
+            client.findEquipmentTypes({search:this.state.search},function(err,items){
+                if(err) return e(err); 
+                s(items);
+            });
+        }.bind(this));
+        this.update();
+    }
+    
+    async loadCategories(){
+        this.state.categories = await new Promise(function(s,e){
+            client.getEquipmentCategories(function(err,categories){
+                if(err) return e(err);        
+                s(categories);
+            })
+        });
+        this.state.categoriesbyid = {};
+        for(var category of categories){
+            this.state.categoriesbyid[category._id] = category.name;                        
+        }
+        this.update();
     }
     
     getNeededPermissions(){
@@ -100,11 +97,7 @@ script(section="body").
     search(e){
         this.state.search = e.target.value;
         delete this.state.items;
-        this.update();
-    }
-
-    componentDidMount(){
-        this.checkData();
+        this.searchTypes();
     }
 
     create(){

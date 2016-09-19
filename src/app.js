@@ -7,6 +7,7 @@ var globalize = require("globalize");
 var localize = require("react-widgets/lib/localizers/globalize");
 require("moment/locale/de");
 require("globalize/lib/cultures/globalize.culture.de-CH");
+require("babel-polyfill");
 
 moment.locale("de-CH");
 globalize.culture("de-CH");
