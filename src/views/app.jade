@@ -1,0 +1,190 @@
+#sel
+	Navbar(fixedTop)
+		Header
+			Brand
+				a(href="/")
+					img(src="/public/logo.png")
+			Toggle
+			if client.session
+				.session
+					| Eingeloggt als
+					b= " "+client.session.user.firstname+" "+client.session.user.lastname
+					br
+					.btn.btn-danger.pull-right(onClick=this.logout.bind(this))
+						.glyphicon.glyphicon-log-out
+						|  Ausloggen
+		Collapse
+			= this.create()
+	div(style="paddingTop:60px")
+		if client.session
+			case this.props.route.name
+				when "main"
+				when "equipmentcategories"
+				when "profile"
+					= this.props.route.render({})
+				when "equipment"
+					= this.props.route.render({onSelect:this.showEquipmentType.bind(this),onCategoriesClicked:this.showEquipmentCategories.bind(this)})
+				when "equipmenttype"
+					= this.props.route.render({type:this.props.params.type})
+				when "equipmentitem"
+					= this.props.route.render({type:this.props.params.type,id:this.props.params.id})
+				when "contact"
+					= this.props.route.render({contact:this.props.params.contact})
+				when "users"
+					= this.props.route.render({onSelect:this.showUser.bind(this)})
+				when "user"
+					= this.props.route.render({user:this.props.params.user})
+				when "customers"
+					= this.props.route.render({onSelect:this.showCustomer.bind(this)})
+				when "customer"
+					= this.props.route.render({customer:this.props.params.customer})
+				when "suppliers"
+					= this.props.route.render({onSelect:this.showSupplier.bind(this)})
+				when "supplier"
+					= this.props.route.render({supplier:this.props.params.supplier})
+				when "projects"
+					= this.props.route.render({onSelect:this.showProject.bind(this)})
+				when "project"
+					= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this)})
+				when "reservation"
+					= this.props.route.render({project:this.props.params.project,reservation:this.props.params.reservation})
+				when "checkout"
+					= this.props.route.render({project:this.props.params.project,checkout:this.props.params.checkout})
+				when "checkin"
+					= this.props.route.render({project:this.props.params.project,checkin:this.props.params.checkin})
+				when "projectrental"
+					= this.props.route.render({project:this.props.params.project,rental:"newrequest"})
+				when "rentals"
+					= this.props.route.render({onSelect:this.showRental.bind(this)})
+				when "rental"
+					= this.props.route.render({rental:this.props.params.rental})
+		else
+			LoginPage(onLogin=this.update.bind(this))
+script(section="body").
+	constructor(props,context){
+		super(props,context);
+		this.state = this.props.state||{};
+	}
+	update(){
+		history.replaceState(this.state,undefined,location.pathname);
+		this.forceUpdate();
+	}
+	needsLogin(){
+		var needed = this.getNeededPermissions();
+		if(needed && !client.session) return true;
+		for(var i = 0; i < needed.length; i++){
+			if(!client.hasPermission(needed[i])) return true;
+		}
+		return false;
+	}
+	getNeededPermissions(){
+		return [];
+	}
+	
+	showEquipmentType(type){
+		this.goTo("/equipment/"+type)
+	}
+	showEquipmentCategories(){
+		this.goTo("/equipment/categories");
+	}
+	showUser(user){
+		this.goTo("/users/"+user)
+	}
+	showCustomer(customer){
+		this.goTo("/customers/"+customer)
+	}
+	showSupplier(supplier){
+		this.goTo("/suppliers/"+supplier);
+	}
+	showProject(project){
+		this.goTo("/projects/"+project);
+	}
+	showReservation(project,reservation){
+		this.goTo("/projects/"+project+"/reservations/"+reservation);
+	}
+	showCheckout(project,checkout){
+		this.goTo("/projects/"+project+"/checkouts/"+checkout);
+	}
+	showCheckin(project,checkin){
+		this.goTo("/projects/"+project+"/checkins/"+checkin);
+	}
+	showProjectRental(project){
+		this.goTo("/projects/"+project+"/newrental");
+	}
+	showRental(rental){
+		this.goTo("/rentals/"+rental);
+	}	
+	goTo(url){
+		this.props.location.push(url);
+	}
+	create(){
+		return React.createElement(Nav,{
+			className:"bs-navbar-collapse",
+			role:"navigation",
+			eventKey:0,
+			id:"top"
+		},Object.keys(menu).filter(function(name){
+			var entry = menu[name];
+			if(entry.loggedIn && !client.session) return false;
+			if(entry.permissions && !client.hasPermissions(entry.permissions)) return false;
+			return true;
+		}).map(function(name){
+			var entry = menu[name];
+			return React.DOM.li({className:isActive(entry.url)?"active":""},
+				React.DOM.a({onClick:function(){
+					this.goTo(entry.url)
+				}.bind(this),style:{cursor:"pointer"}},name)
+			)
+		}.bind(this)))
+	}
+	
+	async logout(){
+		await client.deleteSession();
+		location.reload();
+	}
+script.
+	var LoginPage = require("./loginpage");
+	var client = require("../client");
+	var {Router} = require("react-route-system");
+	var Navbar = require("react-bootstrap/lib/Navbar");
+	var {Collapse,Toggle,Brand,Header} = Navbar;
+	var Nav = require("react-bootstrap/lib/Nav");
+	var Button = require("react-bootstrap/lib/Button");
+	
+	var menu = Component.menu = {
+		"Equipment":{url:"/equipment",permissions:["equipment_read"]},
+		"Projekte":{url:"/projects",permissions:["projects_read"]},
+		"Zumieten":{url:"/rentals",permissions:["rentals_read"]},
+		"Kunden":{url:"/customers",permissions:["customers_read"]},
+		"Zulieferer":{url:"/suppliers",permissions:["suppliers_read"]},
+		"Benutzer":{url:"/users",permissions:["users_read"]},
+		"Profil":{url:"/profile",loggedIn:true}
+	}
+	
+	function isActive(path){
+		return (location.pathname.indexOf(path) == 0)?"active":"";
+	}
+	
+	Component.router = new Router()
+		.add("main","/",require("./main"))
+		.add("equipment","/equipment",require("./equipment"))
+		.add("equipmentcategories","/equipment/categories",require("./equipmentcategories"))
+		.add("equipmenttype","/equipment/:type",require("./equipmenttype"))
+		.add("equipmentitem","/equipment/:type/:id",require("./equipmentitem"))
+		.add("contact","/contacts/:contact",require("./contact"))
+		.add("users","/users",require("./users"))
+		.add("user","/users/:user",require("./user"))
+		.add("customers","/customers",require("./customers"))
+		.add("customer","/customers/:customer",require("./customer"))
+		.add("suppliers","/suppliers",require("./suppliers"))
+		.add("supplier","/suppliers/:supplier",require("./supplier"))
+		.add("projects","/projects",require("./projects"))
+		.add("project","/projects/:project",require("./project"))
+		.add("reservation","/projects/:project/reservations/:reservation",require("./reservation"))
+		.add("checkout","/projects/:project/checkouts/:checkout",require("./checkout"))
+		.add("checkin","/projects/:project/checkins/:checkin",require("./checkin"))
+		.add("projectrental","/projects/:project/newrental",require("./rental"))
+		.add("rentals","/rentals",require("./rentals"))
+		.add("rental","/rentals/:rental",require("./rental"))
+		.add("profile","/profile",require("./profile"))
+		

@@ -1,28 +1,25 @@
-extends ./base
-
-append body
-    .container
-        h2 Equipmentkategorien
-            .btn-toolbar.pull-right
-                button.btn.btn-default(onClick=this.finish.bind(this))
-                    i.glyphicon.glyphicon-chevron-left
-                    |  Zurück
-        
-        table.table.table-striped.table-hover
-            thead
-                tr
-                    th
-                        | Name
-                        button.btn.btn-primary.btn-xs.pull-right(onClick=this.addCategory.bind(this))
-                            i.glyphicon.glyphicon-plus
-            tbody
-                if this.state.categories
-                    each category in this.state.categories
-                        tr
-                            td(onClick=this.edit(category))
-                                = category.name
-                                button.btn.btn-default.btn-xs.pull-right(onClick=this.delete.bind(this,category))
-                                    i.glyphicon.glyphicon-trash
+.container
+    h2 Equipmentkategorien
+        .btn-toolbar.pull-right
+            button.btn.btn-default(onClick=this.finish.bind(this))
+                i.glyphicon.glyphicon-chevron-left
+                |  Zurück
+    
+    table.table.table-striped.table-hover
+        thead
+            tr
+                th
+                    | Name
+                    button.btn.btn-primary.btn-xs.pull-right(onClick=this.addCategory.bind(this))
+                        i.glyphicon.glyphicon-plus
+        tbody
+            if this.state.categories
+                each category in this.state.categories
+                    tr
+                        td(onClick=this.edit.bind(this,category))
+                            = category.name
+                            button.btn.btn-default.btn-xs.pull-right(onClick=this.delete.bind(this,category))
+                                i.glyphicon.glyphicon-trash
     if this.state.category
         Modal
             .modal-header
@@ -56,6 +53,7 @@ script(section="body").
     
     constructor(props,context){
         super(props,context);
+        this.state = {};
         this.loadCategories();
     }
     
@@ -79,12 +77,10 @@ script(section="body").
         this.update();
     }
     
-    edit(category){        
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            this.state.category = category;
-            this.update();
-        }.bind(this);
+    edit(category,e){        
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        this.state.category = category;
+        this.update();
     }
     
     dismiss(){
@@ -113,5 +109,5 @@ script(section="body").
     }
     
     finish(){
-        back();
+        history.back();
     }

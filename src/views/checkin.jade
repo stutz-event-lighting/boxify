@@ -1,79 +1,76 @@
-extends ./base
-
-append body
+.container
     if this.state.data
-        .container
-            h2 Wareneingang
-                .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Abbrechen
-                    button.btn.btn-primary(onClick=this.finish.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        |  Abschliessen
-            .row
-                .col-xs-12
-                    .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Person
-                            .col-lg-10
-                                ContactBox(value=this.state.data.person onChange=this.onPersonChanged.bind(this) type="person" disabled=!this.state.data.draft)
-            .row
-                .col-xs-12.col-md-8
-                    h3.pull-left Equipment
-                    .pull-right.checkbox(style="paddingTop:20px")
-                        label
-                            input(type="checkbox" checked=this.state.hideUnbooked onChange=this.onUnbookedChanged.bind(this))
-                            |  Ungebuchte ausblenden
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th ID
-                                th Name
-                                each supplier in this.state.suppliers
-                                    th
-                                        img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                                th Total
-                        tbody
-                            each type in this.state.data.types
-                                if (type.available !== undefined && !this.state.hideUnbooked) || type.count !== undefined
-                                    tr(onClick=this.startScan(type._id) className=(type.available===type.count)?"success":"")
-                                        td= type._id
-                                        td= type.name
-                                        each supplier in this.state.suppliers
-                                            td
-                                                = ((this.state.data.types[type._id].suppliers && this.state.data.types[type._id].suppliers[supplier])?(this.state.data.types[type._id].suppliers[supplier].count||"0"):"0")
-                                                | /
-                                                = ((this.state.data.types[type._id].suppliers && this.state.data.types[type._id].suppliers[supplier])?this.state.data.types[type._id].suppliers[supplier].available:0)
-                                        td= (this.state.data.types[type._id].count||"0") + "/"+this.state.data.types[type._id].available
-                .col-md-4
-                    .pull-left
-                        h3 Verlauf
-                    if this.state.data.draft
-                        .btn-toolbar.pull-right(style="marginTop:18px")
-                            DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier.bind(this))        
-                                each supplier in this.state.allsuppliers
-                                    MenuItem(eventKey=supplier)
-                                        img(src="/api/contacts/"+supplier+"/image" style="height:20px")
-                            ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier=this.state.supplier||"own")
-                            QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan.bind(this))
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
+        h2 Wareneingang
+            .btn-toolbar.pull-right
+                button.btn.btn-default(onClick=this.cancel.bind(this))
+                    i.glyphicon.glyphicon-chevron-left
+                    |  Abbrechen
+                button.btn.btn-primary(onClick=this.finish.bind(this))
+                    i.glyphicon.glyphicon-ok
+                    |  Abschliessen
+        .row
+            .col-xs-12
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Person
+                        .col-lg-10
+                            ContactBox(value=this.state.data.person onChange=this.onPersonChanged.bind(this) type="person" disabled=!this.state.data.draft)
+        .row
+            .col-xs-12.col-md-8
+                h3.pull-left Equipment
+                .pull-right.checkbox(style="paddingTop:20px")
+                    label
+                        input(type="checkbox" checked=this.state.hideUnbooked onChange=this.onUnbookedChanged.bind(this))
+                        |  Ungebuchte ausblenden
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th ID
+                            th Name
+                            each supplier in this.state.suppliers
                                 th
-                                th Name
-                                th
-                        tbody
-                            each entry,i in this.state.data.history.slice().reverse()
-                                tr
-                                    td
-                                        img(src="/api/contacts/"+entry.supplier+"/image" style="height:20px")
-                                    td
-                                        +renderLogEntry(entry,0)
-                                    td
-                                        if this.state.data.draft
-                                            .btn.btn-xs.btn-default(onClick=this.remove(i))
-                                                .glyphicon.glyphicon-trash
+                                    img(src="/api/contacts/"+supplier+"/image" style="height:20px")
+                            th Total
+                    tbody
+                        each type in this.state.data.types
+                            if (type.available !== undefined && !this.state.hideUnbooked) || type.count !== undefined
+                                tr(onClick=this.startScan.bind(this,type._id) className=(type.available===type.count)?"success":"")
+                                    td= type._id
+                                    td= type.name
+                                    each supplier in this.state.suppliers
+                                        td
+                                            = ((this.state.data.types[type._id].suppliers && this.state.data.types[type._id].suppliers[supplier])?(this.state.data.types[type._id].suppliers[supplier].count||"0"):"0")
+                                            | /
+                                            = ((this.state.data.types[type._id].suppliers && this.state.data.types[type._id].suppliers[supplier])?this.state.data.types[type._id].suppliers[supplier].available:0)
+                                    td= (this.state.data.types[type._id].count||"0") + "/"+this.state.data.types[type._id].available
+            .col-md-4
+                .pull-left
+                    h3 Verlauf
+                if this.state.data.draft
+                    .btn-toolbar.pull-right(style="marginTop:18px")
+                        DropdownButton(title=this.renderSupplierButtonTitle(null,null,this.state.supplier||"own")[0] onSelect=this.setSupplier.bind(this))        
+                            each supplier in this.state.allsuppliers
+                                MenuItem(eventKey=supplier)
+                                    img(src="/api/contacts/"+supplier+"/image" style="height:20px")
+                        ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier=this.state.supplier||"own")
+                        QuaggaButton.pull-left.visible-xs(onScan=this.onQuaggaScan.bind(this))
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th
+                            th Name
+                            th
+                    tbody
+                        each entry,i in this.state.data.history.slice().reverse()
+                            tr
+                                td
+                                    img(src="/api/contacts/"+entry.supplier+"/image" style="height:20px")
+                                td
+                                    +renderLogEntry(entry,0)
+                                td
+                                    if this.state.data.draft
+                                        .btn.btn-xs.btn-default(onClick=this.remove.bind(this,i))
+                                            .glyphicon.glyphicon-trash
     - this.scanreceiver = null;
     if this.state.entry
         Modal
@@ -110,7 +107,7 @@ mixin renderCaseEntry(entry,level)
                 +renderCaseEntry(subentry,level+1)
     else
         div(style="paddingLeft:"+(level*20)+"px")
-            input.form-control(type="text" value=entry.count style="width:50px;display:inline-block" onChange=this.onCountChanged(entry) onFocus=this.select)
+            input.form-control(type="text" value=entry.count style="width:50px;display:inline-block" onChange=this.onCountChanged.bind(this,entry) onFocus=this.select)
             = " "+this.state.data.types[entry.type].name                
 script.
     var client = require("../client");
@@ -128,6 +125,7 @@ script(section="body").
     
     constructor(props,context){
         super(props,context);
+        this.state = {};
         this.state.supplier = "own";
     }
     
@@ -136,7 +134,7 @@ script(section="body").
     }
     
     async loadData(){
-        var data = await client.getCheckin(this.props.params.checkin);
+        var data = await client.getCheckin(this.props.checkin);
         this.state.data = data;
         this.state.hideUnbooked = !this.state.data.draft;
         var suppliers = {};
@@ -144,7 +142,7 @@ script(section="body").
             for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
         }
         this.state.suppliers = this.state.allsuppliers = Object.keys(suppliers);
-        this.update();
+        this.forceUpdate();
     }   
     
     onPersonChanged(id){
@@ -155,7 +153,7 @@ script(section="body").
     
     onUnbookedChanged(e){
         this.state.hideUnbooked = e.target.checked;
-        this.update();
+        this.forceUpdate();
     }
     
     select(e){
@@ -163,25 +161,21 @@ script(section="body").
     }
     
     onCountChanged(entry){
-        return function(e){
-            var count = parseInt(e.target.value,10);
-            if(!isNaN(count)){
-                entry.count = count;
-            }
-            this.update();
-        }.bind(this);
+        var count = parseInt(e.target.value,10);
+        if(!isNaN(count)){
+            entry.count = count;
+        }
+        this.forceUpdate();
     }
     
     setSupplier(supplier){
         this.state.supplier = supplier;
-        this.update();
+        this.forceUpdate();
     }
     
     startScan(type){
-        return function(){
-            this.refs.scanbutton.scan();
-            this.refs.scanbutton.onEquipmenttypeChanged({value:type,label:this.state.data.types[type].name});
-        }.bind(this)
+        this.refs.scanbutton.scan();
+        this.refs.scanbutton.onEquipmenttypeChanged({value:type,label:this.state.data.types[type].name});
     }
     
     onQuaggaScan(code){
@@ -224,14 +218,14 @@ script(section="body").
                     receiver.contents[i].items[itemId] = item;
                     //reorder this item to the end
                     receiver.contents.push(receiver.contents.splice(i,1)[0]);
-                    this.update();
+                    this.forceUpdate();
                     return;
                 }
             }
             var type = this.state.data.types[receiver.entry.type];
             if(type.contents === null){
                 receiver.contents.push(entry);
-                this.update();
+                this.forceUpdate();
                 return;
             }            
             receiver = receiver.parent;
@@ -241,7 +235,7 @@ script(section="body").
         if(!entry.items[itemId].length && this.state.data.types[entry.type].contents !== null){
             this.finishEntry();
         }else{
-            this.update();
+            this.forceUpdate();
         }
     }
     
@@ -253,7 +247,7 @@ script(section="body").
     
     cancelEntry(){
         delete this.state.entry;
-        this.update();
+        this.forceUpdate();
     }
     
     async getEntryContents(entry,item){
@@ -344,33 +338,31 @@ script(section="body").
         }else{
             this.playErrorSound();
         }
-        this.update();
+        this.forceUpdate();
         this.save();
     }
     
     remove(index){
-        return function(){
-            var entry = this.state.data.history.splice(this.state.data.history.length-1-index,1)[0];
-            var total = this.calculateEntryTotal(entry);
-            for(var type in total){
-                if(total[type].ids) {
-                    for(var i = 0; i < total[type].ids.length; i++){
-                        this.state.data.types[type].suppliers[entry.supplier].ids.splice(this.state.data.types[type].suppliers[entry.supplier].ids.indexOf(total[type].ids[i]),1);
-                    }
-                    if(!this.state.data.types[type].suppliers[entry.supplier].ids.length) delete this.state.data.types[type].suppliers[entry.supplier].ids;
+        var entry = this.state.data.history.splice(this.state.data.history.length-1-index,1)[0];
+        var total = this.calculateEntryTotal(entry);
+        for(var type in total){
+            if(total[type].ids) {
+                for(var i = 0; i < total[type].ids.length; i++){
+                    this.state.data.types[type].suppliers[entry.supplier].ids.splice(this.state.data.types[type].suppliers[entry.supplier].ids.indexOf(total[type].ids[i]),1);
                 }
-                this.state.data.types[type].suppliers[entry.supplier].count -= total[type].count;
-                if(!this.state.data.types[type].suppliers[entry.supplier].count){
-                    delete this.state.data.types[type].suppliers[entry.supplier].count;
-                    if(!this.state.data.types[type].suppliers[entry.supplier].available && !this.state.data.types[type].suppliers[entry.supplier].needed) delete this.state.data.types[type].suppliers[entry.supplier];
-                }
-            
-                this.state.data.types[type].count -= total[type].count;
-                if(!this.state.data.types[type].count) delete this.state.data.types[type].count
+                if(!this.state.data.types[type].suppliers[entry.supplier].ids.length) delete this.state.data.types[type].suppliers[entry.supplier].ids;
             }
-            this.update();
-            this.save();           
-        }.bind(this);
+            this.state.data.types[type].suppliers[entry.supplier].count -= total[type].count;
+            if(!this.state.data.types[type].suppliers[entry.supplier].count){
+                delete this.state.data.types[type].suppliers[entry.supplier].count;
+                if(!this.state.data.types[type].suppliers[entry.supplier].available && !this.state.data.types[type].suppliers[entry.supplier].needed) delete this.state.data.types[type].suppliers[entry.supplier];
+            }
+        
+            this.state.data.types[type].count -= total[type].count;
+            if(!this.state.data.types[type].count) delete this.state.data.types[type].count
+        }
+        this.forceUpdate();
+        this.save();
     }
     
     async applyContents(entry){
@@ -414,10 +406,10 @@ script(section="body").
                 };
             }
         }
-        await client.updateEquipmentIo(this.props.params.checkin,{person:this.state.data.person,items:data,history:this.state.data.history});
+        await client.updateEquipmentIo(this.props.checkin,{person:this.state.data.person,items:data,history:this.state.data.history});
     }
     
     async finish(){
-        await client.finishEquipmentIo(this.props.params.checkin);
+        await client.finishEquipmentIo(this.props.checkin);
         history.back();
     }

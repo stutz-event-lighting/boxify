@@ -9,7 +9,12 @@ class Client extends events.EventEmitter{
 
     async getResponse(url,opts){
 		opts = opts||{};
+        opts.headers = opts.headers||{};
 		opts.credentials = "same-origin";
+        if(!opts.body && opts.jsonBody){
+            opts.body = JSON.stringify(opts.jsonBody);
+            opts.headers["Content-Type"] = "application/json";
+        }
 		var response = await fetch(url,opts);
 		if(response.status != 200) {
 			var err = new Error(response.statusText);
@@ -37,7 +42,7 @@ class Client extends events.EventEmitter{
 	}
 
     async createSession(data){
-        var session = await this.getJson("/api/session/create",{methdo:"POST",body:JSON.stringify(data)});
+        var session = await this.getJson("/api/session/create",{methdo:"POST",jsonBody:(data)});
         this.session = session;
         cookie.set("session",this.session._id,{expires:60*60*24*365*100});
     }
@@ -73,11 +78,11 @@ class Client extends events.EventEmitter{
     }
 
     async createEquipmentCategory(name){
-        return await this.getText("/api/equipment/categories/create",{method:"POST",body:JSON.stringify({name:name})});
+        return await this.getText("/api/equipment/categories/create",{method:"POST",jsonBody:({name:name})});
     }
 
     async updateEquipmentCategory(id,name){
-        await this.execute("/api/equipment/categories/"+id,{method:"POST",body:JSON.stringify({name:name})});
+        await this.execute("/api/equipment/categories/"+id,{method:"POST",jsonBody:({name:name})});
     }
 
     async deleteEquipmentCategory(id){
@@ -85,18 +90,18 @@ class Client extends events.EventEmitter{
     }
 
     async findEquipmentTags(name){
-        return await this.getJson("/api/equipment/tags/find",{method:"POST",body:JSON.stringify({tag:name})});
+        return await this.getJson("/api/equipment/tags/find",{method:"POST",jsonBody:({tag:name})});
     }
     async renameEquipmentTag(oldname,newname){
-        return await this.getJson("/api/equipment/tags/"+oldname,{method:"POST",body:JSON.stringify({tag:newname})});
+        return await this.getJson("/api/equipment/tags/"+oldname,{method:"POST",jsonBody:({tag:newname})});
     }
 
     async findEquipmentTypes(opts){
-        return await this.getJson("/api/equipment",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/equipment",{method:"POST",jsonBody:(opts)});
     }
 
     async createEquipmentType(opts){
-        return await this.getText("/api/equipment/create",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getText("/api/equipment/create",{method:"POST",jsonBody:(opts)});
     }
 
     async getEquipmentType(id){
@@ -108,15 +113,15 @@ class Client extends events.EventEmitter{
     }
 
     async saveEquipmentType(id,data){
-        await this.execute("/api/equipment/"+id,{method:"POST",body:JSON.stringify(data)});
+        await this.execute("/api/equipment/"+id,{method:"POST",jsonBody:(data)});
     }
 
     async increaseEquipmentCount(id,data){
-        await this.execute("/api/equipment/"+id+"/count",{method:"POST",body:JSON.stringify(data)});
+        await this.execute("/api/equipment/"+id+"/count",{method:"POST",jsonBody:(data)});
     }
 
     async getEquipmentTypeStock(id,loose){
-        return await this.getJson("/api/equipment/"+id+"/stock",{method:"POST",body:JSON.stringify({loose:loose})});
+        return await this.getJson("/api/equipment/"+id+"/stock",{method:"POST",jsonBody:({loose:loose})});
     }
 
     async getEquipmentTypeItems(id){
@@ -128,7 +133,7 @@ class Client extends events.EventEmitter{
     }
 
     async createEquipment(type,opts){
-        return await this.getText("/api/equipment/"+type+"/create",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getText("/api/equipment/"+type+"/create",{method:"POST",jsonBody:(opts)});
     }
 
     async getEquipment(type,id){
@@ -136,7 +141,7 @@ class Client extends events.EventEmitter{
     }
 
     async saveEquipment(type,id,data){
-        await this.execute("/api/equipment/"+type+"/"+id,{method:"POST",body:JSON.stringify(data)});
+        await this.execute("/api/equipment/"+type+"/"+id,{method:"POST",jsonBody:(data)});
     }
 
     async getEquipmentContainer(type,id){
@@ -152,11 +157,11 @@ class Client extends events.EventEmitter{
     }
 
     async createContact(opts){
-        return await this.getText("/api/contacts/create",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getText("/api/contacts/create",{method:"POST",jsonBody:(opts)});
     }
 
     async findContacts(opts){
-        return await this.getJson("/api/contacts/find",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/contacts/find",{method:"POST",jsonBody:(opts)});
     }
 
     async getContact(id){
@@ -164,19 +169,19 @@ class Client extends events.EventEmitter{
     }
 
     async updateContact(id,data){
-        await this.execute("/api/contacts/"+id,{method:"POST",body:JSON.stringify(data)});
+        await this.execute("/api/contacts/"+id,{method:"POST",jsonBody:(data)});
     }
 
     async updateContactImage(id,image){
-        await this.execute("/api/contacts/"+id+"/image",{method:"POST",body:JSON.stringify(image)});
+        await this.execute("/api/contacts/"+id+"/image",{method:"POST",jsonBody:(image)});
     }
 
     async createUser(contact){
-        return await this.getText("/api/users/create",{method:"POST",body:JSON.stringify({contact:contact})});
+        return await this.getText("/api/users/create",{method:"POST",jsonBody:({contact:contact})});
     }
 
     async findUsers(opts){
-        return await this.getJson("/api/users/find",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/users/find",{method:"POST",jsonBody:(opts)});
     }
 
     async getUser(id){
@@ -184,15 +189,15 @@ class Client extends events.EventEmitter{
     }
 
     async saveUser(id,data){
-        await this.execute("/api/users/"+id+"/save",{method:"POST",body:JSON.stringify(data)});
+        await this.execute("/api/users/"+id+"/save",{method:"POST",jsonBody:(data)});
     }
 
     async setPin(id,pin){
-        return await this.execute("/api/users/"+id+"/pin",{method:"POST",body:JSON.stringify({pin:pin})});
+        return await this.execute("/api/users/"+id+"/pin",{method:"POST",jsonBody:({pin:pin})});
     }
 
     async setPassword(id,password){
-        await this.execute("/api/users/"+id+"/password",{method:"POST",body:JSON.stringify({password:password})});
+        await this.execute("/api/users/"+id+"/password",{method:"POST",jsonBody:({password:password})});
     }
 
     async deleteUser(id){
@@ -200,11 +205,11 @@ class Client extends events.EventEmitter{
     }
 
     async createCustomer(contact){
-        return await this.getJson("/api/customers/create",{method:"POST",body:JSON.stringify({contact:contact})});
+        return await this.getJson("/api/customers/create",{method:"POST",jsonBody:({contact:contact})});
     }
 
     async findCustomers(opts){
-        return await this.getJson("/api/customers/find",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/customers/find",{method:"POST",jsonBody:(opts)});
     }
 
     async deleteCustomer(id){
@@ -212,11 +217,11 @@ class Client extends events.EventEmitter{
     }
 
     async findProjects(opts){
-        return await this.getJson("/api/projects",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/projects",{method:"POST",jsonBody:(opts)});
     }
 
     async createProject(opts){
-        return await this.getText("/api/projects/create",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getText("/api/projects/create",{method:"POST",jsonBody:(opts)});
     }
 
     async getProject(id){
@@ -224,7 +229,7 @@ class Client extends events.EventEmitter{
     }
 
     async updateProject(id,opts){
-        await this.execute("/api/projects/"+id,{method:"POST",body:JSON.stringify(opts)});
+        await this.execute("/api/projects/"+id,{method:"POST",jsonBody:(opts)});
     }
 
     async finishProject(id){
@@ -244,7 +249,7 @@ class Client extends events.EventEmitter{
     }
 
     async updateReservation(project,id,items){
-        await this.execute("/api/projects/"+project+"/reservations/"+id,{method:"POST",body:JSON.stringify(items)});
+        await this.execute("/api/projects/"+project+"/reservations/"+id,{method:"POST",jsonBody:(items)});
     }
 
     async deleteReservation(project,id){
@@ -252,7 +257,7 @@ class Client extends events.EventEmitter{
     }
 
     async findRentals(opts){
-        return await this.getJson("/api/rentals",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/rentals",{method:"POST",jsonBody:(opts)});
     }
 
     async getRental(id,opts){
@@ -260,11 +265,11 @@ class Client extends events.EventEmitter{
     }
 
     async updateRental(id,opts){
-        await this.execute("/api/rentals/"+id,{method:"POST",body:JSON.stringify(opts)});
+        await this.execute("/api/rentals/"+id,{method:"POST",jsonBody:(opts)});
     }
 
     async updateRentalStatus(id,status){
-        await this.execute("/api/rentals/"+id+"/updatestatus",{method:"POST",body:JSON.stringify({status:status})});
+        await this.execute("/api/rentals/"+id+"/updatestatus",{method:"POST",jsonBody:({status:status})});
     }
 
     async deleteRental(id){
@@ -272,7 +277,7 @@ class Client extends events.EventEmitter{
     }
 
     async createEquipmentIo(data){
-        return await this.getText("/api/equipmentio/",{method:"POST",body:JSON.stringify(data)});
+        return await this.getText("/api/equipmentio/",{method:"POST",jsonBody:(data)});
     }
 
     async getCheckout(id){
@@ -284,7 +289,7 @@ class Client extends events.EventEmitter{
     }
 
     async updateEquipmentIo(id,data){
-        await this.execute("/api/equipmentio/"+id,{method:"POST",body:JSON.stringify(data)});
+        await this.execute("/api/equipmentio/"+id,{method:"POST",jsonBody:(data)});
     }
 
     async finishEquipmentIo(id){
@@ -296,11 +301,11 @@ class Client extends events.EventEmitter{
     }
 
     async createSupplier(contact){
-        return await this.getText("/api/suppliers/create",{method:"POST",body:JSON.stringify({contact:contact})});
+        return await this.getText("/api/suppliers/create",{method:"POST",jsonBody:({contact:contact})});
     }
 
     async findSuppliers(opts){
-        return await this.getJson("/api/suppliers/find",{method:"POST",body:JSON.stringify(opts)});
+        return await this.getJson("/api/suppliers/find",{method:"POST",jsonBody:(opts)});
     }
 
     async getSupplier(id){

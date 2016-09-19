@@ -12,7 +12,7 @@
                     .form-group
                         label.col-lg-2.control-label Typ
                         .col-lg-10
-                            select.form-control(value=this.state.new.type onChange=this.setValue("type"))
+                            select.form-control(value=this.state.new.type onChange=this.setValue.bind(this,"type"))
                                 option(value="person") Person
                                 option(value="company") Firma
                                 option(value="club") Verein
@@ -20,13 +20,13 @@
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10(style="display:flex")
-                                input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.new.firstname onChange=this.setValue("firstname"))
-                                input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.new.lastname onChange=this.setValue("lastname"))
+                                input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.new.firstname onChange=this.setValue.bind(this,"firstname"))
+                                input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.new.lastname onChange=this.setValue.bind(this,"lastname"))
                     else
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10
-                                input.form-control(placeholder="Name" value=this.state.new.firstname onChange=this.setValue("firstname"))
+                                input.form-control(placeholder="Name" value=this.state.new.firstname onChange=this.setValue.bind(this,"firstname"))
             .modal-footer
                 button.btn.btn-default(onClick=this.cancel.bind(this)) Abbrechen
                 button.btn.btn-primary(onClick=this.create.bind(this)) Erfassen
@@ -79,10 +79,8 @@ script(section="body").
 
     
     setValue(name,target){
-        return function(e){
-            (target||this.state.new)[name] = e.target.value;
-            this.forceUpdate();
-        }.bind(this)
+        (target||this.state.new)[name] = e.target.value;
+        this.forceUpdate();
     }
     
     onContactChanged(id,name){

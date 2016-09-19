@@ -1,108 +1,105 @@
-extends ./base
-
-append body
+.container
     if this.state.item
-        .container
-            h2 Projekt
-                .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
-                    button.btn.btn-primary(onClick=this.save.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        |  Speichern
-            .row
-                .col-xs-12
-                    h3 Projektdaten
-                    .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Name
-                            .col-lg-10
-                                input.form-control(placeholder="Kommentar" value=this.state.item.name onChange=this.onNameChange.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Kunde
-                            .col-lg-10
-                                ContactBox(value=this.state.item.customer disabled=true)
-                        .form-group
-                            label.col-lg-2.control-label Beginn
-                            .col-lg-10
-                                DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Ende
-                            .col-lg-10
-                                DatePicker(value=new Date(this.state.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Kommentar
-                            .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange.bind(this))
-            .row
-                .col-xs-12
-                    h3
-                        | Reservationen
-                        if this.state.item.status == "ongoing"
-                            .btn.btn-primary.pull-right(onClick=this.createReservation.bind(this)) Neu
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th Name
-                                th Objektarten
-                                th Objekte
-                        tbody
-                            - var i = 1;
-                            each reservation in this.state.reservations
-                                tr(onClick=this.openReservation.bind(this,reservation))
-                                    td= "Reservation "+(i++)
-                                    td= reservation.count
-                                    td
-                                        = reservation.total
-                                        .btn-toolbar.pull-right
-                                            button.btn.btn-default.btn-xs(onClick=this.deleteReservation.bind(this,reservation))
-                                                i.glyphicon.glyphicon-trash
-                                            button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation.bind(this,reservation))
-                                                i.glyphicon.glyphicon-log-out
-                    if this.state.needsRental
-                        .alert.alert-warning(onClick=this.createRental.bind(this)) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
-            .row
-                .col-xs-12
-                    h3
-                        | Aus- und Eingänge
-                        if this.state.item.status == "ongoing"
-                            .btn-toolbar.pull-right
-                                .btn.btn-primary(onClick=this.createCheckout.bind(this)) 
-                                    .glyphicon.glyphicon-log-out
-                                    |  Neuer Ausgang
-                                .btn.btn-primary(onClick=this.createCheckin.bind(this))
-                                    .glyphicon.glyphicon-log-in
-                                    |  Neuer Eingang
-                    table.table.table-striped
-                        thead
-                            tr
-                                th Typ
-                                th Datum
-                                th Benutzer
-                                th Objekte
-                        tbody
-                            each io,i in this.state.io
-                                tr(onClick=this.editIo.bind(this,io) className=io.draft?"warning":"")
-                                    td
-                                        div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
-                                    td= !io.draft?moment(io.time).format("LLL"):"Entwurf"
-                                    td= io.user?(io.user.firstname+" "+io.user.lastname):""
-                                    td
-                                        = io.count+" / "+io.total
-                                        if io.draft || i == this.state.io.length-1
-                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteIo.bind(this,io))
-                                                i.glyphicon.glyphicon-trash
-                                        a.btn.btn-default.btn-xs.pull-right(href="/api/equipmentio/"+io._id+"/pickupConfirmation.docx" target="_blank")
-                                            i.glyphicon.glyphicon-print
-                    if Object.keys(this.state.item.balance).length
-                        .alert.alert-warning(onClick=this.createCheckin.bind(this)) Es ist noch nicht alles Material vom Kunden zurückgekommen!
-            .row
-                .col-xs-12
-                    h3 Aktionen
+        h2 Projekt
+            .btn-toolbar.pull-right
+                button.btn.btn-default(onClick=this.cancel.bind(this))
+                    i.glyphicon.glyphicon-chevron-left
+                    |  Zurück
+                button.btn.btn-primary(onClick=this.save.bind(this))
+                    i.glyphicon.glyphicon-ok
+                    |  Speichern
+        .row
+            .col-xs-12
+                h3 Projektdaten
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(placeholder="Kommentar" value=this.state.item.name onChange=this.onNameChange.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Kunde
+                        .col-lg-10
+                            ContactBox(value=this.state.item.customer disabled=true)
+                    .form-group
+                        label.col-lg-2.control-label Beginn
+                        .col-lg-10
+                            DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Ende
+                        .col-lg-10
+                            DatePicker(value=new Date(this.state.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Kommentar
+                        .col-lg-10
+                            TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange.bind(this))
+        .row
+            .col-xs-12
+                h3
+                    | Reservationen
+                    if this.state.item.status == "ongoing"
+                        .btn.btn-primary.pull-right(onClick=this.createReservation.bind(this)) Neu
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th Name
+                            th Objektarten
+                            th Objekte
+                    tbody
+                        - var i = 1;
+                        each reservation in this.state.reservations
+                            tr(onClick=this.openReservation.bind(this,reservation))
+                                td= "Reservation "+(i++)
+                                td= reservation.count
+                                td
+                                    = reservation.total
+                                    .btn-toolbar.pull-right
+                                        button.btn.btn-default.btn-xs(onClick=this.deleteReservation.bind(this,reservation))
+                                            i.glyphicon.glyphicon-trash
+                                        button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation.bind(this,reservation))
+                                            i.glyphicon.glyphicon-log-out
+                if this.state.needsRental
+                    .alert.alert-warning(onClick=this.createRental.bind(this)) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
+        .row
+            .col-xs-12
+                h3
+                    | Aus- und Eingänge
+                    if this.state.item.status == "ongoing"
                         .btn-toolbar.pull-right
-                            if this.state.item.status == "ongoing"
-                                .btn.btn-primary(onClick=this.finish.bind(this) disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
+                            .btn.btn-primary(onClick=this.createCheckout.bind(this)) 
+                                .glyphicon.glyphicon-log-out
+                                |  Neuer Ausgang
+                            .btn.btn-primary(onClick=this.createCheckin.bind(this))
+                                .glyphicon.glyphicon-log-in
+                                |  Neuer Eingang
+                table.table.table-striped
+                    thead
+                        tr
+                            th Typ
+                            th Datum
+                            th Benutzer
+                            th Objekte
+                    tbody
+                        each io,i in this.state.io
+                            tr(onClick=this.editIo.bind(this,io) className=io.draft?"warning":"")
+                                td
+                                    div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
+                                td= !io.draft?moment(io.time).format("LLL"):"Entwurf"
+                                td= io.user?(io.user.firstname+" "+io.user.lastname):""
+                                td
+                                    = io.count+" / "+io.total
+                                    if io.draft || i == this.state.io.length-1
+                                        button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteIo.bind(this,io))
+                                            i.glyphicon.glyphicon-trash
+                                    a.btn.btn-default.btn-xs.pull-right(href="/api/equipmentio/"+io._id+"/pickupConfirmation.docx" target="_blank")
+                                        i.glyphicon.glyphicon-print
+                if Object.keys(this.state.item.balance).length
+                    .alert.alert-warning(onClick=this.createCheckin.bind(this)) Es ist noch nicht alles Material vom Kunden zurückgekommen!
+        .row
+            .col-xs-12
+                h3 Aktionen
+                    .btn-toolbar.pull-right
+                        if this.state.item.status == "ongoing"
+                            .btn.btn-primary(onClick=this.finish.bind(this) disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
     if this.state.confirm
         = this.createConfirmDialog(this.state.confirm)
 script.
@@ -117,52 +114,59 @@ script(section="body").
         return ["projects_read"];
     }
     
-    componentDidMount(){
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
+        this.componentWillReceiveProps(props);
+    }
+    
+    componentWillReceiveProps(props){
+        this.props = props;
         this.loadData();
     }
     
     async loadData(){
-        var data = await client.getProject(this.props.params.id);
+        var data = await client.getProject(this.props.id);
         if(!this.state.item) this.state.item = data.project;
         this.state.reservations = data.reservations;
         this.state.needsRental = data.needsRental;
         this.state.io = data.io;
-        this.update();        
+        this.forceUpdate();        
     }
 
     onNameChange(e){
         this.state.item.name = e.target.value;
-        this.update();
+        this.forceUpdate();
     }    
     
     onCommentChange(e){
         this.state.item.remark = e.target.value;
-        this.update();
+        this.forceUpdate();
     }    
     
     onStartChanged(time){
         if(time) this.state.item.start = time.getTime();
-        this.update();
+        this.forceUpdate();
     }
     
     onEndChanged(time){
         if(time) this.state.item.end = time.getTime();
-        this.update();
+        this.forceUpdate();
     }
 
     async createReservation(){
-        var id = await client.createReservation(this.props.params.id);
-        visit("/projects/"+this.props.params.id+"/reservations/"+id);
+        var id = await client.createReservation(this.props.id);
+        this.props.onReservationSelected(this.props.id,id);
     }
     
     openReservation(reservation,e){
         if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-        visit("/projects/"+this.props.params.id+"/reservations/"+reservation._id)
+        this.props.onReservationSelected(this.props.id,reservation._id)
     }
 
     async checkoutReservation(reservation){
-        var id = await client.createEquipmentIo({type:"checkout",project:this.props.params.id,reservation:reservation._id});
-        visit("/projects/"+this.props.params.id+"/checkouts/"+id);
+        var id = await client.createEquipmentIo({type:"checkout",project:this.props.id,reservation:reservation._id});
+        this.props.onCheckoutSelected(this.props.id,id);
     }
 
     deleteReservation(reservation){
@@ -170,27 +174,27 @@ script(section="body").
     }
     
     async confirmDeleteReservation(reservation){
-        await client.deleteReservation(this.props.params.id,reservation);
+        await client.deleteReservation(this.props.id,reservation);
         this.loadData();
     }
     
     createRental(){
-        visit("/rentals/newrequest",{project:this.props.params.id});
+        this.props.onCreateRental(this.props.id,"request");
     }
     
     async createCheckout(){
-        var id = await client.createEquipmentIo({type:"checkout",project:this.props.params.id});
-        visit("/projects/"+this.props.params.id+"/checkouts/"+id);
+        var id = await client.createEquipmentIo({type:"checkout",project:this.props.id});
+        this.props.onCheckoutSelected(this.props.id,id);
     }
     
     async createCheckin(){
-        var id = await client.createEquipmentIo({type:"checkin",project:this.props.params.id});
-        visit("/projects/"+this.props.params.id+"/checkins/"+id);
+        var id = await client.createEquipmentIo({type:"checkin",project:this.props.id});
+        this.props.onCheckinSelected(this.props.id,id);
     }
     
     editIo(io,e){
         if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-        visit("/projects/"+this.props.params.id+"/"+io.type+"s/"+io._id)
+        this.props[io.type=="checkout"?"onCheckoutSelected":"onCheckinSelected"](this.props.id,io._id)
     }
     
     deleteIo(io){
@@ -205,7 +209,7 @@ script(section="body").
     async finish(){
         await client.finishProject(this.state.item._id);
         this.state.item.status = "finished";
-        this.update();
+        this.forceUpdate();
     }
 
     cancel(){
@@ -214,7 +218,7 @@ script(section="body").
 
     async save(){
         await client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,remark:this.state.item.remark||""});
-        back(true);
+        history.back();
     }    
     
     createConfirmDialog(opts){
@@ -224,7 +228,7 @@ script(section="body").
             question:opts.question,
             onAnswer:function(confirmed){
                 delete this.state.confirm;
-                this.update();
+                this.forceUpdate();
                 if(confirmed) this[opts.callback](opts.data);
             }.bind(this)
         });
@@ -238,5 +242,5 @@ script(section="body").
             callback:cb,
             data:data
         };
-        this.update();
+        this.forceUpdate();
     }

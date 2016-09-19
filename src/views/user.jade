@@ -19,13 +19,13 @@ script(section="body").
     }
     
     getContactId(){
-        return this.props.params.user;
+        return this.props.user;
     }    
         
     async loadContact(){
         super.loadContact();
         this.state.user = await client.getUser(this.getContactId());
-        this.update();
+        this.forceUpdate();
     }
     
     cancel(){
@@ -34,7 +34,7 @@ script(section="body").
     
     togglePermission(permission,e){
         permission.allowed = e.target.checked;
-        this.update();     
+        this.forceUpdate();     
     }
     
     async onSaved(){

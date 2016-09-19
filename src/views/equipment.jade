@@ -1,40 +1,37 @@
-extends ./base
-
-append body
-    .container
-        h1 Equipment
-        .searchbar(style="display:flex")
-            .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
-                span.input-group-btn(style="display:inline-block;width:auto;")
-                    button.btn.btn-default Suchen
-            .btn-group(style="marginLeft:10px")
-                button.btn.btn-primary(onClick=this.create.bind(this)) Erfassen
-        table.table.table-striped.table-hover
-            thead
-                tr
-                    th ID
-                    th Name
-                    th Hersteller
-                    th.hidden-xs Kategorie
-                    th.hidden-xs Anzahl
-                    th.hidden-xs Grösse
-                    th.hidden-xs Gewicht
-                    th
-            tbody
-                if this.state.categories && this.state.items
-                    each item in this.state.items
-                        tr(onClick=this.edit(item))
-                            td= item._id
-                            td= item.name
-                            td= item.manufacturer
-                            td.hidden-xs= item.category?this.state.categoriesbyid[item.category]:"Keine"
-                            td.hidden-xs= item.count
-                            td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
-                            td.hidden-xs= item.weight
-                            td
-                                button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
-                                    i.glyphicon.glyphicon-trash
+.container
+    h1 Equipment
+    .searchbar(style="display:flex")
+        .input-group(style="flex:1;display:flex;width:auto;")
+            input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
+            span.input-group-btn(style="display:inline-block;width:auto;")
+                button.btn.btn-default Suchen
+        .btn-group(style="marginLeft:10px")
+            button.btn.btn-primary(onClick=this.create.bind(this)) Erfassen
+    table.table.table-striped.table-hover
+        thead
+            tr
+                th ID
+                th Name
+                th Hersteller
+                th.hidden-xs Kategorie
+                th.hidden-xs Anzahl
+                th.hidden-xs Grösse
+                th.hidden-xs Gewicht
+                th
+        tbody
+            if this.state.categories && this.state.items
+                each item in this.state.items
+                    tr(onClick=this.edit.bind(this,item))
+                        td= item._id
+                        td= item.name
+                        td= item.manufacturer
+                        td.hidden-xs= item.category?this.state.categoriesbyid[item.category]:"Keine"
+                        td.hidden-xs= item.count
+                        td.hidden-xs= item.length&&item.width&&item.height?(item.length+"x"+item.width+"x"+item.height):""
+                        td.hidden-xs= item.weight
+                        td
+                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete.bind(this,item))
+                                i.glyphicon.glyphicon-trash
     if this.state.create
         Modal
             .modal-header
@@ -62,13 +59,14 @@ script.
 script(section="body").
     constructor(props,context){
         super(props,context);
+        this.state = {};
         this.loadCategories();
         this.searchTypes();
     }
     
     async searchTypes(){
         this.state.items = await client.findEquipmentTypes({search:this.state.search});
-        this.update();
+        this.forceUpdate();
     }
     
     async loadCategories(){
@@ -77,7 +75,7 @@ script(section="body").
         for(var category of this.state.categories){
             this.state.categoriesbyid[category._id] = category.name;                        
         }
-        this.update();
+        this.forceUpdate();
     }
     
     getNeededPermissions(){
@@ -92,50 +90,44 @@ script(section="body").
 
     create(){
         this.state.create = {_id:"",name:""};
-        this.update();
+        this.forceUpdate();
         setTimeout(function(){
             this.refs.createid.focus();
         }.bind(this),1);
     }
     validateCreateName(e){
         this.state.create.name = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     cancelCreate(){
         delete this.state.create;
-        this.update();
+        this.forceUpdate();
     }
     async confirmCreate(){
         var id = await client.createEquipmentType(this.state.create);
         delete this.state.create;
-        this.update();
-        setTimeout(function(){
-            visit("/equipment/"+id)
-        },1)
+        this.forceUpdate();
+        this.props.onSelect(id);
     }
 
-    edit(item){
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/equipment/"+item._id)
-        }
+    edit(item,e){
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        this.props.onSelect(item._id)
     }
     
     delete(item){
-        return function(){
-            this.state.delete = item;
-            this.update();
-        }.bind(this)
+        this.state.delete = item;
+        this.forceUpdate();
     }
     
     cancelDelete(){
         delete this.state.delete;
-        this.update();
+        this.forceUpdate();
     }
     async confirmDelete(){
         var del = this.state.delete;
         delete this.state.delete;
         await client.deleteEquipmentType(del._id);
         delete this.state.items;
-        this.update();
+        this.forceUpdate();
     }

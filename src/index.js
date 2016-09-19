@@ -13,7 +13,7 @@ var compress = require("koa-compress");
 var serve = require("koa-static");
 var send = require("koa-send");
 var pug = require("pug");
-var routes = require("./routes");
+var App = require("./views/app")
 require("babel-polyfill")
 
 var page = pug.compile(fs.readFileSync(path.resolve(__dirname,"../views/page.jade")));
@@ -79,16 +79,14 @@ var Boxify = module.exports = function Boxify(config){
         }))
     }
 
-    for(var r in routes){
-        this.addRoute(r);
-    }
-}
-
-Boxify.prototype.addRoute = function(path,componentPath){
-    this.app.use(route.get(path,async function(ctx){
-        ctx.set("Content-Type","text/html");
-        ctx.body = page({modules:this.moduleclients});
-    }.bind(this)));
+    this.app.use(async function(ctx,next){
+        if(App.router.route(ctx.path)){
+            ctx.set("Content-Type","text/html");
+            ctx.body = page({modules:this.moduleclients});
+        }else{
+            await next();
+        }
+    }.bind(this))
 }
 
 Boxify.prototype.addPermission = function(id,name){

@@ -1,73 +1,70 @@
-extends ./base
-
-append body
+.container
     if this.state.data
-        .container
-            h2 Zumiete
-                .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
-                    button.btn.btn-primary(onClick=this.save.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        = " "+(this.props.params.rental.indexOf("new") == 0?"Erstellen":"Speichern")
-            .row
-                .col-xs-12
-                    h3 Daten
-                    .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Name
-                            .col-lg-10
-                                input.form-control(placeholder="Name" value=this.state.data.rental.name onChange=this.onNameChange.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Lieferant
-                            .col-lg-10
-                                ContactBox(value=this.state.data.rental.supplier role="supplier" onChange=this.onSupplierChange.bind(this) disabled=this.props.params.rental.indexOf("new")!=0)
-                        .form-group
-                            label.col-lg-2.control-label Erhalt
-                            .col-lg-10
-                                DatePicker(disabled=(this.state.data.rental.status=="received") format="dd.MM.yyyy HH:mm" value=this.state.data.rental.delivery?new Date(this.state.data.rental.delivery):undefined onChange=this.onDeliveryChanged.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Rückgabe
-                            .col-lg-10
-                                DatePicker(value=this.state.data.rental.return?new Date(this.state.data.rental.return):undefined format="dd.MM.yyyy HH:mm" onChange=this.onReturnChanged.bind(this))
-            .row
-                .col-xs-12                    
-                    h3
-                        | Equipment
-                        .pull-right
-                            if this.props.params.rental.indexOf("new") == 0
-                                .btn.btn-primary(onClick=this.add.bind(this)) Hinzufügen
-                            else if this.state.data.rental.status == "requested"
-                                .btn.btn-primary(onClick=this.book.bind(this)) Buchen
-                            else if this.state.data.rental.status == "booked"
-                                .btn.btn-primary(onClick=this.receive.bind(this)) Ware erhalten
-                            else
-                                .btn.btn-primary(onClick=this.doreturn.bind(this)) Ware zurückgeben
-                    each category in this.state.data.categories
-                        - var types = Object.keys(this.state.data.types).map(id=>this.state.data.types[id]).filter(type=> (this.state.data.types[type._id].count !== undefined || this.state.data.types[type._id].available < 0) &&type.category == category._id);
-                        if types.length
-                            h4= category.name
-                            table.table.table-striped.table-hover
-                                thead
+        h2 Zumiete
+            .btn-toolbar.pull-right
+                button.btn.btn-default(onClick=this.cancel.bind(this))
+                    i.glyphicon.glyphicon-chevron-left
+                    |  Zurück
+                button.btn.btn-primary(onClick=this.save.bind(this))
+                    i.glyphicon.glyphicon-ok
+                    = " "+(this.props.rental.indexOf("new") == 0?"Erstellen":"Speichern")
+        .row
+            .col-xs-12
+                h3 Daten
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(placeholder="Name" value=this.state.data.rental.name onChange=this.onNameChange.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Lieferant
+                        .col-lg-10
+                            ContactBox(value=this.state.data.rental.supplier role="supplier" onChange=this.onSupplierChange.bind(this) disabled=this.props.rental.indexOf("new")!=0)
+                    .form-group
+                        label.col-lg-2.control-label Erhalt
+                        .col-lg-10
+                            DatePicker(disabled=(this.state.data.rental.status=="received") format="dd.MM.yyyy HH:mm" value=this.state.data.rental.delivery?new Date(this.state.data.rental.delivery):undefined onChange=this.onDeliveryChanged.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Rückgabe
+                        .col-lg-10
+                            DatePicker(value=this.state.data.rental.return?new Date(this.state.data.rental.return):undefined format="dd.MM.yyyy HH:mm" onChange=this.onReturnChanged.bind(this))
+        .row
+            .col-xs-12                    
+                h3
+                    | Equipment
+                    .pull-right
+                        if this.props.rental.indexOf("new") == 0
+                            .btn.btn-primary(onClick=this.add.bind(this)) Hinzufügen
+                        else if this.state.data.rental.status == "requested"
+                            .btn.btn-primary(onClick=this.book.bind(this)) Buchen
+                        else if this.state.data.rental.status == "booked"
+                            .btn.btn-primary(onClick=this.receive.bind(this)) Ware erhalten
+                        else
+                            .btn.btn-primary(onClick=this.doreturn.bind(this)) Ware zurückgeben
+                each category in this.state.data.categories
+                    - var types = Object.keys(this.state.data.types).map(id=>this.state.data.types[id]).filter(type=> (this.state.data.types[type._id].count !== undefined || this.state.data.types[type._id].available < 0) &&type.category == category._id);
+                    if types.length
+                        h4= category.name
+                        table.table.table-striped.table-hover
+                            thead
+                                tr
+                                    th ID
+                                    th Name
+                                    th Anzahl
+                                    th
+                            tbody
+                                each type in types
                                     tr
-                                        th ID
-                                        th Name
-                                        th Anzahl
-                                        th
-                                tbody
-                                    each type in types
-                                        tr
-                                            td= type._id
-                                            td= this.state.data.types[type._id].name
-                                            td(style="paddingTop:2px;paddingBottom:2px")
-                                                if this.props.params.rental.indexOf("new") == 0
-                                                    input.form-control.input-sm(value=(this.state.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
-                                                else
-                                                    = this.state.data.types[type._id].count||0
-                                            td
-                                                .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
-                                                    i.glyphicon.glyphicon-trash
+                                        td= type._id
+                                        td= this.state.data.types[type._id].name
+                                        td(style="paddingTop:2px;paddingBottom:2px")
+                                            if this.props.rental.indexOf("new") == 0
+                                                input.form-control.input-sm(value=(this.state.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem.bind(this,type._id) onFocus=this.selectCount.bind(this))
+                                            else
+                                                = this.state.data.types[type._id].count||0
+                                        td
+                                            .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem.bind(this,type._id))
+                                                i.glyphicon.glyphicon-trash
     if this.state.add
         Modal
             .modal-header
@@ -80,7 +77,7 @@ append body
                             each type in category.types
                                 if this.state.data.types[type].count === undefined
                                     tr
-                                        td(onClick=this.addItem(type))= this.state.data.types[type].name
+                                        td(onClick=this.addItem.bind(this,type))= this.state.data.types[type].name
             .modal-footer
                 button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
 script.
@@ -92,6 +89,7 @@ script.
 script(section="body").
     constructor(props,context){
         super(props,context);
+        this.state = {};
         this.componentWillReceiveProps(props);
     }
     componentWillReceiveProps(props){
@@ -104,14 +102,14 @@ script(section="body").
     
     async loadData(){
         var opts = {};
-        if(this.state.project) opts.project = this.state.project;
-        var data = await client.getRental(this.props.params.rental,opts);
+        if(this.props.project) opts.project = this.props.project;
+        var data = await client.getRental(this.props.rental,opts);
         this.state.data = data;
         if(!this.state.data.rental){
             this.state.data.rental = {
                 name:"",
                 supplier:null,
-                status:this.props.params.rental=="newrequest"?"requested":(this.props.params.rental=="newbooking"?"booked":"received")
+                status:this.props.rental=="newrequest"?"requested":(this.props.rental=="newbooking"?"booked":"received")
             }                    
         }
         if(!this.state.data.rental.delivery) this.state.data.rental.delivery = moment({hour:20}).toDate().getTime();
@@ -122,12 +120,12 @@ script(section="body").
             if(!category.types) category.types = [];
             category.types.push(type);                    
         }
-        this.update();
+        this.forceUpdate();
     }
     
     onNameChange(e){
         this.state.data.rental.name = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     
     onSupplierChange(id){
@@ -136,42 +134,38 @@ script(section="body").
         }else{
             delete this.state.data.rental.supplier;
         }
-        this.update();
+        this.forceUpdate();
     }
     
     onDeliveryChanged(time){
         if(time) this.state.data.rental.delivery = time.getTime();
-        this.update();
+        this.forceUpdate();
     }
     
     onReturnChanged(time){
         if(time) this.state.data.rental.return = time.getTime();
-        this.update();
+        this.forceUpdate();
     }
     
     add(){
         this.state.add = true;
-        this.update();
+        this.forceUpdate();
     }
     
     done(){
         delete this.state.add;
-        this.update();
+        this.forceUpdate();
     }
     
     addItem(type){
-        return function(){
-            this.state.data.types[type].count = 0;
-            this.update();
-        }.bind(this);
+        this.state.data.types[type].count = 0;
+        this.forceUpdate();
     }
     
-    changeItem(type){
-        return function(e){
-            if(/^[0-9]+$/.test(e.target.value)) this.state.data.types[type].count = parseInt(e.target.value,10);
-            if(e.target.value.length == 0) this.state.data.types[type].count = 0;            
-            this.update();
-        }.bind(this);
+    changeItem(typee,e){
+        if(/^[0-9]+$/.test(e.target.value)) this.state.data.types[type].count = parseInt(e.target.value,10);
+        if(e.target.value.length == 0) this.state.data.types[type].count = 0;            
+        this.forceUpdate();
     }
     
     selectCount(e){
@@ -179,23 +173,21 @@ script(section="body").
     }
     
     removeItem(type){
-        return function(){
-            delete this.state.data.types[type].count;
-            this.update();
-        }.bind(this);
+        delete this.state.data.types[type].count;
+        this.forceUpdate();
     }
     
     async book(){
-        await client.updateRentalStatus(this.props.params.rental,"booked");
-        back(true);
+        await client.updateRentalStatus(this.props.rental,"booked");
+        history.back();
     }
     async receive(){
-        await client.updateRentalStatus(this.props.params.rental,"received");
-        back(true);
+        await client.updateRentalStatus(this.props.rental,"received");
+        history.back();
     }
     async doreturn(){
-        await client.updateRentalStatus(this.props.params.rental,"returned");
-        back(true);
+        await client.updateRentalStatus(this.props.rental,"returned");
+        history.back();
     }
 
     cancel(){
@@ -217,6 +209,6 @@ script(section="body").
             items:items
         };
                
-        await client.updateRental(this.props.params.rental,rental);
-        back(true);
+        await client.updateRental(this.props.rental,rental);
+        history.back();
     }

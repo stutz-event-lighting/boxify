@@ -1,41 +1,38 @@
-extends ./base
-
-append body
+.container
     if this.state.data
-        .container
-            h2 Reservation
-                .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
-                    button.btn.btn-primary(onClick=this.save.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        |  Speichern
-            .row
-                .col-xs-12
-                    .pull-left
-                        h3 Equipment
-                    .btn-toolbar.pull-right(style="marginTop:18px")
-                        .btn.btn-primary.pull-right(onClick=this.add.bind(this)) Hinzufügen
-                        ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier="none")
-                    table.table.table-striped.table-hover
-                        thead
-                            tr
-                                th ID
-                                th Name
-                                th Anzahl
-                                th
-                        tbody
-                            each type in this.state.data.types
-                                if this.state.data.reservation.items[type._id] !== undefined
-                                    tr
-                                        td= type._id
-                                        td= this.state.data.types[type._id].name
-                                        td(style="paddingTop:2px;paddingBottom:2px")
-                                            input.form-control.input-sm(value=this.state.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
-                                        td
-                                            .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem(type._id))
-                                                i.glyphicon.glyphicon-trash
+        h2 Reservation
+            .btn-toolbar.pull-right
+                button.btn.btn-default(onClick=this.cancel.bind(this))
+                    i.glyphicon.glyphicon-chevron-left
+                    |  Zurück
+                button.btn.btn-primary(onClick=this.save.bind(this))
+                    i.glyphicon.glyphicon-ok
+                    |  Speichern
+        .row
+            .col-xs-12
+                .pull-left
+                    h3 Equipment
+                .btn-toolbar.pull-right(style="marginTop:18px")
+                    .btn.btn-primary.pull-right(onClick=this.add.bind(this)) Hinzufügen
+                    ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier="none")
+                table.table.table-striped.table-hover
+                    thead
+                        tr
+                            th ID
+                            th Name
+                            th Anzahl
+                            th
+                    tbody
+                        each type in this.state.data.types
+                            if this.state.data.reservation.items[type._id] !== undefined
+                                tr
+                                    td= type._id
+                                    td= this.state.data.types[type._id].name
+                                    td(style="paddingTop:2px;paddingBottom:2px")
+                                        input.form-control.input-sm(value=this.state.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
+                                    td
+                                        .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem.bind(this,type._id))
+                                            i.glyphicon.glyphicon-trash
     if this.state.add
         .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
@@ -51,7 +48,7 @@ append body
                                     each type in category.types                                
                                         if this.state.data.reservation.items[type] === undefined
                                             tr
-                                                td(onClick=this.addItem(type))= this.state.data.types[type].name
+                                                td(onClick=this.addItem.bind(this,type,0))= this.state.data.types[type].name
                     .modal-footer
                         button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
 script.
@@ -64,6 +61,7 @@ script(section="body").
     
     constructor(props,context){
         super(props,context);
+        this.state = {};
         this.componentWillReceiveProps(props);
     }
     componentWillReceiveProps(props){
@@ -71,7 +69,8 @@ script(section="body").
         this.loadData();
     }
     async loadData(){
-        var data = await client.getReservation(this.props.params.project,this.props.params.reservation);
+        var data = await client.getReservation(this.props.project,this.props.reservation);
+        console.log("DATA",data)
         this.state.data = data;
         var itemlist = [];
         data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
@@ -80,35 +79,33 @@ script(section="body").
             if(!category.types) category.types = [];
             category.types.push(type);                    
         }
-        this.update();
+        this.forceUpdate();
     }
     
     add(){
         this.state.add = true;
-        this.update();
+        this.forceUpdate();
     }
     
     done(){
         delete this.state.add;
-        this.update();
+        this.forceUpdate();
     }
     
     addItem(type,count){
-        return function(){
-            this.state.data.reservation.items[type] = count||0;
-            this.update();
-        }.bind(this);
+        this.state.data.reservation.items[type] = count||0;
+        this.forceUpdate();
     }
     
     handleScan(code){
-        this.addItem(code.type,code.count)();        
+        this.addItem(code.type,code.count);        
     }
     
     changeItem(type){
         return function(e){
             if(/^[0-9]+$/.test(e.target.value)) this.state.data.reservation.items[type] = parseInt(e.target.value,10);
             if(e.target.value.length == 0) this.state.data.reservation.items[type] = 0;            
-            this.update();
+            this.forceUpdate();
         }.bind(this);
     }
     
@@ -117,10 +114,8 @@ script(section="body").
     }
     
     removeItem(type){
-        return function(){
-            delete this.state.data.reservation.items[type];
-            this.update();
-        }.bind(this);
+        delete this.state.data.reservation.items[type];
+        this.forceUpdate();
     }
 
     cancel(){
@@ -128,6 +123,6 @@ script(section="body").
     }
 
     async save(){
-        await client.updateReservation(this.props.params.project,this.props.params.reservation,this.state.data.reservation.items);
-        back(true);
+        await client.updateReservation(this.props.project,this.props.reservation,this.state.data.reservation.items);
+        history.back();
     }

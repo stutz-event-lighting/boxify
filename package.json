@@ -38,6 +38,7 @@
     "react": "^15.0.2",
     "react-bootstrap": "^0.30.3",
     "react-dom": "^15.0.2",
+    "react-route-system": "github:vancoding/react-route-system",
     "react-select": "^1.0.0-beta13",
     "react-textarea-autosize": "^4.0.1",
     "react-widgets": "^3.3.1",

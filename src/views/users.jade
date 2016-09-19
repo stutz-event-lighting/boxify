@@ -1,21 +1,18 @@
-extends ./base
-
-append body
-    .container
-        h2
-            | Benutzer
-            CreateContactButton(callback=this.create.bind(this))
-        table.table.table-striped
-            thead
-                tr
-                    th Name
-            tbody
-                each user in this.state.users
-                    tr(onClick=this.edit.bind(this,user))
-                        td
-                            = (user.firstname?user.firstname+" ":"")+(user.lastname||"")
-                            button.btn.btn-default.btn-xs.pull-right(onClick=this.delete.bind(this,user))
-                                i.glyphicon.glyphicon-trash
+.container
+    h2
+        | Benutzer
+        CreateContactButton(callback=this.create.bind(this))
+    table.table.table-striped
+        thead
+            tr
+                th Name
+        tbody
+            each user in this.state.users
+                tr(onClick=this.edit.bind(this,user))
+                    td
+                        = (user.firstname?user.firstname+" ":"")+(user.lastname||"")
+                        button.btn.btn-default.btn-xs.pull-right(onClick=this.delete.bind(this,user))
+                            i.glyphicon.glyphicon-trash
 script.
     var client = require("../client");
     var CreateContactButton = require("./CreateContactButton");
@@ -26,22 +23,28 @@ script(section="body").
     
     constructor(props,context){
         super(props,context);
+        this.state = {};
+        this.componentWillReceiveProps(props);
+    }
+    
+    componentWillReceiveProps(props){
+        this.props = props;
         this.findUsers();
     }
     
     async findUsers(){
         this.state.users = await client.findUsers({});
-        this.update();
+        this.forceUpdate();
     }
     
     async create(id){
         await client.createUser(id);
-        visit("/users/"+id);
+        this.props.onSelect(id);
     }
     
     edit(user,e){    
         if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-        visit("/users/"+user._id)  
+        this.props.onSelect(user._id)  
     }
     
     async delete(user){

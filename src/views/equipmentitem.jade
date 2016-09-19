@@ -1,112 +1,109 @@
-extends ./base
-
-append body
+.container
     if this.state.item && this.state.type
-        .container
-            h2
-                = this.state.item.name+" "+this.state.item.id
-                .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
-                    button.btn.btn-primary(onClick=this.save.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        |  Speichern
-            .row
-                .col-lg-3.col-md-4.col-sm-6.col-xs-12
-                    div.text-center
-                        ImageViewer(image="/api/equipment/"+this.state.item.type+"/image")
-                        br
-                        img(src="/api/barcode/EQ-"+this.state.item.type+"-"+this.state.item.id+"/"+(this.state.type.manufacturer?(this.state.type.manufacturer+" "):"")+this.state.item.name width="100%")
-                .col-lg-9.col-md-8.col-sm-6.col-xs-12
-                    h3 Daten
-                    .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Seriennummer
-                            .col-lg-10
-                                input.form-control(placeholder="Seriennummer" value=this.state.item.serialnumber||"" onChange=this.onSerialNumberChange.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Kommentar
-                            .col-lg-10
-                                TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange.bind(this))
-                    .row
-                        .col-md-4.col-xs-6
-                            h4 Aktueller Standort
-                            if this.state.location
-                                a(href="/customers/"+this.state.location._id)= (this.state.location.firstname?this.state.location.firstname+" ":"")+(this.state.location.lastname||"")
-                            else
-                                | Lager
-                        .col-md-4.col-xs-6
-                            h4 Case
-                            if this.state.container
-                                a(href="/equipment/"+this.state.container.type+"/"+this.state.container.id)= this.state.container.name+" "+this.state.container.id
-                            else
-                                | Keines
-                        .col-md-4.col-xs-6
-                            h4 Status
-                            .badge OK
+        h2
+            = this.state.item.name+" "+this.state.item.id
+            .btn-toolbar.pull-right
+                button.btn.btn-default(onClick=this.cancel.bind(this))
+                    i.glyphicon.glyphicon-chevron-left
+                    |  Zurück
+                button.btn.btn-primary(onClick=this.save.bind(this))
+                    i.glyphicon.glyphicon-ok
+                    |  Speichern
+        .row
+            .col-lg-3.col-md-4.col-sm-6.col-xs-12
+                div.text-center
+                    ImageViewer(image="/api/equipment/"+this.state.item.type+"/image")
                     br
-                    .row
-                        .col-md-4.col-xs-6
-                            h4 Letzte Wartung
-                            | 12.12.2014
-                        .col-md-4.col-xs-6
-                            h4 Nächste Wartung
-                            | 12.12.2015
+                    img(src="/api/barcode/EQ-"+this.state.item.type+"-"+this.state.item.id+"/"+(this.state.type.manufacturer?(this.state.type.manufacturer+" "):"")+this.state.item.name width="100%")
+            .col-lg-9.col-md-8.col-sm-6.col-xs-12
+                h3 Daten
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Seriennummer
+                        .col-lg-10
+                            input.form-control(placeholder="Seriennummer" value=this.state.item.serialnumber||"" onChange=this.onSerialNumberChange.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Kommentar
+                        .col-lg-10
+                            TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.onCommentChange.bind(this))
+                .row
+                    .col-md-4.col-xs-6
+                        h4 Aktueller Standort
+                        if this.state.location
+                            a(href="/customers/"+this.state.location._id)= (this.state.location.firstname?this.state.location.firstname+" ":"")+(this.state.location.lastname||"")
+                        else
+                            | Lager
+                    .col-md-4.col-xs-6
+                        h4 Case
+                        if this.state.container
+                            a(href="/equipment/"+this.state.container.type+"/"+this.state.container.id)= this.state.container.name+" "+this.state.container.id
+                        else
+                            | Keines
+                    .col-md-4.col-xs-6
+                        h4 Status
+                        .badge OK
+                br
+                .row
+                    .col-md-4.col-xs-6
+                        h4 Letzte Wartung
+                        | 12.12.2014
+                    .col-md-4.col-xs-6
+                        h4 Nächste Wartung
+                        | 12.12.2015
+        .row
+            .col-xs-12
+                h3
+                    | Log
+                    .btn-toolbar.pull-right
+                        button.btn.btn-primary
+                            i.glyphicon.glyphicon-plus
+                            |  Log hinzufügen
+                table.table.table-striped
+                    thead
+                        tr
+                            th Zeit
+                            th Ereignis
+                    tbody
+                        each log in this.state.logs
+                            tr
+                                td= moment(log.time).format("llll")
+                                td
+                                    case log.event
+                                        when "added"
+                                            | Objekt erfasst
+                                        when "removed"
+                                            | Objekt entfernt
+        if this.state.type.contents
             .row
                 .col-xs-12
-                    h3
-                        | Log
-                        .btn-toolbar.pull-right
-                            button.btn.btn-primary
-                                i.glyphicon.glyphicon-plus
-                                |  Log hinzufügen
-                    table.table.table-striped
+                    .pull-left
+                        h3 Inhalt
+                    .btn-toolbar.pull-right(style="marginTop:18px")
+                        ScanButton.pull-left(onScan=this.handleScan.bind(this) supplier="own")
+                        .btn-group.pull-left(style="marginLeft:10px")
+                            div(className="btn "+(this.state.remove?"btn-primary":"btn-default") onClick=this.toggleMode.bind(this))
+                                i.glyphicon.glyphicon-minus
+                            div(className="btn "+(this.state.remove?"btn-default":"btn-primary") onClick=this.toggleMode.bind(this))
+                                i.glyphicon.glyphicon-plus                                                            
+                    table.table.table-striped.table-hover
                         thead
                             tr
-                                th Zeit
-                                th Ereignis
+                                th ID
+                                th Name
+                                th Menge
+                                th Einzel IDs
                         tbody
-                            each log in this.state.logs
-                                tr
-                                    td= moment(log.time).format("llll")
-                                    td
-                                        case log.event
-                                            when "added"
-                                                | Objekt erfasst
-                                            when "removed"
-                                                | Objekt entfernt
-            if this.state.type.contents
-                .row
-                    .col-xs-12
-                        .pull-left
-                            h3 Inhalt
-                        .btn-toolbar.pull-right(style="marginTop:18px")
-                            ScanButton.pull-left(onScan=this.handleScan.bind(this) supplier="own")
-                            .btn-group.pull-left(style="marginLeft:10px")
-                                div(className="btn "+(this.state.remove?"btn-primary":"btn-default") onClick=this.toggleMode.bind(this))
-                                    i.glyphicon.glyphicon-minus
-                                div(className="btn "+(this.state.remove?"btn-default":"btn-primary") onClick=this.toggleMode.bind(this))
-                                    i.glyphicon.glyphicon-plus                                                            
-                        table.table.table-striped.table-hover
-                            thead
-                                tr
-                                    th ID
-                                    th Name
-                                    th Menge
-                                    th Einzel IDs
-                            tbody
-                                each item, id in this.state.item.contents
-                                    if item.newcount > 0
-                                        tr
-                                            td= id
-                                            td= item.name
-                                            td= item.newcount
-                                            td
-                                                each iid, i in item.newids
-                                                    if i > 0
-                                                        = ", "
-                                                    a(href="/equipment/"+id+"/"+iid)= iid
+                            each item, id in this.state.item.contents
+                                if item.newcount > 0
+                                    tr
+                                        td= id
+                                        td= item.name
+                                        td= item.newcount
+                                        td
+                                            each iid, i in item.newids
+                                                if i > 0
+                                                    = ", "
+                                                a(href="/equipment/"+id+"/"+iid)= iid
 script.
     var client = require("../client");
     var TextArea = require("react-textarea-autosize").default;
@@ -118,13 +115,20 @@ script(section="body").
         return ["equipment_read"];
     }
     
-    componentDidMount(){
-        if(!this.state.item) this.loadItem();
-        if(!this.state.type) this.loadType();
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
+        this.componentWillReceiveProps(props);
+    }
+    
+    componentWillReceiveProps(props){
+        this.props = props;
+        this.loadItem();
+        this.loadType();
     }
     
     async loadItem(){
-        var data  = await client.getEquipment(this.props.params.type,this.props.params.id);
+        var data  = await client.getEquipment(this.props.type,this.props.id);
         this.state.item = data.item;
         this.state.logs = data.logs;
         this.state.location = data.location;
@@ -135,22 +139,22 @@ script(section="body").
                 this.state.item.contents[type].newids = JSON.parse(JSON.stringify(this.state.item.contents[type].ids));
             }
         }
-        this.update();
+        this.forceUpdate();
     }
     
     async loadType(){
-        this.state.type = await client.getEquipmentType(this.props.params.type);
-        this.update();
+        this.state.type = await client.getEquipmentType(this.props.type);
+        this.forceUpdate();
     }
     
     onSerialNumberChange(e){
         this.state.item.serialnumber = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     
     onCommentChange(e){
         this.state.item.remark = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
 
     toggleMode(){
@@ -159,7 +163,7 @@ script(section="body").
         }else{
             this.state.remove = true;
         }
-        this.update();
+        this.forceUpdate();
     }
     
     async handleScan(code){
@@ -183,7 +187,7 @@ script(section="body").
                 delete this.state.item.contents[code.type].newcount;
                 delete this.state.item.contents[code.type].newids;
             }
-            this.update();
+            this.forceUpdate();
         }else{
             if(this.state.type.contents instanceof Array){
                 var allowed = this.state.type.contents.map(function(type){return type._id});
@@ -193,7 +197,7 @@ script(section="body").
                 try{
                     var container = await client.getEquipmentContainer(code.type,code.item);
                     if(this.state.item.contents[code.type] && this.state.item.contents[code.type].newids && this.state.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
-                    if(container && container != this.props.params.id) return this.playErrorSound();                    
+                    if(container && container != this.props.id) return this.playErrorSound();                    
                     await this.continueAddingItems(code);
                 }catch(e){
                     return this.playErrorSound();
@@ -225,7 +229,7 @@ script(section="body").
             if(!this.state.item.contents[code.type].newids) this.state.item.contents[code.type].newids = [];
             this.state.item.contents[code.type].newids.push(code.item+"");
         }
-        this.update();  
+        this.forceUpdate();  
     }
     
     playErrorSound(){

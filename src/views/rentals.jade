@@ -1,65 +1,61 @@
-extends ./base
-
-append body
-    .container
-        h2 Zumieten
-        
-        .row
-            .col-xs-12
-                h4 
-                    | Anfragen
-                    button.btn.btn-primary.pull-right(onClick=this.createRequest.bind(this)) Neu
-                table.table.table-striped.table-hover
-                    thead
-                        tr
-                            th Name
-                            th Zulieferer
-                            th Projekte
-                            th Erhalt
-                            th Rückgabe
-                            th Objekte
-                    tbody
-                        each item in this.state.items
-                            if item.status == "requested"
-                                +renderEntry(item)
-        .row
-            .col-xs-12
-                h4 
-                    | Buchungen
-                    button.btn.btn-primary.pull-right(onClick=this.createBooking.bind(this)) Neu
-                table.table.table-striped.table-hover
-                    thead
-                        tr
-                            th Name
-                            th Zulieferer
-                            th Projekte
-                            th Erhalt
-                            th Rückgabe
-                            th Objekte
-                    tbody
-                        each item in this.state.items
-                            if item.status == "booked"
-                                +renderEntry(item)
-        .row
-            .col-xs-12
-                h4 
-                    | Mieten
-                    button.btn.btn-primary.pull-right(onClick=this.createRental.bind(this)) Neu
-                table.table.table-striped.table-hover
-                    thead
-                        tr
-                            th Name
-                            th Zulieferer
-                            th Projekte
-                            th Erhalt
-                            th Rückgabe
-                            th Objekte
-                    tbody
-                        each item in this.state.items
-                            if item.status == "received"
-                                +renderEntry(item)
+.container
+    h2 Zumieten    
+    .row
+        .col-xs-12
+            h4 
+                | Anfragen
+                button.btn.btn-primary.pull-right(onClick=this.createRequest.bind(this)) Neu
+            table.table.table-striped.table-hover
+                thead
+                    tr
+                        th Name
+                        th Zulieferer
+                        th Projekte
+                        th Erhalt
+                        th Rückgabe
+                        th Objekte
+                tbody
+                    each item in this.state.items
+                        if item.status == "requested"
+                            +renderEntry(item)
+    .row
+        .col-xs-12
+            h4 
+                | Buchungen
+                button.btn.btn-primary.pull-right(onClick=this.createBooking.bind(this)) Neu
+            table.table.table-striped.table-hover
+                thead
+                    tr
+                        th Name
+                        th Zulieferer
+                        th Projekte
+                        th Erhalt
+                        th Rückgabe
+                        th Objekte
+                tbody
+                    each item in this.state.items
+                        if item.status == "booked"
+                            +renderEntry(item)
+    .row
+        .col-xs-12
+            h4 
+                | Mieten
+                button.btn.btn-primary.pull-right(onClick=this.createRental.bind(this)) Neu
+            table.table.table-striped.table-hover
+                thead
+                    tr
+                        th Name
+                        th Zulieferer
+                        th Projekte
+                        th Erhalt
+                        th Rückgabe
+                        th Objekte
+                tbody
+                    each item in this.state.items
+                        if item.status == "received"
+                            +renderEntry(item)
 mixin renderEntry(item)
-    tr(onClick=this.edit(item))
+    tr(onClick=this.edit.bind(this,item))
         td= item.name
         td= item.supplier.firstname+(item.supplier.lastname?(" "+item.supplier.lastname):"")
         td= item.projects.map(function(project){return project.name}).join(", ")
@@ -79,31 +75,30 @@ script(section="body").
     
     constructor(props,context){
         super(props,context);
+        this.state = {};
         this.loadData();
     }
     
     async loadData(){
         this.state.items = await client.findRentals({search:this.state.search});
-        this.update();
+        this.forceUpdate();
     }
     
     createRequest(){
-        visit("/rentals/newrequest");
+        this.props.onCreate("request");
     }
     
     createBooking(){
-        visit("/rentals/newbooking");
+        this.props.onCreate("booking");
     }
     
     createRental(){
-        visit("/rentals/newrental");
+        this.props.onCreate("rental");
     }
     
-    edit(item){
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/rentals/"+item._id);
-        };    
+    edit(item,e){
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        this.props.onSelect(item._id); 
     }
     
     async delete(item,e){

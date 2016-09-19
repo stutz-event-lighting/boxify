@@ -1,27 +1,24 @@
-extends ./base
-
-append body
-    .container
-        h1 Zulieferer
-        .searchbar(style="display:flex")
-            .input-group(style="flex:1;display:flex;width:auto;")
-                input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
-                span.input-group-btn(style="display:inline-block;width:auto;")
-                    button.btn.btn-default Suchen
-            .btn-group(style="marginLeft:10px")
-                CreateContactButton(callback=this.create.bind(this))
-        table.table.table-striped.table-hover
-            thead
-                tr
-                    th Name
-                    th
-            tbody
-                each item in this.state.items
-                    tr(onClick=this.edit.bind(this,item))
-                        td= (item.firstname?item.firstname+" ":"")+(item.lastname||"")
-                        td
-                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete.bind(this,item))
-                                i.glyphicon.glyphicon-trash
+.container
+    h1 Zulieferer
+    .searchbar(style="display:flex")
+        .input-group(style="flex:1;display:flex;width:auto;")
+            input.form-control(type="text" style="display:block;width:auto;flex:1" onChange=this.search.bind(this) value=this.state.search||"")
+            span.input-group-btn(style="display:inline-block;width:auto;")
+                button.btn.btn-default Suchen
+        .btn-group(style="marginLeft:10px")
+            CreateContactButton(callback=this.create.bind(this))
+    table.table.table-striped.table-hover
+        thead
+            tr
+                th Name
+                th
+        tbody
+            each item in this.state.items
+                tr(onClick=this.edit.bind(this,item))
+                    td= (item.firstname?item.firstname+" ":"")+(item.lastname||"")
+                    td
+                        button.btn.btn-xs.btn-default.pull-right(onClick=this.delete.bind(this,item))
+                            i.glyphicon.glyphicon-trash
     if this.state.delete
         Modal
             .modal-header
@@ -49,13 +46,15 @@ script(section="body").
         return ["suppliers_read"];
     }
     
-    componentDidMount(){
-        if(!this.state.items) this.findContacts();
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
+        this.findContacts();
     }
     
     async findContacts(){
         this.state.items = await client.findSuppliers({search:this.state.search});
-        this.update();
+        this.forceUpdate();
     }
 
     search(e){
@@ -65,27 +64,27 @@ script(section="body").
     
     dismiss(){
         delete this.state.error;
-        this.update();
+        this.forceUpdate();
     }
 
     async create(id){
         await client.createSupplier(id);
-        visit("/suppliers/"+id);
+        this.props.onSelect(id);
     }
 
     edit(item,e){
         if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-        visit("/suppliers/"+item._id)       
+        this.props.onSelect(item._id)       
     }
 
     delete(item){
         this.state.delete = item;
-        this.update();
+        this.forceUpdate();
     }
 
     cancelDelete(){
         delete this.state.delete;
-        this.update();
+        this.forceUpdate();
     }
     
     async confirmDelete(){
@@ -98,5 +97,5 @@ script(section="body").
         }catch(err){
             this.state.error = err.code;
         }
-        this.update();
+        this.forceUpdate();
     }

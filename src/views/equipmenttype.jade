@@ -1,216 +1,213 @@
-extends ./base
-
-append body
+.container
     if this.state.item && this.state.stock !== undefined && this.state.items && this.state.graph && this.state.categories
-        .container
-            h2 Equipmenttyp bearbeiten
-                .btn-toolbar.pull-right
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
-                    button.btn.btn-primary(onClick=this.save.bind(this))
-                        i.glyphicon.glyphicon-ok
-                        |  Speichern
-            .row
-                .col-lg-3.col-md-4.col-sm-6.col-xs-12
-                    div.text-center
-                        ImageViewer(image=this.getImagePath() onChange=this.onImageChanged.bind(this) editable)
-                        br
-                        img(src="/api/barcode/EQ-"+this.state.item._id+"/"+(this.state.item.manufacturer?(this.state.item.manufacturer+" "):"")+this.state.item.name width="100%")
-                .col-lg-9.col-md-8.col-sm-6.col-xs-12
-                    h4 Technische Daten
-                    .form-horizontal
-                        .form-group
-                            label.col-lg-2.control-label Name
-                            .col-lg-10
-                                input.form-control(type="text" placeholder="Name" value=this.state.item.name onChange=function(e){this.state.item.name = e.target.value; this.update()}.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Kategorie
-                            .col-lg-10
+        h2 Equipmenttyp bearbeiten
+            .btn-toolbar.pull-right
+                button.btn.btn-default(onClick=this.cancel.bind(this))
+                    i.glyphicon.glyphicon-chevron-left
+                    |  Zurück
+                button.btn.btn-primary(onClick=this.save.bind(this))
+                    i.glyphicon.glyphicon-ok
+                    |  Speichern
+        .row
+            .col-lg-3.col-md-4.col-sm-6.col-xs-12
+                div.text-center
+                    ImageViewer(image=this.getImagePath() onChange=this.onImageChanged.bind(this) editable)
+                    br
+                    img(src="/api/barcode/EQ-"+this.state.item._id+"/"+(this.state.item.manufacturer?(this.state.item.manufacturer+" "):"")+this.state.item.name width="100%")
+            .col-lg-9.col-md-8.col-sm-6.col-xs-12
+                h4 Technische Daten
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(type="text" placeholder="Name" value=this.state.item.name onChange=function(e){this.state.item.name = e.target.value; this.forceUpdate()}.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Kategorie
+                        .col-lg-10
+                            .input-group
+                                select.form-control(onChange=this.onCategoryChanged.bind(this) value=this.state.item.category||"null")
+                                    option(value="null") Keine
+                                    each category in this.state.categories
+                                        option(value=category._id)= category.name
+                                span.input-group-btn
+                                    button.btn.btn-default(onClick=this.startEditCategories.bind(this))
+                                        i.glyphicon.glyphicon-pencil
+                    .form-group
+                        label.col-lg-2.control-label Tags
+                        .col-lg-10
+                            Select(value=(this.state.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) loadOptions=this.findTags.bind(this) onChange=this.onTagsChanged.bind(this) multi=true)
+                    .form-group
+                        label.col-lg-2.control-label Hersteller
+                        .col-lg-10
+                            input.form-control(type="text" placeholder="Hersteller" value=this.state.item.manufacturer onChange=function(e){this.state.item.manufacturer = e.target.value;this.forceUpdate();}.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Hersteller Artikelnummer
+                        .col-lg-10
+                            input.form-control(type="text" placeholder="Hersteller Artikelnummer" value=this.state.item.manufacturerArticlenumber onChange=function(e){this.state.item.manufacturerArticlenumber = e.target.value;this.forceUpdate();}.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Hersteller EAN Code
+                        .col-lg-10
+                            input.form-control(type="text" placeholder="Hersteller EAN Code" value=this.state.item.manufacturerEAN onChange=function(e){this.state.item.manufacturerEAN = e.target.value;this.forceUpdate();}.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Technische Beschreibung
+                        .col-lg-10
+                            TextArea.form-control(placeholder="Technische Beschreibung" value=this.state.item.technicalDescription onChange=this.onTechnicalDescriptionChanged.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Gewicht
+                        div(className="col-lg-10 "+(!this.state.weightOk?"has-error":""))
+                            .input-group
+                                input.form-control(type="text" placeholder="Gewicht" value=this.state.weight onChange=this.onWeightChange.bind(this) onBlur=this.onWeightBlur.bind(this))
+                                span.input-group-addon kg
+                    .form-group
+                        label.col-lg-2.control-label Grösse
+                        .col-lg-10(style="display:flex")
+                            div(className=!this.state.lengthOk?"has-error":"" style="flex:1")
                                 .input-group
-                                    select.form-control(onChange=this.onCategoryChanged.bind(this) value=this.state.item.category||"null")
-                                        option(value="null") Keine
-                                        each category in this.state.categories
-                                            option(value=category._id)= category.name
-                                    span.input-group-btn
-                                        button.btn.btn-default(onClick=this.startEditCategories.bind(this))
-                                            i.glyphicon.glyphicon-pencil
-                        .form-group
-                            label.col-lg-2.control-label Tags
-                            .col-lg-10
-                                Select(value=(this.state.item.tags||[]).map(function(tag){return {value:tag,label:tag}}) loadOptions=this.findTags.bind(this) onChange=this.onTagsChanged.bind(this) multi=true)
-                        .form-group
-                            label.col-lg-2.control-label Hersteller
-                            .col-lg-10
-                                input.form-control(type="text" placeholder="Hersteller" value=this.state.item.manufacturer onChange=function(e){this.state.item.manufacturer = e.target.value;this.update();}.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Hersteller Artikelnummer
-                            .col-lg-10
-                                input.form-control(type="text" placeholder="Hersteller Artikelnummer" value=this.state.item.manufacturerArticlenumber onChange=function(e){this.state.item.manufacturerArticlenumber = e.target.value;this.update();}.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Hersteller EAN Code
-                            .col-lg-10
-                                input.form-control(type="text" placeholder="Hersteller EAN Code" value=this.state.item.manufacturerEAN onChange=function(e){this.state.item.manufacturerEAN = e.target.value;this.update();}.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Technische Beschreibung
-                            .col-lg-10
-                                TextArea.form-control(placeholder="Technische Beschreibung" value=this.state.item.technicalDescription onChange=this.onTechnicalDescriptionChanged.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Gewicht
-                            div(className="col-lg-10 "+(!this.state.weightOk?"has-error":""))
+                                    input.form-control(type="text" placeholder="Länge" value=this.state.length onChange=this.onLengthChange.bind(this) onBlur=this.onLengthBlur.bind(this))
+                                    span.input-group-addon cm
+                            div(className=!this.state.widthOk?"has-error":"" style="flex:1;marginLeft:10px")
                                 .input-group
-                                    input.form-control(type="text" placeholder="Gewicht" value=this.state.weight onChange=this.onWeightChange.bind(this) onBlur=this.onWeightBlur.bind(this))
-                                    span.input-group-addon kg
-                        .form-group
-                            label.col-lg-2.control-label Grösse
-                            .col-lg-10(style="display:flex")
-                                div(className=!this.state.lengthOk?"has-error":"" style="flex:1")
-                                    .input-group
-                                        input.form-control(type="text" placeholder="Länge" value=this.state.length onChange=this.onLengthChange.bind(this) onBlur=this.onLengthBlur.bind(this))
-                                        span.input-group-addon cm
-                                div(className=!this.state.widthOk?"has-error":"" style="flex:1;marginLeft:10px")
-                                    .input-group
-                                        input.form-control(type="text" placeholder="Breite" value=this.state.width onChange=this.onWidthChange.bind(this) onBlur=this.onWidthBlur.bind(this))
-                                        span.input-group-addon cm
-                                div(className=!this.state.heightOk?"has-error":"" style="flex:1;marginLeft:10px")
-                                    .input-group
-                                        input.form-control(type="text" placeholder="Höhe" value=this.state.height onChange=this.onHeightChange.bind(this) onBlur=this.onHeightBlur.bind(this))
-                                        span.input-group-addon cm
-                        .form-group
-                            label.col-lg-2.control-label Mietpreis
-                            div(className="col-lg-10 "+(!this.state.rentOk?"has-error":""))
+                                    input.form-control(type="text" placeholder="Breite" value=this.state.width onChange=this.onWidthChange.bind(this) onBlur=this.onWidthBlur.bind(this))
+                                    span.input-group-addon cm
+                            div(className=!this.state.heightOk?"has-error":"" style="flex:1;marginLeft:10px")
                                 .input-group
-                                    span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Mietpreis" value=this.state.rent onChange=this.onRentChange.bind(this) onBlur=this.onRentBlur.bind(this))
-                                    span.input-group-addon /Tag
+                                    input.form-control(type="text" placeholder="Höhe" value=this.state.height onChange=this.onHeightChange.bind(this) onBlur=this.onHeightBlur.bind(this))
+                                    span.input-group-addon cm
+                    .form-group
+                        label.col-lg-2.control-label Mietpreis
+                        div(className="col-lg-10 "+(!this.state.rentOk?"has-error":""))
+                            .input-group
+                                span.input-group-addon CHF
+                                input.form-control(type="text" placeholder="Mietpreis" value=this.state.rent onChange=this.onRentChange.bind(this) onBlur=this.onRentBlur.bind(this))
+                                span.input-group-addon /Tag
+                    .form-group
+                        label.col-lg-2.control-label Neupreis
+                        div(className="col-lg-10 "+(!this.state.factoryPriceOk?"has-error":""))
+                            .input-group
+                                span.input-group-addon CHF
+                                input.form-control(type="text" placeholder="Neupreis" value=this.state.factoryPrice onChange=this.onFactoryPriceChange.bind(this) onBlur=this.onFactoryPriceBlur.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Inhalt
+                        .col-lg-10
+                            select.form-control(value=this.state.item.contents!==undefined?(this.state.item.contents===null?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange.bind(this))
+                                option(value="none") Kein
+                                option(value="specific") Spezifisch
+                                option(value="all") Universal
+                    if this.state.item.contents instanceof Array
                         .form-group
-                            label.col-lg-2.control-label Neupreis
-                            div(className="col-lg-10 "+(!this.state.factoryPriceOk?"has-error":""))
-                                .input-group
-                                    span.input-group-addon CHF
-                                    input.form-control(type="text" placeholder="Neupreis" value=this.state.factoryPrice onChange=this.onFactoryPriceChange.bind(this) onBlur=this.onFactoryPriceBlur.bind(this))
-                        .form-group
-                            label.col-lg-2.control-label Inhalt
-                            .col-lg-10
-                                select.form-control(value=this.state.item.contents!==undefined?(this.state.item.contents===null?"all":"specific"):"none" disabled=(this.state.item.contents instanceof Array && this.state.item.contents.length) onChange=this.onContentsChange.bind(this))
-                                    option(value="none") Kein
-                                    option(value="specific") Spezifisch
-                                    option(value="all") Universal
-                        if this.state.item.contents instanceof Array
-                            .form-group
-                                .col-lg-10.col-lg-offset-2
-                                    Select(value=this.state.item.contents.map(function(type){return {value:type._id,label:type.name}}) loadOptions=this.findTypes.bind(this) onChange=this.onEquipmenttypeChanged.bind(this) multi=true)
-            br
-            br
-            .row
-                .col-xs-12
-                    h3
-                        = "Bestand: "+this.state.stock
-                        .btn-toolbar.pull-right
-                            if this.state.stock
-                                if !this.state.item.hasItems
-                                    button.btn.btn-danger(onClick=this.decrease.bind(this)) Entfernen
-                                button.btn.btn-primary(onClick=this.state.items.length?this.createItem.bind(this):this.increase.bind(this)) Hinzufügen
-                            else
-                                DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick.bind(this))
-                                    MenuItem(eventKey="1") Menge
-                                    MenuItem(eventKey="2") Einzelobjekt
-                    if this.state.items.length
-                        table.table.table-striped.table-hover
-                            thead
-                                tr
-                                    th Name
-                                    th Letzte Wartung
-                                    th
-                            tbody
-                                each item in this.state.items
-                                    - (function(item){
-                                    tr
-                                        td(onClick=this.editItem.bind(this,item))= this.state.item.name+" "+item.id
-                                        td(onClick=this.editItem.bind(this,item)) 12.12.2012
-                                        td
-                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem.bind(this,item))
-                                                i.glyphicon.glyphicon-trash
-                                    - }).bind(this)(item)
-            .row
-                .col-xs-12
-                    h3 Ausgänge
-                    table.table.table-striped
-                        thead
-                            tr
-                                th Projekt
-                                th Anzahl
-                                th Rückkehr
-                        tbody
-                            each project in this.state.item.locations
-                                tr
-                                    td= project.name
-                                    td= project.count
-                                    td= moment(project.to).format("LLL")
-            .row
-                .col-xs-12
-                    h3 Reservationen
-                    table.table.table-striped
-                        thead
-                            tr
-                                th Projekt
-                                th Anzahl
-                                th Ausgang
-                                th Rückkehr
-                        tbody
-                            each project in this.state.item.reservations
-                                tr
-                                    td= project.name
-                                    td= project.count
-                                    td= moment(project.from).format("LLL")
-                                    td= moment(project.to).format("LLL")
-            .row
-                .col-xs-12
-                    h3 Zumieten
-                    table.table.table-striped
+                            .col-lg-10.col-lg-offset-2
+                                Select(value=this.state.item.contents.map(function(type){return {value:type._id,label:type.name}}) loadOptions=this.findTypes.bind(this) onChange=this.onEquipmenttypeChanged.bind(this) multi=true)
+        br
+        br
+        .row
+            .col-xs-12
+                h3
+                    = "Bestand: "+this.state.stock
+                    .btn-toolbar.pull-right
+                        if this.state.stock
+                            if !this.state.item.hasItems
+                                button.btn.btn-danger(onClick=this.decrease.bind(this)) Entfernen
+                            button.btn.btn-primary(onClick=this.state.items.length?this.createItem.bind(this):this.increase.bind(this)) Hinzufügen
+                        else
+                            DropdownButton(title="Hinzufügen" bsStyle="primary" onSelect=this.onUniversalAddClick.bind(this))
+                                MenuItem(eventKey="1") Menge
+                                MenuItem(eventKey="2") Einzelobjekt
+                if this.state.items.length
+                    table.table.table-striped.table-hover
                         thead
                             tr
                                 th Name
-                                th Anzahl
-                                th Erhalt
-                                th Rückgabe
+                                th Letzte Wartung
+                                th
                         tbody
-                            each rental in this.state.item.rentals
+                            each item in this.state.items
+                                - (function(item){
                                 tr
-                                    td= rental.name
-                                    td= rental.count
-                                    td= moment(rental.from).format("LLL")
-                                    td= moment(rental.to).format("LLL")
-            .row
-                .col-xs-12
-                    h3
-                        = "Graph "+moment(this.state.start).format("MMMM YYYY")
-                        .btn-toolbar.pull-right
-                            .btn.btn-default(onClick=this.graphBackward.bind(this))
-                                .glyphicon.glyphicon-chevron-left
-                            .btn.btn-default(onClick=this.graphForward.bind(this))
-                                .glyphicon.glyphicon-chevron-right
-                    .graph(style="width:100%;height:300px;position:relative")
-                        - var yAxisWidth = 50;
-                        - var xAxisHeight = 50;
-                        - var cap = this.cap([this.state.graph.supply,this.state.graph.ownsupply,this.state.graph.demand])
-                        - var days = this.days();
-                        .y-axis(style="position:absolute;bottom:"+xAxisHeight+"px;width:"+yAxisWidth+"px;top:0px;left:0px;borderRight:1px solid black")
-                            each step in this.steps(cap)
-                                .y-axis-label(style="position:absolute;marginTop:-10px;right:5px;top:"+(100-step/cap.range*100)+"%")= step
-                        .x-axis(style="position:absolute;bottom:0px;height:"+xAxisHeight+"px;right:0px;left:"+yAxisWidth+"px;borderTop:1px solid black")
-                            each day,i in days
-                                .x-axis-label(style="position:absolute;left:"+(i/days.length*100)+"%;width:"+(100/days.length)+"%;textAlign:center")= day
-                        .data(style="position:absolute;top:0px;right:0px;left:"+yAxisWidth+";bottom:"+xAxisHeight+"px")
-                            svg(style="width:100%;height:100%")
-                                svg(viewBox="0 0 100 100" preserveAspectRatio="none")
-                                    path(style="fill: #ffc540;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.supply,true))
-                                    path(style="fill: #6B8E00;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.ownsupply,true))
-                                    each step in this.steps(cap)
-                                        path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M0,"+(100-step/cap.range*100)+" L100,"+(100-step/cap.range*100))
-                                    each day,i in days
-                                        path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M"+(i/days.length*100)+",0L"+(i/days.length*100)+",100")
-                                    path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.demand))
+                                    td(onClick=this.editItem.bind(this,item))= this.state.item.name+" "+item.id
+                                    td(onClick=this.editItem.bind(this,item)) 12.12.2012
+                                    td
+                                        button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem.bind(this,item))
+                                            i.glyphicon.glyphicon-trash
+                                - }).bind(this)(item)
+        .row
+            .col-xs-12
+                h3 Ausgänge
+                table.table.table-striped
+                    thead
+                        tr
+                            th Projekt
+                            th Anzahl
+                            th Rückkehr
+                    tbody
+                        each project in this.state.item.locations
+                            tr
+                                td= project.name
+                                td= project.count
+                                td= moment(project.to).format("LLL")
+        .row
+            .col-xs-12
+                h3 Reservationen
+                table.table.table-striped
+                    thead
+                        tr
+                            th Projekt
+                            th Anzahl
+                            th Ausgang
+                            th Rückkehr
+                    tbody
+                        each project in this.state.item.reservations
+                            tr
+                                td= project.name
+                                td= project.count
+                                td= moment(project.from).format("LLL")
+                                td= moment(project.to).format("LLL")
+        .row
+            .col-xs-12
+                h3 Zumieten
+                table.table.table-striped
+                    thead
+                        tr
+                            th Name
+                            th Anzahl
+                            th Erhalt
+                            th Rückgabe
+                    tbody
+                        each rental in this.state.item.rentals
+                            tr
+                                td= rental.name
+                                td= rental.count
+                                td= moment(rental.from).format("LLL")
+                                td= moment(rental.to).format("LLL")
+        .row
+            .col-xs-12
+                h3
+                    = "Graph "+moment(this.state.start).format("MMMM YYYY")
+                    .btn-toolbar.pull-right
+                        .btn.btn-default(onClick=this.graphBackward.bind(this))
+                            .glyphicon.glyphicon-chevron-left
+                        .btn.btn-default(onClick=this.graphForward.bind(this))
+                            .glyphicon.glyphicon-chevron-right
+                .graph(style="width:100%;height:300px;position:relative")
+                    - var yAxisWidth = 50;
+                    - var xAxisHeight = 50;
+                    - var cap = this.cap([this.state.graph.supply,this.state.graph.ownsupply,this.state.graph.demand])
+                    - var days = this.days();
+                    .y-axis(style="position:absolute;bottom:"+xAxisHeight+"px;width:"+yAxisWidth+"px;top:0px;left:0px;borderRight:1px solid black")
+                        each step in this.steps(cap)
+                            .y-axis-label(style="position:absolute;marginTop:-10px;right:5px;top:"+(100-step/cap.range*100)+"%")= step
+                    .x-axis(style="position:absolute;bottom:0px;height:"+xAxisHeight+"px;right:0px;left:"+yAxisWidth+"px;borderTop:1px solid black")
+                        each day,i in days
+                            .x-axis-label(style="position:absolute;left:"+(i/days.length*100)+"%;width:"+(100/days.length)+"%;textAlign:center")= day
+                    .data(style="position:absolute;top:0px;right:0px;left:"+yAxisWidth+";bottom:"+xAxisHeight+"px")
+                        svg(style="width:100%;height:100%")
+                            svg(viewBox="0 0 100 100" preserveAspectRatio="none")
+                                path(style="fill: #ffc540;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.supply,true))
+                                path(style="fill: #6B8E00;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.ownsupply,true))
+                                each step in this.steps(cap)
+                                    path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M0,"+(100-step/cap.range*100)+" L100,"+(100-step/cap.range*100))
+                                each day,i in days
+                                    path(style="stroke:#eee;fill:transparent;strokeWidth:1;vectorEffect:non-scaling-stroke" d="M"+(i/days.length*100)+",0L"+(i/days.length*100)+",100")
+                                path(style="stroke: red;fill:transparent;strokeWidth:3;vectorEffect: non-scaling-stroke;" d=this.createAreaPath(cap,this.state.graph.demand))
     if this.state.increase
         Modal
             .modal-header
@@ -221,7 +218,7 @@ append body
                         label.col-lg-2.control-label Menge
                         div(className="col-lg-10 "+(!this.state.increase.countOk?"has-error":""))
                             .input-group
-                                input.form-control(type="text" placeholder="Menge" value=this.state.increase.count onChange=function(e){this.state.increase.count=e.target.value;this.update()}.bind(this))
+                                input.form-control(type="text" placeholder="Menge" value=this.state.increase.count onChange=function(e){this.state.increase.count=e.target.value;this.forceUpdate()}.bind(this))
                                 span.input-group-addon Stk.
             .modal-footer
                 button.btn.btn-default(onClick=this.cancelIncrease.bind(this)) Abbrechen
@@ -257,10 +254,17 @@ script(section="body").
         return ["equipment_read"];
     }
     
-    componentDidMount(){
+    constructor(props,context){
+        super(props,context);
+        this.state = {};
         this.state.start = moment().startOf("month").toDate().getTime();
         this.state.end = moment().endOf("month").toDate().getTime();
-        if(!this.state.item) this.loadEquipmentType();
+        this.componentWillReceiveProps(props);
+    }
+    
+    componentWillReceiveProps(props){
+        this.props = props;
+        this.loadEquipmentType();
         this.loadStock();
         this.loadItems();
         this.loadCategories();
@@ -268,7 +272,7 @@ script(section="body").
     }
     
     async loadEquipmentType(){
-        var item = await client.getEquipmentType(this.props.params.type);
+        var item = await client.getEquipmentType(this.props.type);
         this.state.item = item;
         this.state.weight = (item.weight||"")+"";
         this.state.weightOk = true;
@@ -282,27 +286,27 @@ script(section="body").
         this.state.rentOk = true;
         this.state.factoryPrice = (item.factoryPrice||"")+"";
         this.state.factoryPriceOk = true;
-        this.update();
+        this.forceUpdate();
     }
     
     async loadItems(){
-        this.state.items = await client.getEquipmentTypeItems(this.props.params.type);
-        this.update();
+        this.state.items = await client.getEquipmentTypeItems(this.props.type);
+        this.forceUpdate();
     }
     
     async loadStock(){
-        this.state.stock = await client.getEquipmentTypeStock(this.props.params.type,false);
-        this.update();        
+        this.state.stock = await client.getEquipmentTypeStock(this.props.type,false);
+        this.forceUpdate();        
     }
     
     async loadCategories(){
         this.state.categories = await client.getEquipmentCategories();
-        this.update();
+        this.forceUpdate();
     }
     
     async loadGraph(){
-        this.state.graph = await client.getEquipmentTypeGraph(this.props.params.type,0,0);
-        this.update();
+        this.state.graph = await client.getEquipmentTypeGraph(this.props.type,0,0);
+        this.forceUpdate();
     }
     
     getImagePath(){
@@ -311,12 +315,12 @@ script(section="body").
     
     onImageChanged(image){
         this.state.item.image = image;
-        this.update();
+        this.forceUpdate();
     }
     
     startEditCategories(){
-        this.update();
-        visit("/equipment/categories");
+        this.forceUpdate();
+        this.props.onCategoriesClicked();
     }
 
     onCategoryChanged(e){
@@ -325,37 +329,37 @@ script(section="body").
         }else{
             this.state.item.category = e.target.value;
         }
-        this.update();
+        this.forceUpdate();
     }
     
     onTechnicalDescriptionChanged(e){
         this.state.item.technicalDescription = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     
     onLengthChange(e){
         this.state.length = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     onWidthChange(e){
         this.state.width = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     onHeightChange(e){
         this.state.height = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     onWeightChange(e){
         this.state.weight = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     onRentChange(e){
         this.state.rent = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     onFactoryPriceChange(e){
         this.state.factoryPrice = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     onLengthBlur(){
         if(!isInt(this.state.length)){
@@ -364,7 +368,7 @@ script(section="body").
             this.state.lengthOk = true;
             this.state.item.length = parseInt(this.state.length,10);
         }
-        this.update();
+        this.forceUpdate();
     }
     onWidthBlur(){
         if(!isInt(this.state.width)){
@@ -373,7 +377,7 @@ script(section="body").
             this.state.widthOk = true;
             this.state.item.width = parseInt(this.state.width,10);
         }
-        this.update();
+        this.forceUpdate();
     }
     onHeightBlur(){
         if(!isInt(this.state.height)){
@@ -382,7 +386,7 @@ script(section="body").
             this.state.heightOk = true;
             this.state.item.height = parseInt(this.state.height,10);
         }
-        this.update();
+        this.forceUpdate();
     }
     onWeightBlur(){
         if(!isFloat(this.state.weight)){
@@ -391,7 +395,7 @@ script(section="body").
             this.state.weightOk = true;
             this.state.item.weight = parseFloat(this.state.weight);
         }
-        this.update();
+        this.forceUpdate();
     }
     onRentBlur(){
         if(!isFloat(this.state.rent)){
@@ -400,13 +404,13 @@ script(section="body").
             this.state.rentOk = true;
             this.state.item.rent = parseFloat(this.state.rent);
         }
-        this.update();
+        this.forceUpdate();
     }
     onFactoryPriceBlur(){
         if(this.state.factoryPriceOk = isFloat(this.state.factoryPrice)){
             this.state.item.factoryPrice = parseFloat(this.state.factoryPrice);
         }
-        this.update();
+        this.forceUpdate();
     }
 
     onUniversalAddClick(i){
@@ -422,16 +426,16 @@ script(section="body").
 
     increase(){
         this.state.increase = {type:"add",count:"",countOk:true}
-        this.update();
+        this.forceUpdate();
     }
     decrease(){
         this.state.increase = {type:"remove",count:"",countOk:true}
-        this.update();
+        this.forceUpdate();
     }
 
     cancelIncrease(){
         delete this.state.increase;
-        this.update();
+        this.forceUpdate();
     }
 
     async confirmIncrease(){
@@ -441,17 +445,17 @@ script(section="body").
             this.loadStock();
         }else{
             this.state.increase.countOk = false;
-            this.update();
+            this.forceUpdate();
         }
     }
 
     async createItem(){
         var id = await client.createEquipment(this.state.item._id,{});
-        visit("/equipment/"+this.state.item._id+"/"+id);
+        this.props.onSelect(this.state.item._id,id);
     }
 
     editItem(equipment){
-        visit("/equipment/"+this.state.item._id+"/"+equipment.id);
+        this.props.onSelect(this.state.item._id,equipment.id);
     }
 
     async deleteItem(item){
@@ -467,7 +471,7 @@ script(section="body").
     
     addContents(){
         this.state.addcontents = {type:null};
-        this.update();
+        this.forceUpdate();
     }
     
     async findTypes(input){
@@ -477,7 +481,7 @@ script(section="body").
     
     onEquipmenttypeChanged(id,selection){
         this.state.item.contents = selection.map(function(sel){return {_id:sel.value,name:sel.label}});
-        this.update();
+        this.forceUpdate();
     }
     
     async findTags(name){
@@ -491,7 +495,7 @@ script(section="body").
         this.state.item.tags = tags.map(function(tag){
             return tag.value
         });
-        this.update();
+        this.forceUpdate();
     }
     
     onContentsChange(e){
@@ -506,7 +510,7 @@ script(section="body").
                 this.state.item.contents = null;
                 break;
         }
-        this.update();
+        this.forceUpdate();
     }
     
     createAreaPath(cap,timeline,fill){
@@ -571,12 +575,12 @@ script(section="body").
     graphForward(){
         this.state.start = this.state.end+1;
         this.state.end = moment(this.state.start).endOf("month").toDate().getTime();
-        this.update();
+        this.forceUpdate();
     }
     graphBackward(){
         this.state.end = this.state.start-1;
         this.state.start = moment(this.state.end).startOf("month").toDate().getTime();
-        this.update();
+        this.forceUpdate();
     }
     
     cancel(){
@@ -601,5 +605,5 @@ script(section="body").
             image:this.state.item.image?this.state.item.image.url:undefined,
             contents:this.state.item.contents!==undefined?(this.state.item.contents instanceof Array?this.state.item.contents.map(function(type){return type._id}):null):undefined
         });
-        back(true);
+        history.back();
     }
