@@ -50,15 +50,15 @@ append body
                         tbody
                             - var i = 1;
                             each reservation in this.state.reservations
-                                tr(onClick=this.openReservation(reservation))
+                                tr(onClick=this.openReservation.bind(this,reservation))
                                     td= "Reservation "+(i++)
                                     td= reservation.count
                                     td
                                         = reservation.total
                                         .btn-toolbar.pull-right
-                                            button.btn.btn-default.btn-xs(onClick=this.deleteReservation(reservation))
+                                            button.btn.btn-default.btn-xs(onClick=this.deleteReservation.bind(this,reservation))
                                                 i.glyphicon.glyphicon-trash
-                                            button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation(reservation))
+                                            button.btn.btn-primary.btn-xs(onClick=this.checkoutReservation.bind(this,reservation))
                                                 i.glyphicon.glyphicon-log-out
                     if this.state.needsRental
                         .alert.alert-warning(onClick=this.createRental.bind(this)) Sie haben mehr Material reserviert als in diesem Zeitraum verfügbar ist. Sie müssen Material zumieten.
@@ -83,7 +83,7 @@ append body
                                 th Objekte
                         tbody
                             each io,i in this.state.io
-                                tr(onClick=this.editIo(io) className=io.draft?"warning":"")
+                                tr(onClick=this.editIo.bind(this,io) className=io.draft?"warning":"")
                                     td
                                         div(className="glyphicon glyphicon-log-"+(io.type=="checkout"?"out":"in"))
                                     td= !io.draft?moment(io.time).format("LLL"):"Entwurf"
@@ -91,7 +91,7 @@ append body
                                     td
                                         = io.count+" / "+io.total
                                         if io.draft || i == this.state.io.length-1
-                                            button.btn.btn-default.btn-xs.pull-right(onClick=(io.type=="checkout"?this.deleteIo(io):this.deleteIo(io)))
+                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteIo.bind(this,io))
                                                 i.glyphicon.glyphicon-trash
                                         a.btn.btn-default.btn-xs.pull-right(href="/api/equipmentio/"+io._id+"/pickupConfirmation.docx" target="_blank")
                                             i.glyphicon.glyphicon-print
@@ -121,15 +121,13 @@ script(section="body").
         this.loadData();
     }
     
-    loadData(){
-        client.getProject(this.props.params.id,function(err,data){
-            if(err) return;
-            if(!this.state.item) this.state.item = data.project;
-            this.state.reservations = data.reservations;
-            this.state.needsRental = data.needsRental;
-            this.state.io = data.io;
-            this.update();
-        }.bind(this));
+    async loadData(){
+        var data = await client.getProject(this.props.params.id);
+        if(!this.state.item) this.state.item = data.project;
+        this.state.reservations = data.reservations;
+        this.state.needsRental = data.needsRental;
+        this.state.io = data.io;
+        this.update();        
     }
 
     onNameChange(e){
@@ -152,93 +150,71 @@ script(section="body").
         this.update();
     }
 
-    createReservation(){
-        client.createReservation(this.props.params.id,function(err,id){
-            if(err) return;
-            visit("/projects/"+this.props.params.id+"/reservations/"+id);
-        }.bind(this));
+    async createReservation(){
+        var id = await client.createReservation(this.props.params.id);
+        visit("/projects/"+this.props.params.id+"/reservations/"+id);
     }
     
-    openReservation(reservation){
-        var self = this;
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/projects/"+self.props.params.id+"/reservations/"+reservation._id)
-        }
+    openReservation(reservation,e){
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        visit("/projects/"+this.props.params.id+"/reservations/"+reservation._id)
     }
 
-    checkoutReservation(reservation){
-        return function(){
-            client.createEquipmentIo({type:"checkout",project:this.props.params.id,reservation:reservation._id},function(err,id){
-                visit("/projects/"+this.props.params.id+"/checkouts/"+id);
-            }.bind(this));            
-        }.bind(this)
+    async checkoutReservation(reservation){
+        var id = await client.createEquipmentIo({type:"checkout",project:this.props.params.id,reservation:reservation._id});
+        visit("/projects/"+this.props.params.id+"/checkouts/"+id);
     }
 
     deleteReservation(reservation){
-        return function(){
-            this.confirm("Reservation löschen","Löschen","diese Reservation löschen möchten","confirmDeleteReservation",reservation._id);
-        }.bind(this)        
+        this.confirm("Reservation löschen","Löschen","diese Reservation löschen möchten","confirmDeleteReservation",reservation._id);    
     }
     
-    confirmDeleteReservation(reservation){
-        client.deleteReservation(this.props.params.id,reservation,function(){
-            this.loadData();
-        }.bind(this));
+    async confirmDeleteReservation(reservation){
+        await client.deleteReservation(this.props.params.id,reservation);
+        this.loadData();
     }
     
     createRental(){
         visit("/rentals/newrequest",{project:this.props.params.id});
     }
     
-    createCheckout(){
-        client.createEquipmentIo({type:"checkout",project:this.props.params.id},function(err,id){
-            visit("/projects/"+this.props.params.id+"/checkouts/"+id);
-        }.bind(this));
+    async createCheckout(){
+        var id = await client.createEquipmentIo({type:"checkout",project:this.props.params.id});
+        visit("/projects/"+this.props.params.id+"/checkouts/"+id);
     }
     
-    createCheckin(){
-        client.createEquipmentIo({type:"checkin",project:this.props.params.id},function(err,id){
-            visit("/projects/"+this.props.params.id+"/checkins/"+id);
-        }.bind(this))
+    async createCheckin(){
+        var id = await client.createEquipmentIo({type:"checkin",project:this.props.params.id});
+        visit("/projects/"+this.props.params.id+"/checkins/"+id);
     }
     
-    editIo(io){
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/projects/"+this.props.params.id+"/"+io.type+"s/"+io._id)
-        }.bind(this);
+    editIo(io,e){
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        visit("/projects/"+this.props.params.id+"/"+io.type+"s/"+io._id)
     }
     
     deleteIo(io){
-        return function(){
-            this.confirm("Entwurf löschen","Löschen", "diesen Entwurf löschen möchten", "confirmDeleteIo",io._id );
-        }.bind(this);
+        this.confirm("Entwurf löschen","Löschen", "diesen Entwurf löschen möchten", "confirmDeleteIo",io._id );
     }
     
-    confirmDeleteIo(io){    
-        client.deleteEquipmentIo(io,function(){
-            this.loadData();
-        }.bind(this));
+    async confirmDeleteIo(io){    
+        await client.deleteEquipmentIo(io);
+        this.loadData();
     }
       
-    finish(){
-        client.finishProject(this.state.item._id,function(err){
-            if(err) return;
-            this.state.item.status = "finished";
-            this.update();
-        }.bind(this));
+    async finish(){
+        await client.finishProject(this.state.item._id);
+        this.state.item.status = "finished";
+        this.update();
     }
 
     cancel(){
         history.back();
     }
 
-    save(){
-        client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,remark:this.state.item.remark||""},function(err){
-            if(err) return true;
-            back(true);
-        });
+    async save(){
+        await client.updateProject(this.state.item._id,{name:this.state.item.name,start:this.state.item.start,end:this.state.item.end,remark:this.state.item.remark||""});
+        back(true);
     }    
     
     createConfirmDialog(opts){

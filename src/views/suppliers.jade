@@ -17,10 +17,10 @@ append body
                     th
             tbody
                 each item in this.state.items
-                    tr(onClick=this.edit(item))
+                    tr(onClick=this.edit.bind(this,item))
                         td= (item.firstname?item.firstname+" ":"")+(item.lastname||"")
                         td
-                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
+                            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete.bind(this,item))
                                 i.glyphicon.glyphicon-trash
     if this.state.delete
         Modal
@@ -53,11 +53,9 @@ script(section="body").
         if(!this.state.items) this.findContacts();
     }
     
-    findContacts(){
-        client.findSuppliers({search:this.state.search},function(err,items){
-            this.state.items = items;
-            this.update();
-        }.bind(this));
+    async findContacts(){
+        this.state.items = await client.findSuppliers({search:this.state.search});
+        this.update();
     }
 
     search(e){
@@ -70,25 +68,19 @@ script(section="body").
         this.update();
     }
 
-    create(id){
-        client.createSupplier(id,function(err){
-            if(err) return;
-            visit("/suppliers/"+id);
-        });
+    async create(id){
+        await client.createSupplier(id);
+        visit("/suppliers/"+id);
     }
 
-    edit(item){
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/suppliers/"+item._id)
-        }        
+    edit(item,e){
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        visit("/suppliers/"+item._id)       
     }
 
     delete(item){
-        return function(){
-            this.state.delete = item;
-            this.update();
-        }.bind(this)
+        this.state.delete = item;
+        this.update();
     }
 
     cancelDelete(){
@@ -96,17 +88,15 @@ script(section="body").
         this.update();
     }
     
-    confirmDelete(){
-        var self = this;
+    async confirmDelete(){
         var del = this.state.delete;
         delete this.state.delete;
-        client.deleteSupplier(del._id,function(err){
-            if(err){
-                self.state.error = err.code;
-            }else{
-                delete self.state.items;
-            }
-            self.update();
-            self.findContacts();
-        })
+        try{
+            await client.deleteSupplier(del._id);
+            this.findContacts();
+            delete this.state.items;
+        }catch(err){
+            this.state.error = err.code;
+        }
+        this.update();
     }

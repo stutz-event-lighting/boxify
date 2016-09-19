@@ -19,8 +19,6 @@ require("babel-polyfill")
 var page = pug.compile(fs.readFileSync(path.resolve(__dirname,"../views/page.jade")));
 
 var Boxify = module.exports = function Boxify(config){
-    var self = this;
-
     this.config = config;
     this.app = new koa();
     this.modules = {};
@@ -52,9 +50,9 @@ var Boxify = module.exports = function Boxify(config){
     }));
 
     this.app.use(async function(ctx,next){
-        ctx.app = self;
+        ctx.app = this;
         await next();
-    });
+    }.bind(this));
 
     this.app.use(mount("/api",require("./api")));
 
@@ -87,11 +85,10 @@ var Boxify = module.exports = function Boxify(config){
 }
 
 Boxify.prototype.addRoute = function(path,componentPath){
-    var self = this;
     this.app.use(route.get(path,async function(ctx){
         ctx.set("Content-Type","text/html");
-        ctx.body = page({modules:self.moduleclients});
-    }));
+        ctx.body = page({modules:this.moduleclients});
+    }.bind(this)));
 }
 
 Boxify.prototype.addPermission = function(id,name){

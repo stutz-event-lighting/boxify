@@ -56,8 +56,7 @@ script(section="body").
 		}))
 	}
 	
-	logout(){
-		client.deleteSession(function(){
-			location.reload();
-		})
+	async logout(){
+		await client.deleteSession();
+		location.reload();
 	}

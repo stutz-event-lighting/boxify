@@ -54,24 +54,22 @@ script(section="body").
         this.focusTypeField();
     }
     
-    findTypes(input,cb){
-        client.findEquipmentTypes({search:input},function(err,types){
-            cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
-        });
+    async findTypes(input,cb){
+        var types = await client.findEquipmentTypes({search:input});
+        return {options:types.map(function(type){return {value:type._id,label:type.name}})}
     }
     
-    onEquipmenttypeChanged(value){
+    async onEquipmenttypeChanged(value){
         if(this.state.type && this.state.type._id == value.value) return;
-        client.getEquipmentTypeItems(value.value,function(err,stock){
-            var type = this.state.type = {_id:value.value,name:value.label,stock:stock}
-            if(type.stock.length && this.props.supplier == "own"){
-                type.value = type.stock[0].id;
-            }else{
-                type.value = "1";
-            }
-            this.forceUpdate();
-            this.focusCountField();
-        }.bind(this))
+        var stock = await client.getEquipmentTypeItems(value.value);
+        var type = this.state.type = {_id:value.value,name:value.label,stock:stock}
+        if(type.stock.length && this.props.supplier == "own"){
+            type.value = type.stock[0].id;
+        }else{
+            type.value = "1";
+        }
+        this.forceUpdate();
+        this.focusCountField();
     }
     
     onValueChanged(e){

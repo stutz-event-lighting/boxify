@@ -126,10 +126,10 @@ append body
                                 each item in this.state.items
                                     - (function(item){
                                     tr
-                                        td(onClick=this.editItem(item))= this.state.item.name+" "+item.id
-                                        td(onClick=this.editItem(item)) 12.12.2012
+                                        td(onClick=this.editItem.bind(this,item))= this.state.item.name+" "+item.id
+                                        td(onClick=this.editItem.bind(this,item)) 12.12.2012
                                         td
-                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem(item))
+                                            button.btn.btn-default.btn-xs.pull-right(onClick=this.deleteItem.bind(this,item))
                                                 i.glyphicon.glyphicon-trash
                                     - }).bind(this)(item)
             .row
@@ -253,11 +253,11 @@ script.
     }
     
 script(section="body").
-    getNeededPermissions (){
+    getNeededPermissions(){
         return ["equipment_read"];
     }
     
-    componentDidMount (){
+    componentDidMount(){
         this.state.start = moment().startOf("month").toDate().getTime();
         this.state.end = moment().endOf("month").toDate().getTime();
         if(!this.state.item) this.loadEquipmentType();
@@ -267,54 +267,42 @@ script(section="body").
         this.loadGraph();
     }
     
-    loadEquipmentType(){
-        client.getEquipmentType(this.props.params.type,function(err,item){
-            this.state.item = item;
-            this.state.weight = (item.weight||"")+"";
-            this.state.weightOk = true;
-            this.state.length = (item.length||"")+"";
-            this.state.lengthOk = true;
-            this.state.width = (item.width||"")+"";
-            this.state.widthOk = true;
-            this.state.height = (item.height||"")+"";
-            this.state.heightOk = true;
-            this.state.rent = (item.rent||"")+"";
-            this.state.rentOk = true;
-            this.state.factoryPrice = (item.factoryPrice||"")+"";
-            this.state.factoryPriceOk = true;
-            this.update();
-        }.bind(this));
+    async loadEquipmentType(){
+        var item = await client.getEquipmentType(this.props.params.type);
+        this.state.item = item;
+        this.state.weight = (item.weight||"")+"";
+        this.state.weightOk = true;
+        this.state.length = (item.length||"")+"";
+        this.state.lengthOk = true;
+        this.state.width = (item.width||"")+"";
+        this.state.widthOk = true;
+        this.state.height = (item.height||"")+"";
+        this.state.heightOk = true;
+        this.state.rent = (item.rent||"")+"";
+        this.state.rentOk = true;
+        this.state.factoryPrice = (item.factoryPrice||"")+"";
+        this.state.factoryPriceOk = true;
+        this.update();
     }
     
-    loadItems(){
-        client.getEquipmentTypeItems(this.props.params.type,function(err,items){
-            if(err) return;
-            this.state.items = items;
-            this.update();
-        }.bind(this));
+    async loadItems(){
+        this.state.items = await client.getEquipmentTypeItems(this.props.params.type);
+        this.update();
     }
     
-    loadStock(){
-        client.getEquipmentTypeStock(this.props.params.type,false,function(err,stock){
-            if(err) return;
-            this.state.stock = stock;
-            this.update();
-        }.bind(this));
+    async loadStock(){
+        this.state.stock = await client.getEquipmentTypeStock(this.props.params.type,false);
+        this.update();        
     }
     
-    loadCategories(){
-        client.getEquipmentCategories(function(err,categories){
-            if(err) categories = [];
-            this.state.categories = categories;
-            this.update();
-        }.bind(this));
+    async loadCategories(){
+        this.state.categories = await client.getEquipmentCategories();
+        this.update();
     }
     
-    loadGraph(){
-        client.getEquipmentTypeGraph(this.props.params.type,0,0,function(err,graph){
-            this.state.graph = graph;
-            this.update();
-        }.bind(this))
+    async loadGraph(){
+        this.state.graph = await client.getEquipmentTypeGraph(this.props.params.type,0,0);
+        this.update();
     }
     
     getImagePath(){
@@ -446,47 +434,34 @@ script(section="body").
         this.update();
     }
 
-    confirmIncrease(){
-        var self = this;
+    async confirmIncrease(){
         if(/^[0-9]+$/.test(this.state.increase.count) && (this.state.increase.type=="add" || parseInt(this.state.increase.count,10) <= this.state.stock)){
-            client.increaseEquipmentCount(this.state.item._id,{type:this.state.increase.type,count:parseInt(this.state.increase.count,10)},function(err){
-                delete self.state.increase;
-                self.loadStock();
-            });
+            await client.increaseEquipmentCount(this.state.item._id,{type:this.state.increase.type,count:parseInt(this.state.increase.count,10)});
+            delete this.state.increase;
+            this.loadStock();
         }else{
             this.state.increase.countOk = false;
             this.update();
         }
     }
 
-    createItem(){
-        var self = this;
-        client.createEquipment(this.state.item._id,{},function(err,id){
-            if(err) return;
-            visit("/equipment/"+self.state.item._id+"/"+id);
-        });
+    async createItem(){
+        var id = await client.createEquipment(this.state.item._id,{});
+        visit("/equipment/"+this.state.item._id+"/"+id);
     }
 
     editItem(equipment){
-        var self = this;
-        return function(){
-            visit("/equipment/"+self.state.item._id+"/"+equipment.id);
-        }
+        visit("/equipment/"+this.state.item._id+"/"+equipment.id);
     }
 
-    deleteItem(item){
-        var self = this;
-        return function(){
-            client.deleteEquipment(self.state.item._id,item.id,function(err){
-                if(err) return;
-                for(var i = 0; i < self.state.items.length; i++){
-                    if(self.state.items[i].id == item.id){
-                        self.loadStock();
-                        self.loadItems();
-                        break;
-                    }
-                }
-            })
+    async deleteItem(item){
+        await client.deleteEquipment(this.state.item._id,item.id);
+        for(var i = 0; i < this.state.items.length; i++){
+            if(this.state.items[i].id == item.id){
+                this.loadStock();
+                this.loadItems();
+                break;
+            }
         }
     }
     
@@ -495,10 +470,9 @@ script(section="body").
         this.update();
     }
     
-    findTypes(input,cb){
-        client.findEquipmentTypes({search:input},function(err,types){
-            cb(err,{options:types.map(function(type){return {value:type._id,label:type.name}})})
-        });
+    async findTypes(input){
+        var types = await client.findEquipmentTypes({search:input});
+        return {options:types.map(function(type){return {value:type._id,label:type.name}})};
     }
     
     onEquipmenttypeChanged(id,selection){
@@ -506,12 +480,11 @@ script(section="body").
         this.update();
     }
     
-    findTags(name,cb){
-        client.findEquipmentTags(name,function(err,tags){
-            var options = tags.map(function(tag){return {value:tag,label:tag}});
-            if(name.length && tags.indexOf(name) < 0) options.push({value:name,label:"Tag '"+name+"' erstellen"});
-            cb(err,{options:options});
-        });
+    async findTags(name){
+        var tags = await client.findEquipmentTags(name);
+        var options = tags.map(function(tag){return {value:tag,label:tag}});
+        if(name.length && tags.indexOf(name) < 0) options.push({value:name,label:"Tag '"+name+"' erstellen"});
+        return {options:options};
     }
     
     onTagsChanged(tags){
@@ -610,8 +583,8 @@ script(section="body").
         history.back();
     }
 
-    save(){
-        client.saveEquipmentType(this.state.item._id,{
+    async save(){
+        await client.saveEquipmentType(this.state.item._id,{
             name:this.state.item.name,
             category:this.state.item.category,
             tags:this.state.item.tags,
@@ -627,8 +600,6 @@ script(section="body").
             factoryPrice:this.state.item.factoryPrice,
             image:this.state.item.image?this.state.item.image.url:undefined,
             contents:this.state.item.contents!==undefined?(this.state.item.contents instanceof Array?this.state.item.contents.map(function(type){return type._id}):null):undefined
-        },function(err){
-            if(err) return true;
-            back(true);
         });
+        back(true);
     }

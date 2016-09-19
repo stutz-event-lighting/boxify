@@ -20,15 +20,14 @@ script(section="body").
     }
 
     applyImage(e){
-        var self = this;
         var files = e.target.files;
         if(files.length && (files[0].type == "image/jpeg" || files[0].type == "image/jpg" || files[0].type == "image/png")){
             var reader = new FileReader();
             reader.onload = function(e) {
-                self.state.image = {file:files[0],url:e.target.result}
-                self.forceUpdate();
-                self.props.onChange(self.state.image);
-            }
+                this.state.image = {file:files[0],url:e.target.result}
+                this.forceUpdate();
+                this.props.onChange(this.state.image);
+            }.bind(this)
             reader.readAsDataURL(files[0]);
         }
     }

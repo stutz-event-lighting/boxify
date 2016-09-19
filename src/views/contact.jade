@@ -112,12 +112,9 @@ script(section="body").
         return this.props.params.contact;
     }
     
-    loadContact(){
-        client.getContact(this.getContactId(),function(err,contact){
-            if(err) return;
-            this.state.item = contact;
-            this.update();
-        }.bind(this));       
+    async loadContact(){
+        this.state.item = await client.getContact(this.getContactId());
+        this.update();
     }
     
     setValue(name,target){
@@ -205,7 +202,7 @@ script(section="body").
         history.back();
     }
     
-    save(){
+    async save(){
         var data = {
             type:this.state.item.type,
             salutation:this.state.item.salutation,
@@ -220,19 +217,13 @@ script(section="body").
             contacts:this.state.item.contacts,
             remark:this.state.item.remark,
         };
-        client.updateContact(this.getContactId(),data,function(err,id){
-            if(err) return;
-            if(this.state.item.image){
-                client.updateContactImage(this.getContactId(),{image:this.state.item.image.url},function(err){
-                    if(err) return;
-                    delete this.state.item.image;
-                    this.update();
-                    this.onSaved();
-                }.bind(this));
-            }else{
-                this.onSaved();
-            }
-        }.bind(this));        
+        await client.updateContact(this.getContactId(),data);
+        if(this.state.item.image){
+            await client.updateContactImage(this.getContactId(),{image:this.state.item.image.url});
+            delete this.state.item.image;
+            this.update();
+        }
+        this.onSaved();
     }
     
     onSaved(){

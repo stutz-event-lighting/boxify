@@ -21,8 +21,6 @@ module.exports = class Router extends React.Component{
             route.regexp = pathToRegexp(route.path,route.keys);
             this.routes.push(route);
         }
-
-        var self = this;
         var clearStateOnBack = false;
         var callbacks = {};
         var nextcallbackid = 1;
@@ -36,9 +34,9 @@ module.exports = class Router extends React.Component{
                 history.replaceState(state,undefined,location.pathname);
             }
             history.pushState(data||{},null,url);
-            self.state.state = data;
-            self.forceUpdate();
-        }
+            this.state.state = data;
+            this.forceUpdate();
+        }.bind(this)
 
         window.back = function(clear){
             if(clear){
@@ -61,9 +59,9 @@ module.exports = class Router extends React.Component{
                     callback(e.state);
                 }
             }
-            self.state.state = e.state||{};
-            self.forceUpdate();
-        }
+            this.state.state = e.state||{};
+            this.forceUpdate();
+        }.bind(this)
 
         this.onScan = function(code){
             if(!this.refs.component.handleScan || this.refs.component.handleScan(code)){

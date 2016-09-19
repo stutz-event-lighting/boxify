@@ -79,12 +79,10 @@ script(section="body").
         this.loadResults();
     }
     
-    loadResults(){
-        client.findProjects({search:this.state.search||"",finished:this.state.finished||false},function(err,items){
-            if(err) return;
-            this.state.items = items;
-            this.update();
-        }.bind(this));
+    async loadResults(){
+        var items = await client.findProjects({search:this.state.search||"",finished:this.state.finished||false});
+        this.state.items = items;
+        this.update();
     }
 
     search(e){
@@ -102,7 +100,6 @@ script(section="body").
     }
 
     create(){
-        var self = this;
         this.state.create = {name:"",start:moment({hour:20}).toDate().getTime(),end:moment({hour:20}).add(1,"days").toDate().getTime()};
         this.update();
     }
@@ -130,19 +127,14 @@ script(section="body").
         delete this.state.create;
         this.update();
     }
-    confirmCreate(){
-        var self = this;
+    async confirmCreate(){
+        var create = this.state.create;
+        if(!create.customer) return;       
         
-        var create = self.state.create;
-        if(!create.customer) return;
-        
-        
-        client.createProject(this.state.create,function(err,id){
-            if(err) return;
-            delete self.state.create;
-            self.update();
-            visit("/projects/"+id)
-        });
+        var id = await client.createProject(this.state.create);
+        delete this.state.create;
+        this.update();
+        visit("/projects/"+id)
     }
 
     edit(item){
@@ -164,11 +156,9 @@ script(section="body").
         this.update();
     }
     
-    confirmDelete(){
-        var self = this;
+    async confirmDelete(){
         var del = this.state.delete;
         delete this.state.delete;
-        client.deleteProject(del._id,function(err){
-            self.loadResults();
-        })
+        await client.deleteProject(del._id);
+        this.loadResults();
     }

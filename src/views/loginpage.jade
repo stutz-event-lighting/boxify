@@ -58,17 +58,16 @@ script(section="body").
         this.forceUpdate();
     }
     
-    login(){
+    async login(){
         if(!getLs("dontRememberEmail")) setLs("email",this.state.email);
         if(!this.state.email || !this.state.password) return;
-        client.createSession({email:this.state.email,password:this.state.password},function(err,sessionid){
-            if(err){
-                this.state.failed = true;
-                this.forceUpdate();
-            }else{
-                this.props.onLogin();
-            }            
-        }.bind(this));
+        try{
+            var sessionId = await client.createSession({email:this.state.email,password:this.state.password});
+            this.props.onLogin();
+        }catch(e){
+            this.state.failed = true;
+            this.forceUpdate();
+        }
     }
     
     checkEnter(e){

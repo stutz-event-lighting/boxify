@@ -91,12 +91,10 @@ script(section="body").
         this.forceUpdate();
     }
     
-    create(){
-        client.createContact(this.state.new,function(err,id){
-            if(err) return;
-            this.props.callback(id,(this.state.new.firstname?this.state.new.firstname+" ":"")+(this.state.new.lastname||""));
-            this.cancel();
-        }.bind(this))
+    async create(){
+        var id = await client.createContact(this.state.new);
+        this.props.callback(id,(this.state.new.firstname?this.state.new.firstname+" ":"")+(this.state.new.lastname||""));
+        this.cancel();
     }
     
     pick(){

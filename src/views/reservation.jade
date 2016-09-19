@@ -1,7 +1,6 @@
 extends ./base
 
 append body
-    - this.checkData();
     if this.state.data
         .container
             h2 Reservation
@@ -63,22 +62,25 @@ script(section="body").
         return ["projects_read"];
     }
     
-    checkData(){
-        var self = this;
-        if(this.state.data === undefined){
-            client.getReservation(this.props.params.project,this.props.params.reservation,function(err,data){
-                if(err) return;
-                self.state.data = data;
-                var itemlist = [];
-                data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-                for(var type in data.types){
-                    var category = data.categories[data.types[type].category];
-                    if(!category.types) category.types = [];
-                    category.types.push(type);                    
-                }
-                self.update();
-            });
+    constructor(props,context){
+        super(props,context);
+        this.componentWillReceiveProps(props);
+    }
+    componentWillReceiveProps(props){
+        this.props = props;
+        this.loadData();
+    }
+    async loadData(){
+        var data = await client.getReservation(this.props.params.project,this.props.params.reservation);
+        this.state.data = data;
+        var itemlist = [];
+        data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+        for(var type in data.types){
+            var category = data.categories[data.types[type].category];
+            if(!category.types) category.types = [];
+            category.types.push(type);                    
         }
+        this.update();
     }
     
     add(){
@@ -125,9 +127,7 @@ script(section="body").
         history.back();
     }
 
-    save(){
-        client.updateReservation(this.props.params.project,this.props.params.reservation,this.state.data.reservation.items,function(err){
-            if(err) return true;
-            back(true);
-        });
+    async save(){
+        await client.updateReservation(this.props.params.project,this.props.params.reservation,this.state.data.reservation.items);
+        back(true);
     }

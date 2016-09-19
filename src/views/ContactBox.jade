@@ -8,23 +8,21 @@ script(section="body").
         if(this.contact && this.contact.value == this.props.value){
             return this.contact;
         }
-        client.getContact(this.props.value,function(err,contact){
-            if(err) return;
+        client.getContact(this.props.value).then(function(contact){
             this.contact = {value:contact._id,label:(contact.firstname?contact.firstname+" ":"")+(contact.lastname||"")};
             this.forceUpdate();
-        }.bind(this));
+        }.bind(this));        
         return undefined;
     }
     
-    search(input,cb){
+    async search(input){
         if(typeof input == "object") return cb(null,{options:[]})
         var query = {search:input||""};
         if(this.props.role) query.role = this.props.role;
         if(this.props.type) query.type = this.props.type;
     
-        client.findContacts(query,function(err,contacts){
-            cb(err,{options:contacts.map(function(contacts){return {value:contacts._id,label:(contacts.firstname?contacts.firstname+" ":"")+(contacts.lastname||"")}})})
-        });
+        var contacts = await client.findContacts(query);
+        return {options:contacts.map(function(contacts){return {value:contacts._id,label:(contacts.firstname?contacts.firstname+" ":"")+(contacts.lastname||"")}})};
     }
     
     onChange(value){

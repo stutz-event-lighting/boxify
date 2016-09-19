@@ -1,323 +1,314 @@
 var cookie = require("cookies-js");
 var events = require("events");
 
-function Client(){
-    events.EventEmitter.call(this);
-    this.session = null;
-}
-
-Client.prototype = Object.create(events.EventEmitter.prototype);
-
-Client.prototype.fetch = function(url,data,cb){
-    var req = new XMLHttpRequest();
-    req.open(data?"POST":"GET",url);
-    req.setRequestHeader("Content-Type","application/json");
-    req.onreadystatechange = function(){
-        if(req.readyState == 4){
-            if(req.status != 200){
-                var err = new Error(req.status+" - "+req.statusMessage);
-                err.code = req.status;
-                cb(err);
-            }else{
-                cb(null,req.responseText);
-            }
-        }
+class Client extends events.EventEmitter{
+    constructor(){
+        super();
+        this.session = null;
     }
-    req.send(data);
-}
-Client.prototype.fetchJSON = function(url,data,cb){
-    this.fetch(url,data,function(err,data){
-        if(err) return cb(err);
-        try{
-            data = JSON.parse(data);
-        }catch(e){
-            return cb(new Error("Got invalid JSON"));
-        }
-        cb(null,data);
-    })
-}
 
-Client.prototype.createSession = function(data,cb){
-    this.fetchJSON("/api/session/create",JSON.stringify(data),function(err,session){
-        if(!err){
-            this.session = session;
-            cookie.set("session",this.session._id,{expires:60*60*24*365*100});
-        }
-        cb(err,session);
-    }.bind(this));
-}
+    async getResponse(url,opts){
+		opts = opts||{};
+		opts.credentials = "same-origin";
+		var response = await fetch(url,opts);
+		if(response.status != 200) {
+			var err = new Error(response.statusText);
+			err.code = response.status;
+			err.message = await response.text();
+			throw err;
+		};
+		return response;
+	}
+	async getText(url,opts){
+		var res = await this.getResponse(url,opts);
+		return await res.text();
+	}
+	async getJson(url,opts){
+		var data = await this.getText(url,opts);
+		try{
+			data = JSON.parse(data);
+		}catch(e){
+			throw new Error("Response was not valid JSON");
+		}
+		return data;
+	}
+	async execute(url,opts){
+		await this.getResponse(url,opts);
+	}
 
-Client.prototype.getSession = function(cb){
-    this.fetchJSON("/api/session",null,function(err,session){
-        this.session = session||null;
-        if(!session) cookie.expire("session");
+    async createSession(data){
+        var session = await this.getJson("/api/session/create",{methdo:"POST",body:JSON.stringify(data)});
+        this.session = session;
+        cookie.set("session",this.session._id,{expires:60*60*24*365*100});
+    }
+
+    async getSession(){
+        this.session = await this.getJson("/api/session")||null;
+        if(!this.session) cookie.expire("session");
         this.emit("sessionChange");
-        cb(err,session);
-    }.bind(this));
-}
+    }
 
-Client.prototype.deleteSession = function(cb){
-    if(!this.session) return cb(new Error("Not logged in"));
-    this.fetch("/api/session/delete",null,function(){
+    async deleteSession(){
+        if(!this.session) throw new Error("Not logged in");
+        await this.execute("/api/session/delete");
         delete this.session;
         cookie.expire("session");
-        cb();
-    }.bind(this));
-}
-
-Client.prototype.hasPermission = function(permission){
-    if(!this.session) return false;
-    return this.session.permissions.indexOf(permission) >= 0;
-}
-
-Client.prototype.hasPermissions = function(permissions){
-    if(!(permissions instanceof Array)) return true;
-    for(var i = 0; i < permissions.length; i++){
-        if(!this.hasPermission(permissions[i])) return false;
     }
-    return true;
-}
 
-Client.prototype.getEquipmentCategories = function(cb){
-    this.fetchJSON("/api/equipment/categories",null,cb);
-}
+    hasPermission(permission){
+        if(!this.session) return false;
+        return this.session.permissions.indexOf(permission) >= 0;
+    }
 
-Client.prototype.createEquipmentCategory = function(name,cb){
-    this.fetch("/api/equipment/categories/create",JSON.stringify({name:name}),cb);
-}
+    hasPermissions(permissions){
+        if(!(permissions instanceof Array)) return true;
+        for(var i = 0; i < permissions.length; i++){
+            if(!this.hasPermission(permissions[i])) return false;
+        }
+        return true;
+    }
 
-Client.prototype.updateEquipmentCategory = function(id,name,cb){
-    this.fetch("/api/equipment/categories/"+id,JSON.stringify({name:name}),cb);
-}
+    async getEquipmentCategories(){
+        return await this.getJson("/api/equipment/categories");
+    }
 
-Client.prototype.deleteEquipmentCategory = function(id,cb){
-    this.fetch("/api/equipment/categories/"+id+"/delete",null,cb);
-}
+    async createEquipmentCategory(name){
+        return await this.getText("/api/equipment/categories/create",{method:"POST",body:JSON.stringify({name:name})});
+    }
 
-Client.prototype.findEquipmentTags = function(name,cb){
-    this.fetchJSON("/api/equipment/tags/find",JSON.stringify({tag:name}),cb);
-}
-Client.prototype.renameEquipmentTag = function(oldname,newname,cb){
-    this.fetchJSON("/api/equipment/tags/"+oldname,JSON.stringify({tag:newname}),cb);
-}
+    async updateEquipmentCategory(id,name){
+        await this.execute("/api/equipment/categories/"+id,{method:"POST",body:JSON.stringify({name:name})});
+    }
 
-Client.prototype.findEquipmentTypes = function(opts,cb){
-    this.fetchJSON("/api/equipment",JSON.stringify(opts),cb);
-}
+    async deleteEquipmentCategory(id){
+        await this.execute("/api/equipment/categories/"+id+"/delete");
+    }
 
-Client.prototype.createEquipmentType = function(opts,cb){
-    this.fetch("/api/equipment/create",JSON.stringify(opts),cb);
-}
+    async findEquipmentTags(name){
+        return await this.getJson("/api/equipment/tags/find",{method:"POST",body:JSON.stringify({tag:name})});
+    }
+    async renameEquipmentTag(oldname,newname){
+        return await this.getJson("/api/equipment/tags/"+oldname,{method:"POST",body:JSON.stringify({tag:newname})});
+    }
 
-Client.prototype.getEquipmentType = function(id,cb){
-    this.fetchJSON("/api/equipment/"+id,null,cb);
-}
+    async findEquipmentTypes(opts){
+        return await this.getJson("/api/equipment",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.getEquipmentTypeName = function(type,cb){
-    this.fetch("/api/equipment/"+type+"/name",null,cb);
-}
+    async createEquipmentType(opts){
+        return await this.getText("/api/equipment/create",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.saveEquipmentType = function(id,data,cb){
-    this.fetch("/api/equipment/"+id,JSON.stringify(data),cb);
-}
+    async getEquipmentType(id){
+        return await this.getJson("/api/equipment/"+id);
+    }
 
-Client.prototype.increaseEquipmentCount = function(id,data,cb){
-    this.fetch("/api/equipment/"+id+"/count",JSON.stringify(data),cb);
-}
+    async getEquipmentTypeName(type){
+        return await this.getText("/api/equipment/"+type+"/name");
+    }
 
-Client.prototype.getEquipmentTypeStock = function(id,loose,cb){
-    this.fetchJSON("/api/equipment/"+id+"/stock",JSON.stringify({loose:loose}),cb);
-}
+    async saveEquipmentType(id,data){
+        await this.execute("/api/equipment/"+id,{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.getEquipmentTypeItems = function(id,cb){
-    this.fetchJSON("/api/equipment/"+id+"/items",null,cb);
-}
+    async increaseEquipmentCount(id,data){
+        await this.execute("/api/equipment/"+id+"/count",{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.getEquipmentTypeGraph = function(id,from,to,cb){
-    this.fetchJSON("/api/equipment/"+id+"/graph/"+from+"-"+to,null,cb);
-}
+    async getEquipmentTypeStock(id,loose){
+        return await this.getJson("/api/equipment/"+id+"/stock",{method:"POST",body:JSON.stringify({loose:loose})});
+    }
 
-Client.prototype.createEquipment = function(type,opts,cb){
-    this.fetch("/api/equipment/"+type+"/create",JSON.stringify(opts),cb);
-}
+    async getEquipmentTypeItems(id){
+        return await this.getJson("/api/equipment/"+id+"/items");
+    }
 
-Client.prototype.getEquipment = function(type,id,cb){
-    this.fetchJSON("/api/equipment/"+type+"/"+id,null,cb);
-}
+    async getEquipmentTypeGraph(id,from,to){
+        return await this.getJson("/api/equipment/"+id+"/graph/"+from+"-"+to);
+    }
 
-Client.prototype.saveEquipment = function(type,id,data,cb){
-    this.fetch("/api/equipment/"+type+"/"+id,JSON.stringify(data),cb);
-}
+    async createEquipment(type,opts){
+        return await this.getText("/api/equipment/"+type+"/create",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.getEquipmentContainer = function(type,id,cb){
-    this.fetchJSON("/api/equipment/"+type+"/"+id+"/container",null,cb);
-}
+    async getEquipment(type,id){
+        return await this.getJson("/api/equipment/"+type+"/"+id);
+    }
 
-Client.prototype.deleteEquipment = function(type,id,cb){
-    this.fetch("/api/equipment/"+type+"/"+id+"/delete",null,cb);
-}
+    async saveEquipment(type,id,data){
+        await this.execute("/api/equipment/"+type+"/"+id,{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.deleteEquipmentType = function(id,cb){
-    this.fetch("/api/equipment/"+id+"/delete",null,cb);
-}
+    async getEquipmentContainer(type,id){
+        return await this.getJson("/api/equipment/"+type+"/"+id+"/container");
+    }
 
-Client.prototype.createContact = function(opts,cb){
-    this.fetch("/api/contacts/create",JSON.stringify(opts),cb);
-}
+    async deleteEquipment(type,id){
+        await this.execute("/api/equipment/"+type+"/"+id+"/delete");
+    }
 
-Client.prototype.findContacts = function(opts,cb){
-    this.fetchJSON("/api/contacts/find",JSON.stringify(opts),cb);
-}
+    async deleteEquipmentType(id){
+        await this.execute("/api/equipment/"+id+"/delete");
+    }
 
-Client.prototype.getContact = function(id,cb){
-    this.fetchJSON("/api/contacts/"+id,null,cb);
-}
+    async createContact(opts){
+        return await this.getText("/api/contacts/create",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.updateContact = function(id,data,cb){
-    this.fetch("/api/contacts/"+id,JSON.stringify(data),cb);
-}
+    async findContacts(opts){
+        return await this.getJson("/api/contacts/find",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.updateContactImage = function(id,image,cb){
-    this.fetch("/api/contacts/"+id+"/image",JSON.stringify(image),cb);
-}
+    async getContact(id){
+        return await this.getJson("/api/contacts/"+id);
+    }
 
-Client.prototype.createUser = function(contact,cb){
-    this.fetch("/api/users/create",JSON.stringify({contact:contact}),cb);
-}
+    async updateContact(id,data){
+        await this.execute("/api/contacts/"+id,{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.findUsers = function(opts,cb){
-    this.fetchJSON("/api/users/find",JSON.stringify(opts),cb);
-}
+    async updateContactImage(id,image){
+        await this.execute("/api/contacts/"+id+"/image",{method:"POST",body:JSON.stringify(image)});
+    }
 
-Client.prototype.getUser = function(id,cb){
-    this.fetchJSON("/api/users/"+id,null,cb);
-}
+    async createUser(contact){
+        return await this.getText("/api/users/create",{method:"POST",body:JSON.stringify({contact:contact})});
+    }
 
-Client.prototype.saveUser = function(id,data,cb){
-    this.fetch("/api/users/"+id+"/save",JSON.stringify(data),cb);
-}
+    async findUsers(opts){
+        return await this.getJson("/api/users/find",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.setPin = function(id,pin,cb){
-    this.fetch("/api/users/"+id+"/pin",JSON.stringify({pin:pin}),cb);
-}
+    async getUser(id){
+        return await this.getJson("/api/users/"+id);
+    }
 
-Client.prototype.setPassword = function(id,password,cb){
-    this.fetch("/api/users/"+id+"/password",JSON.stringify({password:password}),cb);
-}
+    async saveUser(id,data){
+        await this.execute("/api/users/"+id+"/save",{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.deleteUser = function(id,cb){
-    this.fetch("/api/users/"+id+"/delete",null,cb);
-}
+    async setPin(id,pin){
+        return await this.execute("/api/users/"+id+"/pin",{method:"POST",body:JSON.stringify({pin:pin})});
+    }
 
-Client.prototype.createCustomer = function(contact,cb){
-    this.fetch("/api/customers/create",JSON.stringify({contact:contact}),cb);
-}
+    async setPassword(id,password){
+        await this.execute("/api/users/"+id+"/password",{method:"POST",body:JSON.stringify({password:password})});
+    }
 
-Client.prototype.findCustomers = function(opts,cb){
-    this.fetchJSON("/api/customers/find",JSON.stringify(opts),cb);
-}
+    async deleteUser(id){
+        await this.execute("/api/users/"+id+"/delete");
+    }
 
-Client.prototype.deleteCustomer = function(id,cb){
-    this.fetch("/api/customers/"+id+"/delete",null,cb);
-}
+    async createCustomer(contact){
+        return await this.getJson("/api/customers/create",{method:"POST",body:JSON.stringify({contact:contact})});
+    }
 
-Client.prototype.findProjects = function(opts,cb){
-    this.fetchJSON("/api/projects",JSON.stringify(opts),cb);
-}
+    async findCustomers(opts){
+        return await this.getJson("/api/customers/find",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.createProject = function(opts,cb){
-    this.fetch("/api/projects/create",JSON.stringify(opts),cb);
-}
+    async deleteCustomer(id){
+        await this.execute("/api/customers/"+id+"/delete");
+    }
 
-Client.prototype.getProject = function(id,cb){
-    this.fetchJSON("/api/projects/"+id,null,cb);
-}
+    async findProjects(opts){
+        return await this.getJson("/api/projects",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.updateProject = function(id,opts,cb){
-    this.fetch("/api/projects/"+id,JSON.stringify(opts),cb);
-}
+    async createProject(opts){
+        return await this.getText("/api/projects/create",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.finishProject = function(id,cb){
-    this.fetch("/api/projects/"+id+"/finish",null,cb);
-}
+    async getProject(id){
+        return await this.getJson("/api/projects/"+id);
+    }
 
-Client.prototype.deleteProject = function(id,cb){
-    this.fetch("/api/projects/"+id+"/delete",null,cb);
-}
+    async updateProject(id,opts){
+        await this.execute("/api/projects/"+id,{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.createReservation = function(project,cb){
-    this.fetch("/api/projects/"+project+"/reservations/create",null,cb);
-}
+    async finishProject(id){
+        await this.execute("/api/projects/"+id+"/finish");
+    }
 
-Client.prototype.getReservation = function(project,id,cb){
-    this.fetchJSON("/api/projects/"+project+"/reservations/"+id,null,cb);
-}
+    async deleteProject(id){
+        await this.execute("/api/projects/"+id+"/delete");
+    }
 
-Client.prototype.updateReservation = function(project,id,items,cb){
-    this.fetch("/api/projects/"+project+"/reservations/"+id,JSON.stringify(items),cb);
-}
+    async createReservation(project){
+        return await this.getText("/api/projects/"+project+"/reservations/create");
+    }
 
-Client.prototype.deleteReservation = function(project,id,cb){
-    this.fetch("/api/projects/"+project+"/reservations/"+id+"/delete",null,cb);
-}
+    async getReservation(project,id){
+        return await this.getJson("/api/projects/"+project+"/reservations/"+id);
+    }
 
-Client.prototype.findRentals = function(opts,cb){
-    this.fetchJSON("/api/rentals",JSON.stringify(opts),cb);
-}
+    async updateReservation(project,id,items){
+        await this.execute("/api/projects/"+project+"/reservations/"+id,{method:"POST",body:JSON.stringify(items)});
+    }
 
-Client.prototype.getRental = function(id,opts,cb){
-    this.fetchJSON("/api/rentals/"+id+(opts.project?("?project="+opts.project):""),null,cb);
-}
+    async deleteReservation(project,id){
+        await this.execute("/api/projects/"+project+"/reservations/"+id+"/delete");
+    }
 
-Client.prototype.updateRental = function(id,opts,cb){
-    this.fetch("/api/rentals/"+id,JSON.stringify(opts),cb);
-}
+    async findRentals(opts){
+        return await this.getJson("/api/rentals",{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.updateRentalStatus = function(id,status,cb){
-    this.fetch("/api/rentals/"+id+"/updatestatus",JSON.stringify({status:status}),cb);
-}
+    async getRental(id,opts){
+        return await this.getJson("/api/rentals/"+id+(opts.project?("?project="+opts.project):""));
+    }
 
-Client.prototype.deleteRental = function(id,cb){
-    this.fetch("/api/rentals/"+id+"/delete",null,cb);
-}
+    async updateRental(id,opts){
+        await this.execute("/api/rentals/"+id,{method:"POST",body:JSON.stringify(opts)});
+    }
 
-Client.prototype.createEquipmentIo = function(data,cb){
-    this.fetch("/api/equipmentio/",JSON.stringify(data),cb);
-}
+    async updateRentalStatus(id,status){
+        await this.execute("/api/rentals/"+id+"/updatestatus",{method:"POST",body:JSON.stringify({status:status})});
+    }
 
-Client.prototype.getCheckout = function(id,cb){
-    this.fetchJSON("/api/equipmentio/"+id+"/checkout",null,cb);
-}
+    async deleteRental(id){
+        await this.execute("/api/rentals/"+id+"/delete");
+    }
 
-Client.prototype.getCheckin = function(id,cb){
-    this.fetchJSON("/api/equipmentio/"+id+"/checkin",null,cb);
-}
+    async createEquipmentIo(data){
+        return await this.getText("/api/equipmentio/",{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.updateEquipmentIo = function(id,data,cb){
-    this.fetch("/api/equipmentio/"+id,JSON.stringify(data),cb);
-}
+    async getCheckout(id){
+        return await this.getJson("/api/equipmentio/"+id+"/checkout");
+    }
 
-Client.prototype.finishEquipmentIo = function(id,cb){
-    this.fetch("/api/equipmentio/"+id+"/finish",null,cb);
-}
+    async getCheckin(id){
+        return await this.getJson("/api/equipmentio/"+id+"/checkin");
+    }
 
-Client.prototype.deleteEquipmentIo = function(id,cb){
-    this.fetch("/api/equipmentio/"+id+"/delete",null,cb);
-}
+    async updateEquipmentIo(id,data){
+        await this.execute("/api/equipmentio/"+id,{method:"POST",body:JSON.stringify(data)});
+    }
 
-Client.prototype.createSupplier = function(contact,cb){
-    this.fetch("/api/suppliers/create",JSON.stringify({contact:contact}),cb);
-}
+    async finishEquipmentIo(id){
+        await this.execute("/api/equipmentio/"+id+"/finish");
+    }
 
-Client.prototype.findSuppliers = function(opts,cb){
-    this.fetchJSON("/api/suppliers/find",JSON.stringify(opts),cb);
-}
+    async deleteEquipmentIo(id){
+        await this.execute("/api/equipmentio/"+id+"/delete");
+    }
 
-Client.prototype.getSupplier = function(id,cb){
-    this.fetchJSON("/api/suppliers/"+id,null,cb);
-}
+    async createSupplier(contact){
+        return await this.getText("/api/suppliers/create",{method:"POST",body:JSON.stringify({contact:contact})});
+    }
 
-Client.prototype.deleteSupplier = function(id,cb){
-    this.fetch("/api/suppliers/"+id+"/delete",null,cb);
+    async findSuppliers(opts){
+        return await this.getJson("/api/suppliers/find",{method:"POST",body:JSON.stringify(opts)});
+    }
+
+    async getSupplier(id){
+        return await this.getJson("/api/suppliers/"+id);
+    }
+
+    async deleteSupplier(id){
+        await this.execute("/api/suppliers/"+id+"/delete");
+    }
 }
 module.exports = new Client();

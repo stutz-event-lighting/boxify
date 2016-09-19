@@ -135,18 +135,16 @@ script(section="body").
         if(!this.state.data) this.loadData();
     }
     
-    loadData(){
-        client.getCheckin(this.props.params.checkin,function(err,data){
-            if(err) return;
-            this.state.data = data;
-            this.state.hideUnbooked = !this.state.data.draft;
-            var suppliers = {};
-            for(var type in this.state.data.types){
-                for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
-            }
-            this.state.suppliers = this.state.allsuppliers = Object.keys(suppliers);
-            this.update();
-        }.bind(this));
+    async loadData(){
+        var data = await client.getCheckin(this.props.params.checkin);
+        this.state.data = data;
+        this.state.hideUnbooked = !this.state.data.draft;
+        var suppliers = {};
+        for(var type in this.state.data.types){
+            for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
+        }
+        this.state.suppliers = this.state.allsuppliers = Object.keys(suppliers);
+        this.update();
     }   
     
     onPersonChanged(id){
@@ -190,7 +188,7 @@ script(section="body").
         bs.parse(code);
     }
     
-    handleScan(code){
+    async handleScan(code){
         if(!this.state.data.draft) return;
         if(code.kind == "EQ" && this.state.data.types[code.type]){
             if(!code.supplier) code.supplier = this.state.supplier;
@@ -201,10 +199,12 @@ script(section="body").
             };
             
             if(code.item){
-                this.getEntryContents(entry,[code.item],function(err){
-                    if(err) return this.playErrorSound();
+                try{
+                    await this.getEntryContents(entry,[code.item])
                     this.insertOrClose(entry,this.scanreceiver);
-                }.bind(this));
+                }catch(e){
+                    return this.playErrorSound();
+                }
             }else if(entry.supplier == "own" && this.state.data.types[entry.type].hasItems){
                 return this.playErrorSound();
             }else if(!this.scanreceiver){
@@ -256,34 +256,31 @@ script(section="body").
         this.update();
     }
     
-    getEntryContents(entry,item,cb){
-        client.getEquipment(entry.type,item,function(err,data){
-        
-            var item = data.item;
-        
-            if(err) return cb(err);
-            var type = this.state.data.types[entry.type];
+    async getEntryContents(entry,item){
+        var data = await client.getEquipment(entry.type,item);        
+        var item = data.item;
+    
+        if(err) return cb(err);
+        var type = this.state.data.types[entry.type];
 
-            var entries = [];
-            if(type.contents instanceof Array){
-                for(var i = 0; i < type.contents.length; i++){
-                    var t = type.contents[i];
-                    var subentry = {
-                        supplier:entry.supplier,
-                        type:t,
-                        count:item.contents[t]?item.contents[t].count:0
-                    };
-                    if(this.state.data.types[t].hasItems){
-                        subentry.items = {};
-                        subentry.count = 0;
-                    }
-                    entries.push(subentry);
+        var entries = [];
+        if(type.contents instanceof Array){
+            for(var i = 0; i < type.contents.length; i++){
+                var t = type.contents[i];
+                var subentry = {
+                    supplier:entry.supplier,
+                    type:t,
+                    count:item.contents[t]?item.contents[t].count:0
+                };
+                if(this.state.data.types[t].hasItems){
+                    subentry.items = {};
+                    subentry.count = 0;
                 }
+                entries.push(subentry);
             }
-            if(!entry.items) entry.items = {};
-            entry.items[item.id] = entries;
-            cb();
-        }.bind(this))        
+        }
+        if(!entry.items) entry.items = {};
+        entry.items[item.id] = entries;     
     }
     
     calculateEntryTotal(entry,total){
@@ -376,7 +373,7 @@ script(section="body").
         }.bind(this);
     }
     
-    applyContents(entry){
+    async applyContents(entry){
         for(var item in entry.items){
             item = parseInt(item,10);
             var contents = {};
@@ -388,7 +385,7 @@ script(section="body").
                     this.applyContents(subitem);
                 }
             }
-            client.saveEquipment(entry.type,item,{contents:contents},function(){})
+            await client.saveEquipment(entry.type,item,{contents:contents})
         }
     }
     
@@ -400,7 +397,7 @@ script(section="body").
         history.back();
     }
 
-    save(){
+    async save(){
         var data = {};
         for(var type in this.state.data.types){
             var t = this.state.data.types[type];
@@ -417,15 +414,10 @@ script(section="body").
                 };
             }
         }
-    
-        client.updateEquipmentIo(this.props.params.checkin,{person:this.state.data.person,items:data,history:this.state.data.history},function(err){
-            if(err) return true;
-        });
+        await client.updateEquipmentIo(this.props.params.checkin,{person:this.state.data.person,items:data,history:this.state.data.history});
     }
     
-    finish(){
-        client.finishEquipmentIo(this.props.params.checkin,function(err){
-            if(err) return true;
-            history.back();
-        });
+    async finish(){
+        await client.finishEquipmentIo(this.props.params.checkin);
+        history.back();
     }

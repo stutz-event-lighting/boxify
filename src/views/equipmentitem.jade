@@ -123,30 +123,24 @@ script(section="body").
         if(!this.state.type) this.loadType();
     }
     
-    loadItem(){
-        var self = this;
-        client.getEquipment(this.props.params.type,this.props.params.id,function(err,data){
-            if(err) return;
-            self.state.item = data.item;
-            self.state.logs = data.logs;
-            self.state.location = data.location;
-            self.state.container = data.container;
-            for(var type in self.state.item.contents){
-                self.state.item.contents[type].newcount = self.state.item.contents[type].count;
-                if(self.state.item.contents[type].ids){
-                    self.state.item.contents[type].newids = JSON.parse(JSON.stringify(self.state.item.contents[type].ids));
-                }
+    async loadItem(){
+        var data  = await client.getEquipment(this.props.params.type,this.props.params.id);
+        this.state.item = data.item;
+        this.state.logs = data.logs;
+        this.state.location = data.location;
+        this.state.container = data.container;
+        for(var type in this.state.item.contents){
+            this.state.item.contents[type].newcount = this.state.item.contents[type].count;
+            if(this.state.item.contents[type].ids){
+                this.state.item.contents[type].newids = JSON.parse(JSON.stringify(this.state.item.contents[type].ids));
             }
-            self.update();
-        });
+        }
+        this.update();
     }
     
-    loadType(){
-        client.getEquipmentType(this.props.params.type,function(err,data){
-            if(err) return;
-            this.state.type = data;
-            this.update();
-        }.bind(this));
+    async loadType(){
+        this.state.type = await client.getEquipmentType(this.props.params.type);
+        this.update();
     }
     
     onSerialNumberChange(e){
@@ -168,7 +162,7 @@ script(section="body").
         this.update();
     }
     
-    handleScan(code){
+    async handleScan(code){
         if(!code.count) code.count = 1;
         if(this.state.remove){
             if(!this.state.item.contents[code.type]){
@@ -196,41 +190,42 @@ script(section="body").
                 if(allowed.indexOf(parseInt(code.type,10)) < 0) return this.playErrorSound();
             }
             if(code.item){
-                client.getEquipmentContainer(code.type,code.item,function(err,container){
-                    if(err) return this.playErrorSound();
+                try{
+                    var container = await client.getEquipmentContainer(code.type,code.item);
                     if(this.state.item.contents[code.type] && this.state.item.contents[code.type].newids && this.state.item.contents[code.type].newids.indexOf(code.item) >= 0) return this.playErrorSound();
                     if(container && container != this.props.params.id) return this.playErrorSound();                    
-                    this.continueAddingItems(code);
-                }.bind(this))
+                    await this.continueAddingItems(code);
+                }catch(e){
+                    return this.playErrorSound();
+                }
             }else{
-                client.getEquipmentTypeStock(code.type,true,function(err,count){
-                    if(err) return this.playErrorSound();
+                try{
+                    var count = await client.getEquipmentTypeStock(code.type,true);                    
                     count += this.state.item.contents[code.type]?(this.state.item.contents[code.type].count||0):0;
                     if(code.count > count) code.count = count;
-                    this.continueAddingItems(code);
-                }.bind(this))
+                    await this.continueAddingItems(code);
+                }catch(e){
+                    return this.playErrorSound();
+                }
             }
         }
     }
     
-    continueAddingItems(code){   
+    async continueAddingItems(code){   
         if(!this.state.item.contents[code.type]){
-            client.getEquipmentTypeName(code.type,function(err,name){
-                if(err) return this.playErrorSound();
+            try{
+                var name = await client.getEquipmentTypeName(code.type);
                 this.state.item.contents[code.type] = {name:name};
-                next.call(this);
-            }.bind(this))
-        }else{
-            next.call(this);
-        }
-        function next(){
-            this.state.item.contents[code.type].newcount = (this.state.item.contents[code.type].newcount||0)+code.count;
-            if(code.item){
-                if(!this.state.item.contents[code.type].newids) this.state.item.contents[code.type].newids = [];
-                this.state.item.contents[code.type].newids.push(code.item+"");
+            }catch(e){
+                return this.playErrorSound();
             }
-            this.update();
-        };    
+        }
+        this.state.item.contents[code.type].newcount = (this.state.item.contents[code.type].newcount||0)+code.count;
+        if(code.item){
+            if(!this.state.item.contents[code.type].newids) this.state.item.contents[code.type].newids = [];
+            this.state.item.contents[code.type].newids.push(code.item+"");
+        }
+        this.update();  
     }
     
     playErrorSound(){
@@ -241,7 +236,7 @@ script(section="body").
         history.back();
     }
 
-    save(){    
+    async save(){    
         var contents = {};
         for(var type in this.state.item.contents){
             var t = this.state.item.contents[type];
@@ -253,8 +248,6 @@ script(section="body").
             }
         }
     
-        client.saveEquipment(this.state.item.type,this.state.item.id,{remark:this.state.item.remark,serialnumber:this.state.item.serialnumber||"",contents:contents},function(err){
-            if(err) return true;
-            history.back();
-        });
+        await client.saveEquipment(this.state.item.type,this.state.item.id,{remark:this.state.item.remark,serialnumber:this.state.item.serialnumber||"",contents:contents});
+        history.back();
     }

@@ -8,14 +8,14 @@ var localize = require("react-widgets/lib/localizers/globalize");
 require("moment/locale/de");
 require("globalize/lib/cultures/globalize.culture.de-CH");
 require("babel-polyfill");
+require("whatwg-fetch");
 
 moment.locale("de-CH");
 globalize.culture("de-CH");
 localize(globalize);
 
-window.onload = function(){
-    client.getSession(function(){
-        var component = React.createFactory(Router)({});
-        ReactDOM.render(component,document.body)
-    });
+window.onload = async function(){
+    await client.getSession();
+    var component = React.createFactory(Router)({});
+    ReactDOM.render(component,document.body)
 }

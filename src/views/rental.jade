@@ -1,7 +1,6 @@
 extends ./base
 
 append body
-    - this.checkData();
     if this.state.data
         .container
             h2 Zumiete
@@ -90,37 +89,40 @@ script.
     var moment = require("moment");
     var Modal = require("./Modal");
     var ContactBox = require("./ContactBox");
-script(section="body").    
+script(section="body").
+    constructor(props,context){
+        super(props,context);
+        this.componentWillReceiveProps(props);
+    }
+    componentWillReceiveProps(props){
+        this.props = props;
+        this.loadData();
+    }
     getNeededPermissions(){
         return ["rentals_read"];
     }
     
-    checkData(){
-        var self = this;
-        if(this.state.data === undefined){
-            var opts = {};
-            if(this.state.project) opts.project = this.state.project;
-            client.getRental(this.props.params.rental,opts,function(err,data){
-                if(err) return;
-                self.state.data = data;
-                if(!self.state.data.rental){
-                    self.state.data.rental = {
-                        name:"",
-                        supplier:null,
-                        status:self.props.params.rental=="newrequest"?"requested":(self.props.params.rental=="newbooking"?"booked":"received")
-                    }                    
-                }
-                if(!self.state.data.rental.delivery) self.state.data.rental.delivery = moment({hour:20}).toDate().getTime();
-                if(!self.state.data.rental.return) self.state.data.rental.return = moment({hour:20}).add(1,"days").toDate().getTime();
-                data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-                for(var type in data.types){
-                    var category = data.categories[data.types[type].category];
-                    if(!category.types) category.types = [];
-                    category.types.push(type);                    
-                }
-                self.update();
-            });
+    async loadData(){
+        var opts = {};
+        if(this.state.project) opts.project = this.state.project;
+        var data = await client.getRental(this.props.params.rental,opts);
+        this.state.data = data;
+        if(!this.state.data.rental){
+            this.state.data.rental = {
+                name:"",
+                supplier:null,
+                status:this.props.params.rental=="newrequest"?"requested":(this.props.params.rental=="newbooking"?"booked":"received")
+            }                    
         }
+        if(!this.state.data.rental.delivery) this.state.data.rental.delivery = moment({hour:20}).toDate().getTime();
+        if(!this.state.data.rental.return) this.state.data.rental.return = moment({hour:20}).add(1,"days").toDate().getTime();
+        data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+        for(var type in data.types){
+            var category = data.categories[data.types[type].category];
+            if(!category.types) category.types = [];
+            category.types.push(type);                    
+        }
+        this.update();
     }
     
     onNameChange(e){
@@ -183,27 +185,24 @@ script(section="body").
         }.bind(this);
     }
     
-    book(){
-        client.updateRentalStatus(this.props.params.rental,"booked",function(err){
-            back(true);
-        })
+    async book(){
+        await client.updateRentalStatus(this.props.params.rental,"booked");
+        back(true);
     }
-    receive(){
-        client.updateRentalStatus(this.props.params.rental,"received",function(err){
-            back(true);
-        })
+    async receive(){
+        await client.updateRentalStatus(this.props.params.rental,"received");
+        back(true);
     }
-    doreturn(){
-        client.updateRentalStatus(this.props.params.rental,"returned",function(err){
-            back(true);
-        })
+    async doreturn(){
+        await client.updateRentalStatus(this.props.params.rental,"returned");
+        back(true);
     }
 
     cancel(){
         history.back();
     }
 
-    save(){
+    async save(){
         var items = {};
         for(var type in this.state.data.types){
             if(this.state.data.types[type].count) items[type] = {count:this.state.data.types[type].count,ids:this.state.data.types[type].ids};
@@ -218,8 +217,6 @@ script(section="body").
             items:items
         };
                
-        client.updateRental(this.props.params.rental,rental,function(err){
-            if(err) return true;
-            back(true);
-        });
+        await client.updateRental(this.props.params.rental,rental);
+        back(true);
     }

@@ -11,10 +11,10 @@ append body
                     th Name
             tbody
                 each user in this.state.users
-                    tr(onClick=this.edit(user))
+                    tr(onClick=this.edit.bind(this,user))
                         td
                             = (user.firstname?user.firstname+" ":"")+(user.lastname||"")
-                            button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(user))
+                            button.btn.btn-default.btn-xs.pull-right(onClick=this.delete.bind(this,user))
                                 i.glyphicon.glyphicon-trash
 script.
     var client = require("../client");
@@ -24,39 +24,29 @@ script(section="body").
         return ["users_read"];
     }
     
-    componentDidMount(){
+    constructor(props,context){
+        super(props,context);
         this.findUsers();
     }
     
-    findUsers(){
-        client.findUsers({},function(err,users){
-            if(err) return;
-            this.state.users = users;
-            this.update();
-        }.bind(this))
+    async findUsers(){
+        this.state.users = await client.findUsers({});
+        this.update();
     }
     
-    create(id){
-        client.createUser(id,function(err){
-            if(err) return;
-            visit("/users/"+id);
-        });
+    async create(id){
+        await client.createUser(id);
+        visit("/users/"+id);
     }
     
-    edit(user){    
-        return function(e){
-            if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
-            visit("/users/"+user._id)
-        }        
+    edit(user,e){    
+        if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
+        visit("/users/"+user._id)  
     }
     
-    delete(user){
-        var self = this;
-        return function(){
-            client.deleteUser(user._id,function(err){
-                self.findUsers();
-            });
-        }
+    async delete(user){
+        await client.deleteUser(user._id);
+        this.findUsers();
     }
     
     

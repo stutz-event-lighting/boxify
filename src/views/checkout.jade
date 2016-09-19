@@ -139,27 +139,25 @@ script(section="body").
         if(!this.state.data) this.loadData();
     }
     
-    loadData(){
-        client.getCheckout(this.props.params.checkout,function(err,data){
-            if(err) return;
-            this.state.data = data;
-            this.calculateSuppliers();
-            var suppliers = {};
-            for(var type in this.state.data.types){
-                for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
-            }
-            this.state.allsuppliers = Object.keys(suppliers);
-            this.state.supplier = "own";
-            data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-            for(var type in data.types){
-                type = parseInt(type,10);
-                var category = data.categories[data.types[type].category];
-                if(!category.types) category.types = [];
-                category.types.push(type);
-            }
+    async loadData(){
+        var data = await client.getCheckout(this.props.params.checkout);
+        this.state.data = data;
+        this.calculateSuppliers();
+        var suppliers = {};
+        for(var type in this.state.data.types){
+            for(var supplier in this.state.data.types[type].suppliers) suppliers[supplier] = true;
+        }
+        this.state.allsuppliers = Object.keys(suppliers);
+        this.state.supplier = "own";
+        data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+        for(var type in data.types){
+            type = parseInt(type,10);
+            var category = data.categories[data.types[type].category];
+            if(!category.types) category.types = [];
+            category.types.push(type);
+        }
 
-            this.update();
-        }.bind(this));
+        this.update();
     }
     
     onPersonChanged(id){
@@ -231,14 +229,9 @@ script(section="body").
         }
     }
     
-    async getEntryContents(entry,items,cb){
+    async getEntryContents(entry,items){
         return await Promise.all(items.map(async function(item){
-            item = await new Promise(function(s,e){
-                client.getEquipment(entry.type,item,function(err,item){
-                    if(err) return e(err);
-                    s(item.item);
-                });
-            });
+            item = (await client.getEquipment(entry.type,item)).item;
             
             if(!entry.items) entry.items = {};
             
@@ -351,7 +344,7 @@ script(section="body").
         history.back();
     }
 
-    save(){
+    async save(){
         var data = {};
         for(var type in this.state.data.types){
             var t = this.state.data.types[type];
@@ -369,16 +362,12 @@ script(section="body").
             }
         }
     
-        client.updateEquipmentIo(this.props.params.checkout,{person:this.state.data.person,items:data,history:this.state.data.history},function(err){
-            if(err) return true;
-        });
+        await client.updateEquipmentIo(this.props.params.checkout,{person:this.state.data.person,items:data,history:this.state.data.history});
     }
     
-    finish(){
-        client.finishEquipmentIo(this.props.params.checkout,function(err){
-            if(err) return true;
-            history.back();
-        })
+    async finish(){
+        await client.finishEquipmentIo(this.props.params.checkout);
+        history.back();
     }
     
     addCheckedInformation(entry){

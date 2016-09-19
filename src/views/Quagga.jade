@@ -1,7 +1,6 @@
 #interactive.viewport(style="position:fixed;top:0px;bottom:0px;right:0px;left:0px;backgroundColor:rgba(0,0,0,0.7);zIndex:2000")
 script(section="body").
     componentDidMount(){    
-        var self = this;
         Quagga.init({
             inputStream: {
                 type : "LiveStream"
@@ -22,9 +21,9 @@ script(section="body").
             Quagga.offDetected(onDetected);
             Quagga.stop();
             var code = result.codeResult.code;
-            self.props.onScan(code);
+            this.props.onScan(code);
         }
-        Quagga.onDetected(onDetected);       
+        Quagga.onDetected(onDetected.bind(this));       
     }
 
     

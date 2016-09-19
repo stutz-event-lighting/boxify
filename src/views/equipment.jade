@@ -67,24 +67,14 @@ script(section="body").
     }
     
     async searchTypes(){
-        this.state.items = await new Promise(function(s,e){
-            client.findEquipmentTypes({search:this.state.search},function(err,items){
-                if(err) return e(err); 
-                s(items);
-            });
-        }.bind(this));
+        this.state.items = await client.findEquipmentTypes({search:this.state.search});
         this.update();
     }
     
     async loadCategories(){
-        this.state.categories = await new Promise(function(s,e){
-            client.getEquipmentCategories(function(err,categories){
-                if(err) return e(err);        
-                s(categories);
-            })
-        });
+        this.state.categories = await client.getEquipmentCategories();
         this.state.categoriesbyid = {};
-        for(var category of categories){
+        for(var category of this.state.categories){
             this.state.categoriesbyid[category._id] = category.name;                        
         }
         this.update();
@@ -101,12 +91,11 @@ script(section="body").
     }
 
     create(){
-        var self = this;
         this.state.create = {_id:"",name:""};
         this.update();
         setTimeout(function(){
-            self.refs.createid.focus();
-        },1);
+            this.refs.createid.focus();
+        }.bind(this),1);
     }
     validateCreateName(e){
         this.state.create.name = e.target.value;
@@ -116,16 +105,13 @@ script(section="body").
         delete this.state.create;
         this.update();
     }
-    confirmCreate(){
-        var self = this;
-        client.createEquipmentType(this.state.create,function(err,id){
-            if(err) return;
-            delete self.state.create;
-            self.update();
-            setTimeout(function(){
-                visit("/equipment/"+id)
-            },1)
-        });
+    async confirmCreate(){
+        var id = await client.createEquipmentType(this.state.create);
+        delete this.state.create;
+        this.update();
+        setTimeout(function(){
+            visit("/equipment/"+id)
+        },1)
     }
 
     edit(item){
@@ -146,12 +132,10 @@ script(section="body").
         delete this.state.delete;
         this.update();
     }
-    confirmDelete(){
-        var self = this;
+    async confirmDelete(){
         var del = this.state.delete;
         delete this.state.delete;
-        client.deleteEquipmentType(del._id,function(err){
-            delete self.state.items;
-            self.update();            
-        })
+        await client.deleteEquipmentType(del._id);
+        delete this.state.items;
+        this.update();
     }

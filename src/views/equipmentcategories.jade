@@ -1,7 +1,6 @@
 extends ./base
 
 append body
-    - this.checkData();
     .container
         h2 Equipmentkategorien
             .btn-toolbar.pull-right
@@ -22,7 +21,7 @@ append body
                         tr
                             td(onClick=this.edit(category))
                                 = category.name
-                                button.btn.btn-default.btn-xs.pull-right(onClick=this.delete(category))
+                                button.btn.btn-default.btn-xs.pull-right(onClick=this.delete.bind(this,category))
                                     i.glyphicon.glyphicon-trash
     if this.state.category
         Modal
@@ -55,15 +54,14 @@ script(section="body").
         return ["equipment_read"];
     }
     
-    checkData(){
-        var self = this;
-        if(!this.state.categories){
-            client.getEquipmentCategories(function(err,categories){
-                if(err) categories = [];
-                this.state.categories = categories;
-                this.update();
-            }.bind(this))
-        }
+    constructor(props,context){
+        super(props,context);
+        this.loadCategories();
+    }
+    
+    async loadCategories(){
+        this.state.categories = await client.getEquipmentCategories();
+        this.update();
     }
 
     addCategory(){
@@ -93,32 +91,25 @@ script(section="body").
         delete this.state.error;
         this.update();
     }
-    delete(category){
-        return function(){
-            client.deleteEquipmentCategory(category._id,function(err){
-                if(err){
-                    this.state.error = err.code;
-                }else{
-                    this.state.categories.splice(this.state.categories.indexOf(category),1);
-                }
-                this.update();
-            }.bind(this))
-        }.bind(this)
+    async delete(category){
+        try{
+            await client.deleteEquipmentCategory(category._id);
+            this.state.categories.splice(this.state.categories.indexOf(category),1);
+        }catch(err){
+            this.state.error = err.code;
+        }
+        this.update();
     }
     
-    save(){
+    async save(){
         if(this.state.category._id){
-            client.updateEquipmentCategory(this.state.category._id,this.state.category.name,function(err){
-                delete this.state.category;
-                this.update();
-            }.bind(this))
+            await client.updateEquipmentCategory(this.state.category._id,this.state.category.name);
         }else{
-            client.createEquipmentCategory(this.state.category.name,function(err,id){
-                this.state.categories.push({_id:id,name:this.state.category.name});
-                delete this.state.category;
-                this.update();
-            }.bind(this))
+            var id = await client.createEquipmentCategory(this.state.category.name);
+            this.state.categories.push({_id:id,name:this.state.category.name});            
         }
+        delete this.state.category;
+        this.update();
     }
     
     finish(){

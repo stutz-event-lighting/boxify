@@ -58,13 +58,12 @@ script(section="body").
         this.update();
     }
     
-    confirmChangePassword(){
+    async confirmChangePassword(){
         if(!this.state.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
         if(this.state.changepassword.password != this.state.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
-        client.setPassword(this.getContactId(),this.state.changepassword.password,function(err){
-            delete this.state.changepassword;
-            this.update();
-        }.bind(this))
+        await client.setPassword(this.getContactId(),this.state.changepassword.password);
+        delete this.state.changepassword;
+        this.update();
     }
     
     onSaved(){}

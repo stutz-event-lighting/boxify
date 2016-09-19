@@ -7,7 +7,7 @@ append properties
             if client.hasPermission(key)
                 div
                     label
-                        input(type="checkbox" checked=permission.allowed onChange=this.togglePermission(permission))
+                        input(type="checkbox" checked=permission.allowed onChange=this.togglePermission.bind(this,permission))
                         = " "+permission.name
 script.
     var client = require("../client");
@@ -22,36 +22,29 @@ script(section="body").
         return this.props.params.user;
     }    
         
-    loadContact(){
+    async loadContact(){
         super.loadContact();
-        client.getUser(this.getContactId(),function(err,user){
-            if(err) return;
-            this.state.user = user;
-            this.update();
-        }.bind(this));
+        this.state.user = await client.getUser(this.getContactId());
+        this.update();
     }
     
     cancel(){
         history.back();
     }
     
-    togglePermission(permission){
-        return function(e){
-            permission.allowed = e.target.checked;
-            this.update();
-        }.bind(this);        
+    togglePermission(permission,e){
+        permission.allowed = e.target.checked;
+        this.update();     
     }
     
-    onSaved(){
+    async onSaved(){
         var permissions = {};
         for(var permission in this.state.user.permissions){
             permissions[permission] = this.state.user.permissions[permission].allowed;
         }
         
-        client.saveUser(this.state.user._id,{
+        await client.saveUser(this.state.user._id,{
             permissions:permissions
-        },function(err){
-            if(err) return true;
-            history.back();
         });
+        history.back();
     }

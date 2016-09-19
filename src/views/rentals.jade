@@ -1,7 +1,6 @@
 extends ./base
 
 append body
-    - this.checkData();
     .container
         h2 Zumieten
         
@@ -68,7 +67,7 @@ mixin renderEntry(item)
         td= moment(item.return).format("LLL")
         td
             =item.objects
-            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete(item))
+            button.btn.btn-xs.btn-default.pull-right(onClick=this.delete.bind(this,item))
                 i.glyphicon.glyphicon-trash
 script.
     var client = require("../client");
@@ -78,15 +77,14 @@ script(section="body").
         return ["rentals_read"];
     }
     
-    checkData(){
-        var self = this;
-        if(!this.state.items){
-            client.findRentals({search:this.state.search},function(err,items){
-                if(err) return;
-                self.state.items = items;
-                self.update();
-            });
-        }
+    constructor(props,context){
+        super(props,context);
+        this.loadData();
+    }
+    
+    async loadData(){
+        this.state.items = await client.findRentals({search:this.state.search});
+        this.update();
     }
     
     createRequest(){
@@ -108,12 +106,7 @@ script(section="body").
         };    
     }
     
-    delete(item){
-        var self = this;
-        return function(e){
-            client.deleteRental(item._id,function(err){
-                delete self.state.items;
-                self.update();
-            })
-        };
+    async delete(item,e){
+        await client.deleteRental(item._id);
+        this.loadData();
     }

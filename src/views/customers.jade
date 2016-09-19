@@ -1,7 +1,6 @@
 extends ./base
 
 append body
-    - this.checkData();
     .container
         h1 Kunden
         .searchbar(style="display:flex")
@@ -50,27 +49,25 @@ script(section="body").
         return ["customers_read"];
     }
     
-    checkData(){
-        var self = this;
-        if(!this.state.items){
-            client.findCustomers({search:this.state.search},function(err,items){
-                self.state.items = items;
-                self.update();
-            });
-        }
+    constructor(props,context){
+        super(props,context);
+        this.searchCustomers();
     }
     
-    create(id){
-        client.createCustomer(id,function(err){
-            if(err) return;
-            visit("/customers/"+id);
-        });
+    
+    async searchCustomers(){
+        this.state.items = await client.findCustomers({search:this.state.search});
+        this.update();
+    }
+    
+    async create(id){
+        await client.createCustomer(id);
+        visit("/customers/"+id);
     }
 
     search(e){
         this.state.search = e.target.value;
-        delete this.state.items;
-        this.update();
+        this.searchCustomers();
     }
     
     dismiss(){
@@ -96,16 +93,14 @@ script(section="body").
         delete this.state.delete;
         this.update();
     }
-    confirmDelete(){
-        var self = this;
+    async confirmDelete(){
         var del = this.state.delete;
         delete this.state.delete;
-        client.deleteCustomer(del._id,function(err){
-            if(err){
-                self.state.error = err.code;
-            }else{
-                delete self.state.items;
-            }
-            self.update();
-        })
+        try{
+            await client.deleteCustomer(del._id);
+            delete this.state.items;
+        }catch(err){
+            this.state.error = err.code;
+        }
+        this.update();
     }
