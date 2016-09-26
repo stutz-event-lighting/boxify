@@ -11,13 +11,13 @@ module.exports = async function(ctx){
         .select("project time items history person")
         .populate("project","projectNumber customer name start end")
         .populate("person","firstname lastname emails phones")
-        .populate("customer","type salutation firstname lastname streetName streetNr zip city emails phones")
+        .populate("project.customer","type salutation firstname lastname streetName streetNr zip city emails phones")
     var articleIds = Object.keys(checkout.items).map(function(id){return parseFloat(id)});
 
     var articles = await ctx.app.db.EquipmentType.find({_id:{$in:articleIds}});
     var project = checkout.project;
     var person = checkout.person;
-    var customer = checkout.customer;
+    var customer = project.customer;
 
     var data = {
         project_id:project.projectNumber,
@@ -64,8 +64,8 @@ module.exports = async function(ctx){
     }
     data.totalVolume = (data.totalVolume/1000).toFixed(2)
     data.totalWeight = data.totalWeight.toFixed(2);
-    var tempalate = await fs.readFile(path.resolve(__dirname,"../../../word_templates/pickup_confirmation.docx"));
-    doc = new Template(template);
+    var template = await fs.readFile(path.resolve(__dirname,"../../../word_templates/pickup_confirmation.docx"));
+    var doc = new Template(template);
     doc.setData(data);
     doc.render();
     ctx.set("Content-Type","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
