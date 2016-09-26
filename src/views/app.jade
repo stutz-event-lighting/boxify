@@ -166,7 +166,7 @@ script.
 	}
 	
 	Component.router = new Router()
-		.add("main","/",require("./main"))
+		.add("main","",require("./main"))
 		.add("equipment","/equipment",require("./equipment"))
 		.add("equipmentcategories","/equipment/categories",require("./equipmentcategories"))
 		.add("equipmenttype","/equipment/:type",require("./equipmenttype"))

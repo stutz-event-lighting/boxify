@@ -27,33 +27,33 @@
                         .form-group
                             label.col-lg-2.control-label Anrede
                             .col-lg-10
-                                input.form-control(placeholder="Anrede" value=this.state.item.salutation onChange=this.setValue("salutation"))
+                                input.form-control(placeholder="Anrede" value=this.state.item.salutation onChange=this.setValue.bind(this,"salutation"))
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10(style="display:flex")
-                                input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.firstname onChange=this.setValue("firstname"))
-                                input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.lastname onChange=this.setValue("lastname"))
+                                input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.firstname onChange=this.setValue.bind(this,"firstname"))
+                                input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.lastname onChange=this.setValue.bind(this,"lastname"))
                     else
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10
-                                input.form-control(placeholder="Name" value=this.state.item.firstname onChange=this.setValue("firstname"))
+                                input.form-control(placeholder="Name" value=this.state.item.firstname onChange=this.setValue.bind(this,"firstname"))
                     .form-group
                         label.col-lg-2.control-label Adresse
                         .col-lg-10
                             div(style="marginBottom:15px;display:flex")
-                                input.form-control(placeholder="Strasse" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.streetName onChange=this.setValue("streetName"))
-                                input.form-control(placeholder="Hausnummer" style="width:25%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.streetNr onChange=this.setValue("streetNr"))
+                                input.form-control(placeholder="Strasse" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.streetName onChange=this.setValue.bind(this,"streetName"))
+                                input.form-control(placeholder="Hausnummer" style="width:25%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.streetNr onChange=this.setValue.bind(this,"streetNr"))
                             div(style="marginBottom:15px;display:flex")
-                                input.form-control(placeholder="PLZ" style="width:25%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.zip onChange=this.setValue("zip"))
-                                input.form-control(placeholder="Ort" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.city onChange=this.setValue("city"))
+                                input.form-control(placeholder="PLZ" style="width:25%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.zip onChange=this.setValue.bind(this,"zip"))
+                                input.form-control(placeholder="Ort" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.city onChange=this.setValue.bind(this,"city"))
                     .form-group
                         label.col-lg-2.control-label E-Mail
                         .col-lg-10
                             each email in this.state.item.emails
                                 div(style="marginBottom:15px;display:flex")
-                                    input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=email.type onChange=this.setValue("type",email))
-                                    input.form-control(placeholder="E-Mail" style="flex:1;borderRight:0px;borderRadius:0px" value=email.email onChange=this.setValue("email",email))
+                                    input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=email.type onChange=this.setValue.bind(this,"type",email))
+                                    input.form-control(placeholder="E-Mail" style="flex:1;borderRight:0px;borderRadius:0px" value=email.email onChange=this.setValue.bind(this,"email",email))
                                     .btn.btn-default(style="borderRight:0px;borderRadius:0px;"+(email.standard?"color:orange":"") onClick=this.setEmailAsStandard.bind(this,email))
                                         i.glyphicon.glyphicon-star
                                     .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removeEmail.bind(this,email))
@@ -66,8 +66,8 @@
                         .col-lg-10
                             each phone in this.state.item.phones
                                 div(style="marginBottom:15px;display:flex")
-                                    input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=phone.type onChange=this.setValue("type",phone))
-                                    input.form-control(placeholder="Nummer" style="flex:1;borderRight:0px;borderRadius:0px" value=phone.number onChange=this.setValue("number",phone))
+                                    input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=phone.type onChange=this.setValue.bind(this,"type",phone))
+                                    input.form-control(placeholder="Nummer" style="flex:1;borderRight:0px;borderRadius:0px" value=phone.number onChange=this.setValue.bind(this,"number",phone))
                                     .btn.btn-default(style="borderRight:0px;borderRadius:0px;"+(phone.standard?"color:orange":"") onClick=this.setPhoneAsStandard.bind(this,phone))
                                         i.glyphicon.glyphicon-star
                                     .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removePhone.bind(this,phone))
@@ -83,7 +83,7 @@
                                     .input-group(style="marginBottom:15px")
                                         span.input-group-addon
                                             a(href="/contacts/"+contact.id)=contact.name
-                                        input.form-control(placeholder="Funktion" value=contact.type onChange=this.setValue("type",contact))
+                                        input.form-control(placeholder="Funktion" value=contact.type onChange=this.setValue.bind(this,"type",contact))
                                         span.input-group-btn
                                             .btn.btn-default(onClick=this.removeContact.bind(this,contact))
                                                 i.glyphicon.glyphicon-trash
@@ -91,7 +91,7 @@
                     .form-group
                         label.col-lg-2.control-label Kommentar
                         .col-lg-10
-                            TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.setValue("remark"))
+                            TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.setValue.bind(this,"remark"))
 
                 block properties
         block container

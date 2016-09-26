@@ -42,14 +42,18 @@ class Client extends events.EventEmitter{
 	}
 
     async createSession(data){
-        var session = await this.getJson("/api/session/create",{methdo:"POST",jsonBody:(data)});
+        var session = await this.getJson("/api/session/create",{method:"POST",jsonBody:(data)});
         this.session = session;
         cookie.set("session",this.session._id,{expires:60*60*24*365*100});
     }
 
     async getSession(){
-        this.session = await this.getJson("/api/session")||null;
-        if(!this.session) cookie.expire("session");
+        try{
+            this.session = await this.getJson("/api/session");
+        }catch(e){
+            this.session = null;
+            cookie.expire("session");
+        }
         this.emit("sessionChange");
     }
 
