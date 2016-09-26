@@ -56,7 +56,7 @@
                                 each type in types
                                     tr
                                         td= type._id
-                                        td= this.state.data.types[type._id].name
+                                        td= (type.manufacturer?type.manufacturer+" ":"")+type.name
                                         td(style="paddingTop:2px;paddingBottom:2px")
                                             if this.props.rental.indexOf("new") == 0
                                                 input.form-control.input-sm(value=(this.state.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem.bind(this,type._id) onFocus=this.selectCount.bind(this))

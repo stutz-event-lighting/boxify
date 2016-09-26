@@ -30,7 +30,7 @@
                                 each type in types
                                     tr
                                         td= type._id
-                                        td= this.types[type._id].name
+                                        td= (type.manufacturer?type.manufacturer+" ":"")+type.name
                                         td(style="paddingTop:2px;paddingBottom:2px")
                                             input.form-control.input-sm(value=this.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
                                         td
@@ -51,7 +51,7 @@
                                     each type in category.types
                                         if this.reservation.items[type] === undefined
                                             tr
-                                                td(onClick=this.addItem.bind(this,type._id,0))= type.name
+                                                td(onClick=this.addItem.bind(this,type._id,0))= (type.manufacturer?type.manufacturer+" ":"")+type.name
                     .modal-footer
                         button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
 script.
