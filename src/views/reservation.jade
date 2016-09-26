@@ -1,5 +1,5 @@
 .container
-    if this.state.data
+    if this.reservation
         h2 Reservation
             .btn-toolbar.pull-right
                 button.btn.btn-default(onClick=this.cancel.bind(this))
@@ -15,24 +15,27 @@
                 .btn-toolbar.pull-right(style="marginTop:18px")
                     .btn.btn-primary.pull-right(onClick=this.add.bind(this)) Hinzufügen
                     ScanButton.pull-left(onScan=this.handleScan.bind(this) ref="scanbutton" supplier="none")
-                table.table.table-striped.table-hover
-                    thead
-                        tr
-                            th ID
-                            th Name
-                            th Anzahl
-                            th
-                    tbody
-                        each type in this.state.data.types
-                            if this.state.data.reservation.items[type._id] !== undefined
+                each category in this.categories
+                    - var types = category.types.filter(t=>this.reservation.items[t._id] !== undefined)
+                    if types.length
+                        h4= category.name
+                        table.table.table-striped.table-hover
+                            thead
                                 tr
-                                    td= type._id
-                                    td= this.state.data.types[type._id].name
-                                    td(style="paddingTop:2px;paddingBottom:2px")
-                                        input.form-control.input-sm(value=this.state.data.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
-                                    td
-                                        .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem.bind(this,type._id))
-                                            i.glyphicon.glyphicon-trash
+                                    th ID
+                                    th Name
+                                    th Anzahl
+                                    th
+                            tbody
+                                each type in types
+                                    tr
+                                        td= type._id
+                                        td= this.types[type._id].name
+                                        td(style="paddingTop:2px;paddingBottom:2px")
+                                            input.form-control.input-sm(value=this.reservation.items[type._id]+"" style="max-width:100px" onChange=this.changeItem(type._id) onFocus=this.selectCount.bind(this))
+                                        td
+                                            .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem.bind(this,type._id))
+                                                i.glyphicon.glyphicon-trash
     if this.state.add
         .modal-backdrop(style="bottom:0px;display:block").fade.in
         .modal(style="display:block").fade.in
@@ -41,19 +44,20 @@
                     .modal-header
                         h2 Equipment hinzufügen
                     .modal-body(style="height:400px;overflowY:auto")
-                        each category in this.state.data.categories
+                        each category in this.categories
                             h4= category.name
                             table.table.table-striped
                                 tbody
-                                    each type in category.types                                
-                                        if this.state.data.reservation.items[type] === undefined
+                                    each type in category.types
+                                        if this.reservation.items[type] === undefined
                                             tr
-                                                td(onClick=this.addItem.bind(this,type,0))= this.state.data.types[type].name
+                                                td(onClick=this.addItem.bind(this,type._id,0))= type.name
                     .modal-footer
                         button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
 script.
     var client = require("../client");
     var ScanButton = require("./ScanButton");
+    var util = require("../util");
 script(section="body").    
     getNeededPermissions(){
         return ["projects_read"];
@@ -69,15 +73,17 @@ script(section="body").
         this.loadData();
     }
     async loadData(){
-        var data = await client.getReservation(this.props.project,this.props.reservation);
-        console.log("DATA",data)
-        this.state.data = data;
-        var itemlist = [];
-        data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-        for(var type in data.types){
-            var category = data.categories[data.types[type].category];
+        [this.reservation,this.types,this.categories] = await Promise.all([
+            client.getReservation(this.props.project,this.props.reservation),
+            client.findEquipmentTypes({}),
+            client.getEquipmentCategories()
+        ]);
+        this.categories = util.createIndex(this.categories,"_id");
+        this.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+        for(var type of this.types){
+            var category = this.categories[type.category];
             if(!category.types) category.types = [];
-            category.types.push(type);                    
+            category.types.push(type);
         }
         this.forceUpdate();
     }
@@ -93,7 +99,7 @@ script(section="body").
     }
     
     addItem(type,count){
-        this.state.data.reservation.items[type] = count||0;
+        this.reservation.items[type] = count||0;
         this.forceUpdate();
     }
     
@@ -103,8 +109,8 @@ script(section="body").
     
     changeItem(type){
         return function(e){
-            if(/^[0-9]+$/.test(e.target.value)) this.state.data.reservation.items[type] = parseInt(e.target.value,10);
-            if(e.target.value.length == 0) this.state.data.reservation.items[type] = 0;            
+            if(/^[0-9]+$/.test(e.target.value)) this.reservation.items[type] = parseInt(e.target.value,10);
+            if(e.target.value.length == 0) this.reservation.items[type] = 0;            
             this.forceUpdate();
         }.bind(this);
     }
@@ -114,7 +120,7 @@ script(section="body").
     }
     
     removeItem(type){
-        delete this.state.data.reservation.items[type];
+        delete this.reservation.items[type];
         this.forceUpdate();
     }
 
@@ -123,6 +129,6 @@ script(section="body").
     }
 
     async save(){
-        await client.updateReservation(this.props.project,this.props.reservation,this.state.data.reservation.items);
+        await client.updateReservation(this.props.project,this.props.reservation,this.reservation.items);
         history.back();
     }
