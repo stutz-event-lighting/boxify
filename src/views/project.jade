@@ -100,6 +100,9 @@
                     .btn-toolbar.pull-right
                         if this.state.item.status == "ongoing"
                             .btn.btn-primary(onClick=this.finish.bind(this) disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
+        .row
+            .col-xs-12
+                Documents(entity="project-"+this.props.id)
     if this.state.confirm
         = this.createConfirmDialog(this.state.confirm)
 script.
@@ -109,6 +112,7 @@ script.
     var ConfirmDialog = React.createFactory(require("./ConfirmDialog"));
     var DatePicker = require("react-widgets").DateTimePicker;
     var ContactBox = require("./ContactBox");
+    var Documents = require("./documents");
 script(section="body").    
     getNeededPermissions(){
         return ["projects_read"];

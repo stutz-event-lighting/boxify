@@ -1,0 +1,44 @@
+div
+	h3 Dokumente
+		.btn.btn-primary(onClick=this.chooseFile.bind(this)) Neues Dokument
+		input(type="file" style="display:none" ref="file" onChange=this.applyFile.bind(this))
+	table.table.table-striped.table-hover
+		thead
+			tr
+				th Name
+				th Grösse
+		tbody
+			each document in this.documents
+				tr(onClick=this.viewDocument.bind(this,document))
+					td= document.filename
+					td= document.length
+script(section="body").
+	constructor(props,context){
+		super(props,context);
+		this.componentWillReceiveProps(props);
+	}
+	async componentWillReceiveProps(props){
+		this.props = props;
+		this.reloadDocuments();
+	}	
+	async reloadDocuments(){
+		this.documents = await client.getDocuments(this.props.entity)
+		this.forceUpdate();
+	}	
+	chooseFile(e){
+		this.refs.file.click();
+	}
+	applyFile(e){
+		var files = e.target.files;
+		var reader = new FileReader();
+		reader.onload = async function(e) {
+			var id = await client.uploadDocument({entity:this.props.entity,name:files[0].name,file:e.target.result});
+			this.reloadDocuments();
+		}.bind(this)
+		reader.readAsDataURL(files[0]);
+	}
+	viewDocument(document){
+		location.href = "/api/documents/"+document._id;
+	}
+script.
+	var client = require("../client");
