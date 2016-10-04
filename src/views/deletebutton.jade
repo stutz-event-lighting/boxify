@@ -1,0 +1,29 @@
+div(style="display:inline-block" onClick=this.stopPropagation.bind(this) className=this.props.containerClass)
+	div(onClick=this.delete.bind(this) className="btn btn-default "+this.props.className)
+		span.glyphicon.glyphicon-trash
+	if this.needConfirmation
+		Modal
+			.modal-header
+				h3.modal-title Löschen bestätigen
+			.modal-body Möchten Sie dieses Objekt wirklich löschen?
+			.modal-footer
+				.btn.btn-default(onClick=this.cancel.bind(this)) Abbrechen
+				.btn.btn-danger(onClick=this.confirm.bind(this)) Löschen
+script.
+	var Modal = require("./Modal");
+script(section="body").
+	stopPropagation(e){
+		e.stopPropagation();
+	}
+	delete(e){
+		this.needConfirmation = true;
+		this.forceUpdate();
+	}
+	cancel(e){
+		delete this.needConfirmation;
+		this.forceUpdate();
+	}
+	confirm(e){
+		this.cancel();
+		this.props.onDelete();
+	}
