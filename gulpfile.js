@@ -8,35 +8,36 @@ var transform = require("gulp-transform");
 var jade2react = require("jade2react");
 var cp = require("child_process");
 var babel = require("gulp-babel");
+var es = require("event-stream");
+var cache = new (require("gulp-file-cache"))();
+var cacheApi = require("browserify-cache-api");
 
 gulp.task("clean",function(){
 	rimraf("./lib");
 	fs.mkdirSync("./lib");
 });
 
-gulp.task("compileJade",["clean"],function(){
-	return gulp
-		.src("src/**/*.jade")
+gulp.task("compile",function(){
+	return es.merge(
+		gulp.src("src/**/*.jade")
+		.pipe(cache.filter())
+		.pipe(cache.cache())
 		.pipe(replaceExt(".js"))
-		.pipe(transform((code)=>jade2react.compile(code.toString("utf8"))))
-		.pipe(babel({
-			presets:["es2015"],
-			plugins:["syntax-async-functions","transform-regenerator"]
-		}))
-		.pipe(gulp.dest("lib"));
-});
-gulp.task("copyJs",["clean"],function(){
-	return gulp
-		.src("src/**/*.js")
-		.pipe(babel({
-			presets:["es2015"],
-			plugins:["syntax-async-functions","transform-regenerator"]
-		}))
-		.pipe(gulp.dest("lib"));
+		.pipe(transform((code)=>jade2react.compile(code.toString("utf8")))),
+		gulp.src("src/**/*.js")
+		.pipe(cache.filter())
+		.pipe(cache.cache())
+	)
+	.pipe(babel({
+		presets:["es2015"],
+		plugins:["syntax-async-functions","transform-regenerator"]
+	}))
+	.pipe(gulp.dest("lib"));
 });
 
-gulp.task("buildClient",["compileJade","copyJs"],function(cb){
-	var bundle = browserify({basedir:path.resolve(__dirname,"../"),exposeAll:true});
+gulp.task("buildClient",["compile"],function(cb){
+	var bundle = browserify({basedir:path.resolve(__dirname,"../"),cache:{},packageCache:{}});
+	cacheApi(bundle,{cacheFile:"./cache.json"})
 	bundle.require(require.resolve("./lib/app"));
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);
@@ -45,7 +46,7 @@ gulp.task("buildClient",["compileJade","copyJs"],function(cb){
 	});
 });
 
-gulp.task("buildServer",["compileJade","copyJs"],function(cb){
+gulp.task("buildServer",["compile"],function(cb){
 	cb();
 });
 

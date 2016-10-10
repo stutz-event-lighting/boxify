@@ -53,9 +53,12 @@
     "babel-plugin-transform-regenerator": "^6.14.0",
     "babel-preset-es2015": "^6.14.0",
     "browserify": "^6.3.4",
+    "browserify-cache-api": "github:olegskl/browserify-cache-api#resume-bundlestream",
+    "event-stream": "^3.3.4",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-ext-replace": "^0.3.0",
+    "gulp-file-cache": "0.0.1",
     "gulp-transform": "^1.0.7",
     "rimraf": "^2.5.2"
   }

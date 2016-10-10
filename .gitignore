@@ -2,3 +2,5 @@
 /config.json
 build
 lib
+.gulp-cache
+cache.json
