@@ -1,5 +1,5 @@
 .container
-    if this.state.data
+    if this.rental
         h2 Zumiete
             .btn-toolbar.pull-right
                 button.btn.btn-default(onClick=this.cancel.bind(this))
@@ -15,19 +15,19 @@
                     .form-group
                         label.col-lg-2.control-label Name
                         .col-lg-10
-                            input.form-control(placeholder="Name" value=this.state.data.rental.name onChange=this.onNameChange.bind(this))
+                            input.form-control(placeholder="Name" value=this.rental.name onChange=this.onNameChange.bind(this))
                     .form-group
                         label.col-lg-2.control-label Lieferant
                         .col-lg-10
-                            ContactBox(value=this.state.data.rental.supplier role="supplier" onChange=this.onSupplierChange.bind(this) disabled=this.props.rental.indexOf("new")!=0)
+                            ContactBox(value=this.rental.supplier role="supplier" onChange=this.onSupplierChange.bind(this) disabled=this.props.rental.indexOf("new")!=0)
                     .form-group
                         label.col-lg-2.control-label Erhalt
                         .col-lg-10
-                            DatePicker(disabled=(this.state.data.rental.status=="received") format="dd.MM.yyyy HH:mm" value=this.state.data.rental.delivery?new Date(this.state.data.rental.delivery):undefined onChange=this.onDeliveryChanged.bind(this))
+                            DatePicker(disabled=(this.rental.status=="received") format="dd.MM.yyyy HH:mm" value=this.rental.delivery?new Date(this.rental.delivery):undefined onChange=this.onDeliveryChanged.bind(this))
                     .form-group
                         label.col-lg-2.control-label Rückgabe
                         .col-lg-10
-                            DatePicker(value=this.state.data.rental.return?new Date(this.state.data.rental.return):undefined format="dd.MM.yyyy HH:mm" onChange=this.onReturnChanged.bind(this))
+                            DatePicker(value=this.rental.return?new Date(this.rental.return):undefined format="dd.MM.yyyy HH:mm" onChange=this.onReturnChanged.bind(this))
         .row
             .col-xs-12                    
                 h3
@@ -35,14 +35,14 @@
                     .pull-right
                         if this.props.rental.indexOf("new") == 0
                             .btn.btn-primary(onClick=this.add.bind(this)) Hinzufügen
-                        else if this.state.data.rental.status == "requested"
+                        else if this.rental.status == "requested"
                             .btn.btn-primary(onClick=this.book.bind(this)) Buchen
-                        else if this.state.data.rental.status == "booked"
+                        else if this.rental.status == "booked"
                             .btn.btn-primary(onClick=this.receive.bind(this)) Ware erhalten
                         else
                             .btn.btn-primary(onClick=this.doreturn.bind(this)) Ware zurückgeben
-                each category in this.state.data.categories
-                    - var types = Object.keys(this.state.data.types).map(id=>this.state.data.types[id]).filter(type=> (this.state.data.types[type._id].count !== undefined || this.state.data.types[type._id].available < 0) &&type.category == category._id);
+                each category in this.categories
+                    - var types = category.types.filter(type=> (this.rental.items[type._id]&&type.category == category._id));
                     if types.length
                         h4= category.name
                         table.table.table-striped.table-hover
@@ -59,25 +59,25 @@
                                         td= (type.manufacturer?type.manufacturer+" ":"")+type.name
                                         td(style="paddingTop:2px;paddingBottom:2px")
                                             if this.props.rental.indexOf("new") == 0
-                                                input.form-control.input-sm(value=(this.state.data.types[type._id].count||0)+"" style="max-width:100px" onChange=this.changeItem.bind(this,type._id) onFocus=this.selectCount.bind(this))
+                                                input.form-control.input-sm(value=this.rental.items[type._id].count+"" style="max-width:100px" onChange=this.changeItem.bind(this,type._id) onFocus=this.selectCount.bind(this))
                                             else
-                                                = this.state.data.types[type._id].count||0
+                                                = this.rental.items[type._id].count
                                         td
                                             .btn.btn-default.btn-xs.pull-right(onClick=this.removeItem.bind(this,type._id))
                                                 i.glyphicon.glyphicon-trash
-    if this.state.add
+    if this.adding
         Modal
             .modal-header
                 h2 Equipment hinzufügen
             .modal-body(style="maxHeight:500px;overflowY:auto")
-                each category in this.state.data.categories
+                each category in this.categories
                     h4= category.name
                     table.table.table-striped
                         tbody
                             each type in category.types
-                                if this.state.data.types[type].count === undefined
+                                if !this.rental.items[type._id]
                                     tr
-                                        td(onClick=this.addItem.bind(this,type))= this.state.data.types[type].name
+                                        td(onClick=this.addItem.bind(this,type._id))= (type.manufacturer?type.manufacturer+" ":"")+type.name
             .modal-footer
                 button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
 script.
@@ -86,10 +86,10 @@ script.
     var moment = require("moment");
     var Modal = require("./Modal");
     var ContactBox = require("./ContactBox");
+    var util = require("../util");
 script(section="body").
     constructor(props,context){
         super(props,context);
-        this.state = {};
         this.componentWillReceiveProps(props);
     }
     componentWillReceiveProps(props){
@@ -103,68 +103,70 @@ script(section="body").
     async loadData(){
         var opts = {};
         if(this.props.project) opts.project = this.props.project;
-        var data = await client.getRental(this.props.rental,opts);
-        this.state.data = data;
-        if(!this.state.data.rental){
-            this.state.data.rental = {
-                name:"",
-                supplier:null,
-                status:this.props.rental=="newrequest"?"requested":(this.props.rental=="newbooking"?"booked":"received")
-            }                    
+        [this.rental,this.categories,this.types] = await Promise.all([
+            client.getRental(this.props.rental,opts),
+            client.getEquipmentCategories(),
+            client.findEquipmentTypes({})
+        ]);
+        if(!this.rental._id){
+            this.rental.status = this.props.rental=="newrequest"?"requested":(this.props.rental=="newbooking"?"booked":"received")                 
         }
-        if(!this.state.data.rental.delivery) this.state.data.rental.delivery = moment({hour:20}).toDate().getTime();
-        if(!this.state.data.rental.return) this.state.data.rental.return = moment({hour:20}).add(1,"days").toDate().getTime();
-        data.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
-        for(var type in data.types){
-            var category = data.categories[data.types[type].category];
+        if(!this.rental.delivery) this.rental.delivery = moment({hour:20}).toDate().getTime();
+        if(!this.rental.return) this.rental.return = moment({hour:20}).add(1,"days").toDate().getTime();
+        
+        this.categories = util.createIndex(this.categories,"_id");       
+        this.categories["undefined"] = {_id:"undefined",name:"Nicht kategorisiert"};
+        for(var type of this.types){
+            var category = this.categories[type.category];
             if(!category.types) category.types = [];
-            category.types.push(type);                    
+            category.types.push(type);
         }
+        console.log(this.categories);
         this.forceUpdate();
     }
     
     onNameChange(e){
-        this.state.data.rental.name = e.target.value;
+        this.rental.name = e.target.value;
         this.forceUpdate();
     }
     
     onSupplierChange(id){
         if(id){
-            this.state.data.rental.supplier = id;
+            this.rental.supplier = id;
         }else{
-            delete this.state.data.rental.supplier;
+            delete this.rental.supplier;
         }
         this.forceUpdate();
     }
     
     onDeliveryChanged(time){
-        if(time) this.state.data.rental.delivery = time.getTime();
+        if(time) this.rental.delivery = time.getTime();
         this.forceUpdate();
     }
     
     onReturnChanged(time){
-        if(time) this.state.data.rental.return = time.getTime();
+        if(time) this.rental.return = time.getTime();
         this.forceUpdate();
     }
     
     add(){
-        this.state.add = true;
+        this.adding = true;
         this.forceUpdate();
     }
     
     done(){
-        delete this.state.add;
+        delete this.adding;
         this.forceUpdate();
     }
     
     addItem(type){
-        this.state.data.types[type].count = 0;
+        this.rental.items[type] = {count:0,ids:[]};
         this.forceUpdate();
     }
     
-    changeItem(typee,e){
-        if(/^[0-9]+$/.test(e.target.value)) this.state.data.types[type].count = parseInt(e.target.value,10);
-        if(e.target.value.length == 0) this.state.data.types[type].count = 0;            
+    changeItem(type,e){
+        if(/^[0-9]+$/.test(e.target.value)) this.rental.items[type].count = parseInt(e.target.value,10);
+        if(e.target.value.length == 0) this.rental.items[type].count = 0;
         this.forceUpdate();
     }
     
@@ -173,7 +175,7 @@ script(section="body").
     }
     
     removeItem(type){
-        delete this.state.data.types[type].count;
+        delete this.rental.items[type];
         this.forceUpdate();
     }
     
@@ -194,21 +196,7 @@ script(section="body").
         history.back();
     }
 
-    async save(){
-        var items = {};
-        for(var type in this.state.data.types){
-            if(this.state.data.types[type].count) items[type] = {count:this.state.data.types[type].count,ids:this.state.data.types[type].ids};
-        }
-    
-        var rental = {
-            name:this.state.data.rental.name,
-            supplier:this.state.data.rental.supplier,
-            delivery:this.state.data.rental.delivery,
-            return:this.state.data.rental.return,
-            status:this.state.data.rental.status,
-            items:items
-        };
-               
-        await client.updateRental(this.props.rental,rental);
+    async save(){               
+        await client.updateRental(this.props.rental,this.rental);
         history.back();
     }
