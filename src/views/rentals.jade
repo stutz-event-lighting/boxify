@@ -85,15 +85,15 @@ script(section="body").
     }
     
     createRequest(){
-        this.props.onCreate("request");
+        this.props.onSelect("newrequest");
     }
     
     createBooking(){
-        this.props.onCreate("booking");
+        this.props.onSelect("newbooking");
     }
     
     createRental(){
-        this.props.onCreate("rental");
+        this.props.onSelect("newrental");
     }
     
     edit(item,e){
