@@ -1,20 +1,17 @@
 #sel
+	SnackBar(ref="snackbar")
 	Navbar(fixedTop)
 		Header
 			Brand
 				a(href="/")
 					img(src="/public/logo.png")
 			Toggle
-			if client.session
-				.session
-					| Eingeloggt als
-					b= " "+client.session.user.firstname+" "+client.session.user.lastname
-					br
-					.btn.btn-danger.pull-right(onClick=this.logout.bind(this))
-						.glyphicon.glyphicon-log-out
-						|  Ausloggen
 		Collapse
 			= this.create()
+			Nav(pullRight)
+				if client.session
+					NavDropdown(id="nav" title=[React.createElement("i",{key:"icon",className:"glyphicon glyphicon-user"})," "+client.session.user.firstname+" "+client.session.user.lastname])
+						MenuItem(onClick=this.logout.bind(this)) Ausloggen
 	div(style="paddingTop:60px")
 		if client.session
 			case this.props.route.name
@@ -64,6 +61,13 @@ script(section="body").
 	constructor(props,context){
 		super(props,context);
 		this.state = this.props.state||{};
+	}
+	getChildContext(){
+		return {
+			alert:function(type,message){
+				this.refs.snackbar.notify({type:type,message:message})
+			}.bind(this)
+		}
 	}
 	update(){
 		history.replaceState(this.state,undefined,location.pathname);
@@ -149,7 +153,10 @@ script.
 	var Navbar = require("react-bootstrap/lib/Navbar");
 	var {Collapse,Toggle,Brand,Header} = Navbar;
 	var Nav = require("react-bootstrap/lib/Nav");
+	var NavDropdown = require("react-bootstrap/lib/NavDropdown");
+	var MenuItem = require("react-bootstrap/lib/MenuItem");
 	var Button = require("react-bootstrap/lib/Button");
+	var SnackBar = require("./SnackBar");
 	
 	var menu = Component.menu = {
 		"Equipment":{url:"/equipment",permissions:["equipment_read"]},
@@ -187,4 +194,8 @@ script.
 		.add("rentals","/rentals",require("./rentals"))
 		.add("rental","/rentals/:rental",require("./rental"))
 		.add("profile","/profile",require("./profile"))
+			
+	Component.childContextTypes = {
+		alert:React.PropTypes.func
+	}
 		

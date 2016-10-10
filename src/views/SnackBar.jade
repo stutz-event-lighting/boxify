@@ -1,0 +1,23 @@
+.notifications
+	ReactCSSTransitionGroup(transitionName="notification" transitionEnterTimeout=500 transitionLeaveTimeout=300)
+		each notification in this.notifications
+			div(key=notification.id+"" className="alert alert-"+notification.type)
+				span.glyphicon.glyphicon-ok
+				strong(style="paddingLeft:10px")=notification.message
+script(section="body").
+	constructor(props,context){
+		super(props,context);
+		this.notifications = [];
+		this.nextId = 0;
+	}
+	notify(message){
+		message.id = this.nextId++;
+		this.notifications.push(message);
+		this.forceUpdate();
+		setTimeout(()=>{
+			this.notifications.splice(this.notifications.indexOf(message),1);
+			this.forceUpdate();
+		},1000)
+	}
+script.
+	var ReactCSSTransitionGroup = require('react-addons-css-transition-group');

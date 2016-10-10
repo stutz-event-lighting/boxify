@@ -1,8 +1,4 @@
 div
-	h3 Dokumente
-		.btn-toolbar.pull-right
-			.btn.btn-primary(onClick=this.chooseFile.bind(this)) Neues Dokument
-			input(type="file" style="display:none" ref="file" onChange=this.applyFile.bind(this))
 	table.table.table-striped.table-hover
 		thead
 			tr
@@ -14,6 +10,9 @@ div
 					td= document.filename
 					td= filesize(document.length).human("si")
 						DeleteButton.btn-xs(containerClass="pull-right" onDelete=this.delete.bind(this,document))
+	.btn-toolbar.pull-right
+		.btn.btn-primary(onClick=this.chooseFile.bind(this)) Neues Dokument
+		input(type="file" style="display:none" ref="file" onChange=this.applyFile.bind(this))
 script(section="body").
 	constructor(props,context){
 		super(props,context);

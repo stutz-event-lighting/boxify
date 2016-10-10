@@ -29,6 +29,10 @@
     margin-top:-12px;
 }
 
+.nav-tabs li{
+    cursor:pointer;
+}
+
 .session{
     position:absolute;
     right:10px;
@@ -71,4 +75,33 @@
     .rw-select{
         display:none;
     }
+}
+.notifications{
+    position: fixed;
+    bottom:20px;
+    right:20px;
+    z-index:1000;
+    text-align: right;
+}
+.notification-enter{
+    max-height:0 !important;
+    opacity: 0.01;
+    transform: translateX(-25%);
+    transition: 500ms ease-in;
+}
+.notification-enter.notification-enter-active{
+    max-height:20em !important;
+    transform: translateX(0);
+    opacity:1;
+}
+.notification-leave{
+    max-height:20em !important;
+    transition: 300ms ease-in;
+    transform: translateX(0);
+    opacity:1;
+}
+.notification-leave.notification-leave-active{
+    max-height:0 !important;
+    transform: translateX(25%);
+    opacity:0.01;
 }
