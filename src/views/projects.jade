@@ -33,31 +33,31 @@
                         = moment(item.end).format("LLL")
                         button.btn.btn-xs.btn-default.pull-right(onClick=this.delete.bind(this,item))
                             i.glyphicon.glyphicon-trash
-if this.state.create
-    Modal
-        .modal-header
-            h2 Projekt erstellen
-        .modal-body
-            .form-horizontal
-                .form-group
-                    label.col-lg-2.control-label Name
-                    .col-lg-10
-                        input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
-                .form-group
-                    label.col-lg-2.control-label Kunde
-                    .col-lg-10
-                        ContactBox(value=this.state.create.customer onChange=this.onCustomerChanged.bind(this) role="customer")
-                .form-group
-                    label.col-lg-2.control-label Beginn
-                    .col-lg-10
-                        DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
-                .form-group
-                    label.col-lg-2.control-label Ende
-                    .col-lg-10
-                        DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
-        .modal-footer
-            button.btn.btn-default(onClick=this.cancelCreate.bind(this)) Abbrechen
-            button.btn.btn-primary(onClick=this.confirmCreate.bind(this)) Erfassen
+    if this.state.create
+        Modal
+            .modal-header
+                h2 Projekt erstellen
+            .modal-body
+                .form-horizontal
+                    .form-group
+                        label.col-lg-2.control-label Name
+                        .col-lg-10
+                            input.form-control(type="text" value=this.state.create.name onChange=this.validateCreateName.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Kunde
+                        .col-lg-10
+                            ContactBox(value=this.state.create.customer onChange=this.onCustomerChanged.bind(this) role="customer")
+                    .form-group
+                        label.col-lg-2.control-label Beginn
+                        .col-lg-10
+                            DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
+                    .form-group
+                        label.col-lg-2.control-label Ende
+                        .col-lg-10
+                            DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
+            .modal-footer
+                button.btn.btn-default(onClick=this.cancelCreate.bind(this)) Abbrechen
+                button.btn.btn-primary(onClick=this.confirmCreate.bind(this)) Erfassen
     if this.state.delete
         ConfirmDialog(title="Projekt löschen" action="Löschen" question=("\""+this.state.delete.name+"\" löschen möchten") onConfirm=this.confirmDelete.bind(this) onCancel=this.cancelDelete.bind(this))
 script.
@@ -99,7 +99,7 @@ script(section="body").
     }
 
     create(){
-        this.state.create = {name:"",start:moment({hour:20}).toDate().getTime(),end:moment({hour:20}).add(1,"days").toDate().getTime()};
+        this.state.create = {name:"",start:moment({hour:8}).toDate().getTime(),end:moment({hour:20}).add(1,"days").toDate().getTime()};
         this.forceUpdate();
     }
     validateCreateName(e){
