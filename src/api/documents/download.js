@@ -6,6 +6,7 @@ module.exports = async function(ctx){
         await store.open();
 		ctx.body = await store.read();
 		ctx.set("Content-Type",store.contentType);
+        ctx.set("Content-Disposition","attachment; filename=\""+store.filename+"\"");
         await store.close();
     }catch(e){
         ctx.throw(404);
