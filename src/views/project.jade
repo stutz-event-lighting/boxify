@@ -20,6 +20,8 @@
 				a(onClick=this.goTo.bind(this,"/io")) Aus- und Eingänge
 			li(className=route.name=="documents"?"active":"")
 				a(onClick=this.goTo.bind(this,"/documents")) Dokumente
+			li(className=route.name=="offers"?"active":"")
+				a(onClick=this.goTo.bind(this,"/offers")) Offerten
 		br
 		br
 		case this.props.route.name
@@ -105,6 +107,8 @@
 							|  Neuer Eingang
 			when "documents"
 				Documents(entity="project-"+this.props.id)
+			when "offers"
+				= this.props.route.render({onSelect:this.props.onSelectOffer.bind(this,this.props.project)})
 script.
 	var client = require("../client");
 	var moment = require("moment");
@@ -120,6 +124,7 @@ script.
 		.add("reservations","/reservations")
 		.add("io","/io")
 		.add("documents","/documents")
+		.add("offers","/offers",require("./offers"))
 			
 	Component.contextTypes = {alert:1}
 script(section="body").	

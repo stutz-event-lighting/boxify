@@ -42,7 +42,6 @@ script(section="body").
 		window.open("/api/documents/"+document._id,"_blank");
 	}
 	async delete(document){
-		console.log("deleting");
 		await client.deleteDocument(document._id);
 		this.reloadDocuments();
 	}

@@ -1,0 +1,26 @@
+div
+	.btn-toolbar.pull-right
+		.btn.btn-primary(onClick=this.props.onSelect.bind(this,"new")) Neue Offerte
+	table.table.table-striped
+		thead
+			tr
+				th Datum
+				th Preis
+				th Gültig bis
+		tbody
+			each offer in this.offers
+				tr(onClick=this.props.onSelect.bind(this,offer._id))
+					td= moment(offer.date).format("DD.MM.YYYY")
+					td= offer.total
+					td= moment(offer.expiration).format("DD.MM.YYYY")
+script.
+	var client = require("../client")
+script(section="body").
+	constructor(props,context){
+		super(props,context);
+		this.componentWillReceiveProps(props);
+	}
+	async componentWillReceiveProps(props){
+		this.offers = await client.getOffers({project:props.project})
+		this.forceUpdate();
+	}

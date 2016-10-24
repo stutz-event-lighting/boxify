@@ -1,0 +1,50 @@
+span(style="display:inline-block" className=this.props.wrapperClass)
+	div(className="btn "+(this.props.className||" ") onClick=this.add.bind(this))= this.props.children
+	if this.types && this.categories
+		.modal-backdrop(style="bottom:0px;display:block").fade.in
+		.modal(style="display:block").fade.in
+			.modal-dialog
+				.modal-content(style="top:100px;bottom:100px;")
+					.modal-header
+						h2 Equipment hinzufügen
+					.modal-body(style="height:400px;overflowY:auto")
+						each category in this.categories
+							if this.props.filter(category) && !this.selected[category._id]
+								h4(onClick=this.addItem.bind(this,"category",category))= category.name
+								table.table.table-striped
+									tbody
+										each type in category.types
+											if this.props.filter(type) && !this.selected[type._id]
+												tr
+													td(onClick=this.addItem.bind(this,"type",type))= (type.manufacturer?type.manufacturer+" ":"")+type.name
+					.modal-footer
+						button.btn.btn-primary(onClick=this.done.bind(this)) Fertig
+script.
+	var client = require("../client");
+script(section="body").
+	async add(){
+		[this.categories,this.types] = await Promise.all([
+			client.getEquipmentCategories(),
+			client.findEquipmentTypes({})
+		]);
+		this.categories.push({_id:undefined,name:"Nicht kategorisiert"});
+		for(var category of this.categories){
+			category.types = this.types.filter(type=>type.category == category._id);
+		}
+		this.selected = {};
+		this.forceUpdate();
+	}
+	
+	addItem(kind,type){
+		this.selected[type._id] = kind;
+		this.forceUpdate();
+	}
+	
+	done(){
+		var selected = this.selected;
+		delete this.selected;
+		delete this.categories;
+		delete this.types;
+		this.forceUpdate();
+		this.props.onSelect(Object.keys(selected).map(id=>({kind:selected[id],_id:id})));
+	}

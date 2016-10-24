@@ -1,0 +1,288 @@
+.container
+	h3 Offerte
+	Context(target=this.offer)
+		.form-horizontal
+			Binding(name="location")
+				FormGroup(label="Ort" labelClass="col-sm-2" wrapperClass="col-sm-10")
+					Input(type="text")
+			Binding(name="date")
+				FormGroup(label="Datum" labelClass="col-sm-2" wrapperClass="col-sm-10")
+					Date
+			Binding(name="expiration")
+				FormGroup(label="Gültig bis" labelClass="col-sm-2" wrapperClass="col-sm-10")
+					Date
+			Binding(name="person")
+				FormGroup(label="Kontakt" labelClass="col-sm-2" wrapperClass="col-sm-10")
+					ContactBox
+			ul.nav.nav-tabs
+				li(className=this.project?"":"active")
+					a(onClick=this.selectProject.bind(this,null)) Übersicht
+				each project in this.offer.projects
+					li(className=project==this.project?"active":"")
+						a(onClick=this.selectProject.bind(this,project))= project.name
+				li
+					a(onClick=this.addProject.bind(this))
+						.glyphicon.glyphicon-plus
+			if this.project
+				Context(name="projects")
+					Context(name=this.offer.projects.indexOf(this.project)+"")
+						div
+							br
+							br
+							.form-horizontal
+								Binding(name="name")
+									FormGroup(label="Name" labelClass="col-sm-2" wrapperClass="col-sm-10")
+										Input(type="text")
+							.row
+								.col-sm-6
+									.form-horizontal
+										Binding(name="deliveryType" onChange=this.forceUpdate.bind(this))
+											FormGroup(label="Übergabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
+												Input(type="select")
+													option(value="delivery") Lieferung dur SEL
+													option(value="pickup") Abholung durch Kunde
+										Binding(name="deliveryDate")
+											FormGroup(label="Übergabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
+												Date
+										Binding(name="deliveryLocation")
+											FormGroup(label="Übergabeort" labelClass="col-sm-4" wrapperClass="col-sm-8")
+												Input(type="textarea")
+								.col-sm-6
+									.form-horizontal
+										Binding(name="returnType" onChange=this.forceUpdate.bind(this))
+											FormGroup(label="Rückgabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
+												Input(type="select")
+													option(value="pickup") Abholung durch SEL
+													option(value="delivery") Lieferung durch Kunde
+										Binding(name="returnDate")
+											FormGroup(label="Rückgabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
+												Date
+							each name,section in sections
+								h4= name
+								table.table.table-striped
+									thead
+										tr
+											th Name
+											th(style="width:70px") Menge
+											th(style="width:100px") Stückpreis
+											th(style="width:120px") Betrag
+									tbody
+										each item,i in this.project[section].items
+											- if(section == "equipment") var type = (item.kind=="type"?this.types:this.categories)[item._id]
+											Context(name=section)
+												Context(name="items")
+													Context(name=i+"")
+														tr
+															td
+																if section == "equipment"
+																	= (type.manufacturer?(type.manufacturer+" "):"")+type.name
+																else
+																	Binding(name="name")
+																		Input(type="text")
+															td
+																Binding(name="count" onChange=this.recalculate.bind(this))
+																	Number
+															td
+																Binding(name="rate" onChange=this.recalculate.bind(this))
+																	Money
+															td= money.format(item.total)
+																.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,item))
+																	.glyphicon.glyphicon-trash
+										tr
+											th(colSpan="3") Projekt-Total
+											td= money.format(this.project[section].total)
+												if section == "equipment"
+													AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
+														.glyphicon.glyphicon-plus
+												else
+													.btn.btn-default.pull-right(onClick=this.addItem.bind(this,section))
+														.glyphicon.glyphicon-plus
+			else
+				each name,section in sections
+					table.table.table-striped
+						thead
+							tr
+								th Name
+								th
+								th
+								th
+								th Betrag
+						tbody
+							tr
+								td= name+" aller Projekte"
+								td
+								td
+								td
+								td= money.format(this.offer[section].totalBeforeDiscount)
+									.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,"equipment"))
+										.glyphicon.glyphicon-plus
+							each discount,i in this.offer.discounts
+								if discount.section == section
+									Context(name="discounts")
+										Context(name=i)
+											tr
+												td
+													Binding(name="name")
+														Input(type="text")
+												td
+													Binding(name="amount" onChange=this.recalculate.bind(this))
+														if discount.type == "percent"
+															Number
+														else
+															Money
+												td
+													Binding(name="type" onChange=this.recalculate.bind(this))
+														Input(type="select")
+															option(value="percent") %
+															option(value="chf") CHF
+												td= money.format(discount.total)
+												td= money.format(discount.sectionTotal)
+													.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discount))
+														.glyphicon.glyphicon-trash
+script.
+	var client = require("../client");
+	var {Context,Binding} = require("react-bicon");
+	var FormGroup = require("./formgroup");
+	var Input = require("./input");
+	var Date = require("./datefield");
+	var money = require("./money");
+	var Number = require("./numberfield");
+	var Money = require("./moneyfield");
+	var ContactBox = require("./ContactBox");
+	var AddEquipment = require("./AddEquipmentButton");
+	var util = require("../util");
+	
+	var defaultSubproject = {
+		name:"Teilprojekt",
+		deliveryType:"delivery",
+		deliveryDate:null,
+		deliveryLocation:"",
+		returnType:"pickup",
+		returnDate:null,
+	}
+	
+	var defaultSection = {
+		items:[]
+	}
+	
+	var defaultItem = {
+		name:"",
+		section:"services",
+		count:1,
+		rate:0
+	}
+	
+	var sections = {
+		"equipment":"Equipment",
+		"services":"Dienstleistungen",
+		"transportation":"Transport",
+		"consumables":"Verbrauchsmaterial"
+	}
+	
+	for(var section in sections){
+		defaultSubproject[section] = JSON.parse(JSON.stringify(defaultSection));
+	}
+script(section="body").
+	constructor(props,context){
+		super(props,context);
+		this.componentWillReceiveProps(props);
+	}
+	async componentWillReceiveProps(props){
+		if(props.offer == "new"){
+			this.offer = {
+				location:"",
+				date:null,
+				expiration:null,
+				person:null,
+				projects:[
+					JSON.parse(JSON.stringify(defaultSubproject))
+				],
+				discounts:[]
+			};
+			this.project = this.offer.projects[0];
+		}else{
+			this.offer = await client.getOffer(props.offer);
+		}
+		this.types = util.createIndex(await client.findEquipmentTypes({}),"_id");
+		this.categories = util.createIndex(await client.getEquipmentCategories(),"_id");
+		this.recalculate();
+	}
+	
+	addProject(){
+		this.offer.projects.push(JSON.parse(JSON.stringify(defaultSubproject)));
+		this.project = this.offer.projects[this.offer.projects.length-1];
+		this.recalculate();		
+	}
+	
+	selectProject(project){
+		this.project = project;
+		this.forceUpdate();
+	}
+	
+	filterEquipmentTypes(type){
+		return !this.project.equipment.items.filter(i=>i._id == type._id).length
+	}
+	
+	onAddEquipment(items){
+		for(var item of items){
+			this.project.equipment.items.push({section:"equipment",kind:item.kind,_id:item._id,count:1,rate:0});
+		}
+		this.recalculate();
+	}
+	
+	removeEquipment(entry){
+		this.project.equipment.splice(this.project.equipment.indexOf(entry),1);
+		this.recalculate();
+	}
+	
+	addItem(section){
+		var item = JSON.parse(JSON.stringify(defaultItem));
+		item.section = section;
+		this.project.items.push(item);
+		this.recalculate();
+	}
+	
+	removeItem(item){
+		this.project.items.splice(this.project.items.indexOf(item),1);
+		this.recalculate();
+	}
+	
+	addDiscount(section){
+		this.offer.discounts.push({
+			section:section,
+			name:"Rabatt",
+			amount:10,
+			type:"percent"
+		})
+		this.recalculate();
+	}
+	
+	removeDiscount(discount){
+		this.offer.discounts.splice(this.offer.discounts.indexOf(discount),1);
+		this.recalculate();
+	}
+	
+	recalculate(){
+		for(var section in sections){
+			this.offer[section] = {total:0};
+		}
+		for(var p of this.offer.projects){
+			for(var section in sections){
+				p[section].total = 0;
+				for(var i of p[section].items){
+					i.total = (i.count||0)*(i.rate||0);
+					p[i.section].total += i.total;
+				}
+				this.offer[section].total += p[section].total;
+			}
+		}
+		for(var section in sections){
+			this.offer[section].totalBeforeDiscount = this.offer[section].total;
+		}
+		for(var discount of this.offer.discounts){		
+			discount.total = -(discount.type=="percent"?this.offer[discount.section].total/100*discount.amount:discount.amount);
+			discount.sectionTotal = this.offer[discount.section].total = this.offer[section].total+discount.total;
+		}
+		
+		this.forceUpdate();
+	}

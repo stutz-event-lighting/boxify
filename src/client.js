@@ -328,5 +328,21 @@ class Client extends events.EventEmitter{
     async deleteDocument(id){
         await this.execute("/api/documents/"+id,{method:"DELETE"})
     }
+
+    async getOffers(opts){
+        return [];
+    }
+    async getOffer(offer){
+
+    }
+    async createOffer(data){
+
+    }
+    async updateOffer(offer,data){
+
+    }
+    async deleteOffer(offer){
+        
+    }
 }
 module.exports = new Client();

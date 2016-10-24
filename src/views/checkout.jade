@@ -115,7 +115,7 @@ mixin renderEntry(entry,level)
                 = this.state.data.types[entry.type].name
             td
                 .input-group.input-group-sm
-                    Input.form-control(type="text" value=entry.count onChange=this.onCountChanged.bind(this,entry) selectOnFocus=true)
+                    Input(type="text" value=entry.count+"" onChange=this.onCountChanged.bind(this,entry) selectOnFocus=true)
                     .input-group-addon="/ "+entry.max
 script.
     var client = require("../client");
@@ -126,7 +126,7 @@ script.
     var bs = require("../barcodescanner");
     var ContactBox = require("./ContactBox");
     var Modal = require("./Modal");
-    var Input = require("./Input");
+    var Input = require("./input");
 script(section="body").
     getNeededPermissions(){
         return ["projects_read"];
@@ -472,8 +472,8 @@ script(section="body").
         return entry.items[Object.keys(entry.items)[0]];
     }
     
-    onCountChanged(entry,e){
-        var val = parseInt(e.target.value,10);
+    onCountChanged(entry,value){
+        var val = parseInt(value,10);
         if(isNaN(val)){
         
         }else if(val < 1){

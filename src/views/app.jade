@@ -42,7 +42,7 @@
 				when "projects"
 					= this.props.route.render({onSelect:this.showProject.bind(this)})
 				when "project"
-					= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this)})
+					= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this),onSelectOffer:this.showOffer.bind(this)})
 				when "reservation"
 					= this.props.route.render({project:this.props.params.project,reservation:this.props.params.reservation})
 				when "checkout"
@@ -55,6 +55,8 @@
 					= this.props.route.render({onSelect:this.showRental.bind(this)})
 				when "rental"
 					= this.props.route.render({rental:this.props.params.rental})
+				when "offer"
+					= this.props.route.render({offer:this.props.params.offer})
 		else
 			LoginPage(onLogin=this.update.bind(this))
 script(section="body").
@@ -117,6 +119,9 @@ script(section="body").
 	}
 	showRental(rental){
 		this.goTo("/rentals/"+rental);
+	}
+	showOffer(project,offer){
+		this.goTo("/projects/"+project+"/offers/"+offer);
 	}
 	goTo(url){
 		this.props.location.push(url);
@@ -194,6 +199,7 @@ script.
 		.add("rentals","/rentals",require("./rentals"))
 		.add("rental","/rentals/:rental",require("./rental"))
 		.add("profile","/profile",require("./profile"))
+		.add("offer","/projects/:project/offers/:offer",require("./offer"))
 			
 	Component.childContextTypes = {
 		alert:React.PropTypes.func
