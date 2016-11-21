@@ -160,7 +160,7 @@ script(section="body").
         setTimeout(e.target.select.bind(e.target));;
     }
     
-    onCountChanged(entry){
+    onCountChanged(entry,e){
         var count = parseInt(e.target.value,10);
         if(!isNaN(count)){
             entry.count = count;
@@ -175,7 +175,8 @@ script(section="body").
     
     startScan(type){
         this.refs.scanbutton.scan();
-        this.refs.scanbutton.onEquipmenttypeChanged({value:type,label:this.state.data.types[type].name});
+        this.refs.scanbutton.type = type;
+        this.refs.scanbutton.onEquipmenttypeChanged();
     }
     
     onQuaggaScan(code){
@@ -253,8 +254,6 @@ script(section="body").
     async getEntryContents(entry,item){
         var data = await client.getEquipment(entry.type,item);        
         var item = data.item;
-    
-        if(err) return cb(err);
         var type = this.state.data.types[entry.type];
 
         var entries = [];

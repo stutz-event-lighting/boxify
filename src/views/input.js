@@ -6,6 +6,7 @@ module.exports = class Input extends react.Component{
 		if(component == "textarea") component = Textarea;
 		var isCheckbox = this.props.type=="checkbox"||this.props.type=="radio";
 		var props = Object.assign({},this.props,{
+			ref:"input",
 			value:!isCheckbox?this.props.value:undefined,
 			checked:isCheckbox?this.props.value:undefined,
 			onChange:this.onChange.bind(this),
@@ -24,4 +25,9 @@ module.exports = class Input extends react.Component{
         }
         if(this.props.onFocus) this.props.onFocus(e);
     }
+
+	focus(){
+		this.refs.input.focus();
+		this.refs.input.select();
+	}
 }

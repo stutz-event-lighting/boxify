@@ -111,11 +111,11 @@ mixin renderEntry(entry,level)
     else
         tr
             td(style="paddingLeft:"+(level*20)+"px")
-                input(type="checkbox" checked=entry.checked onClick=this.onCheckedChanged(entry))
+                input(type="checkbox" checked=entry.checked onClick=this.onCheckedChanged.bind(this,entry))
                 = this.state.data.types[entry.type].name
             td
                 .input-group.input-group-sm
-                    Input(type="text" value=entry.count+"" onChange=this.onCountChanged.bind(this,entry) selectOnFocus=true)
+                    Input(type="text" value=entry.count+"" onChange=this.onCountChanged.bind(this,entry) selectOnFocus=true errors=[])
                     .input-group-addon="/ "+entry.max
 script.
     var client = require("../client");
@@ -181,14 +181,15 @@ script(section="body").
     
     startScan(type){
         this.refs.scanbutton.scan();
-        this.refs.scanbutton.onEquipmenttypeChanged({value:type,label:this.state.data.types[type].name});
+        this.refs.scanbutton.type = type;
+        this.refs.scanbutton.onEquipmenttypeChanged();
     }
         
     onQuaggaScan(code){
         bs.parse(code);
     }
     
-    handleScan(code){
+    async handleScan(code){
         if(!this.state.data.draft) return;
         if(code.kind == "EQ" && this.state.data.types[code.type]){
             if(!code.supplier) code.supplier = this.state.supplier;
@@ -211,13 +212,14 @@ script(section="body").
             }
             
             if(code.item){
-                this.getEntryContents(entry,[code.item]).then(function(){
+                try{
+                    await this.getEntryContents(entry,[code.item]);
                     this.state.entry = entry;
                     this.addCheckedInformation(entry);
                     this.forceUpdate();
-                }.bind(this)).catch(function(err){
+                }catch(e){
                     this.playErrorSound();
-                }.bind(this));
+                }
             }else if(entry.supplier == "own" && this.state.data.types[entry.type].hasItems){
                 return this.playErrorSound();
             }else{
@@ -232,7 +234,7 @@ script(section="body").
             
             if(!entry.items) entry.items = {};
             
-            items = Promise.all(Object.keys(item.contents).map(async function(type){
+            var items = await Promise.all(Object.keys(item.contents).map(async function(type){
                 type = parseFloat(type);
                 var subentry = {
                     supplier:entry.supplier,

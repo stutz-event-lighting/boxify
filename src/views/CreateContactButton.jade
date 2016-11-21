@@ -83,9 +83,10 @@ script(section="body").
         this.forceUpdate();
     }
     
-    onContactChanged(id,name){
+    async onContactChanged(id){
         this.state.existing.contact = id;
-        this.state.existing.name = name;
+        var contact = await client.getContact(id)
+        this.state.existing.name = (contact.firstname?contact.firstname+" ":"")+contact.lastname;
         this.forceUpdate();
     }
     
