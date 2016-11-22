@@ -5,7 +5,7 @@ var calcNeeded = require("./calculateneeded");
 module.exports = async function(ctx){
     var id = mongo.ObjectID(ctx.params.id);
     var results = await Promise.all([
-        ctx.app.db.Project.findOne({_id:id}).select("name customer start end balance remark status"),
+        ctx.app.db.Project.findOne({_id:id}).select("name customer start end balance remark status projectNumber"),
         ctx.app.db.EquipmentReservation.find({project:id}).select("items"),
         calcNeeded(ctx.app.db,id),
         ctx.app.db.EquipmentIo.find({project:id}).select("type time items user draft").populate("user","firstname lastname").sort({time:1})
