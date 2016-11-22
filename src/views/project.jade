@@ -38,11 +38,11 @@
 					.form-group
 						label.col-lg-2.control-label Beginn
 						.col-lg-10
-							DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
+							DatePicker(disabled=(this.state.io.length>0) value=new Date(this.state.item.start) format="DD.MM.YYYY HH:mm" onChange=this.onStartChanged.bind(this))
 					.form-group
 						label.col-lg-2.control-label Ende
 						.col-lg-10
-							DatePicker(value=new Date(this.state.item.end) format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
+							DatePicker(value=new Date(this.state.item.end) format="DD.MM.YYYY HH:mm" onChange=this.onEndChanged.bind(this))
 					.form-group
 						label.col-lg-2.control-label Kommentar
 						.col-lg-10
