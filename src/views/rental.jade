@@ -23,11 +23,11 @@
                     .form-group
                         label.col-lg-2.control-label Erhalt
                         .col-lg-10
-                            DatePicker(disabled=(this.rental.status=="received") format="dd.MM.yyyy HH:mm" value=this.rental.delivery?new Date(this.rental.delivery):undefined onChange=this.onDeliveryChanged.bind(this))
+                            DatePicker(disabled=(this.rental.status=="received") format="DD.MM.YYYY HH:mm" value=this.rental.delivery?new Date(this.rental.delivery):undefined onChange=this.onDeliveryChanged.bind(this))
                     .form-group
                         label.col-lg-2.control-label Rückgabe
                         .col-lg-10
-                            DatePicker(value=this.rental.return?new Date(this.rental.return):undefined format="dd.MM.yyyy HH:mm" onChange=this.onReturnChanged.bind(this))
+                            DatePicker(value=this.rental.return?new Date(this.rental.return):undefined format="DD.MM.YYYY HH:mm" onChange=this.onReturnChanged.bind(this))
         .row
             .col-xs-12                    
                 h3

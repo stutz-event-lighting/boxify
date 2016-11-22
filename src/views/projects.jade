@@ -50,11 +50,11 @@
                     .form-group
                         label.col-lg-2.control-label Beginn
                         .col-lg-10
-                            DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="dd.MM.yyyy HH:mm" onChange=this.onStartChanged.bind(this))
+                            DatePicker(value=this.state.create.start?new Date(this.state.create.start):undefined format="DD.MM.YYYY HH:mm" onChange=this.onStartChanged.bind(this))
                     .form-group
                         label.col-lg-2.control-label Ende
                         .col-lg-10
-                            DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="dd.MM.yyyy HH:mm" onChange=this.onEndChanged.bind(this))
+                            DatePicker(value=this.state.create.end?new Date(this.state.create.end):undefined format="DD.MM.YYYY HH:mm" onChange=this.onEndChanged.bind(this))
             .modal-footer
                 button.btn.btn-default(onClick=this.cancelCreate.bind(this)) Abbrechen
                 button.btn.btn-primary(onClick=this.confirmCreate.bind(this)) Erfassen
