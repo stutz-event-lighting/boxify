@@ -36,9 +36,9 @@ gulp.task("compile",function(){
 });
 
 gulp.task("buildClient",["compile"],function(cb){
-	var bundle = browserify({basedir:path.resolve(__dirname,"../"),cache:{},packageCache:{}});
+	var bundle = browserify({basedir:path.resolve(__dirname,"../"),cache:{},packageCache:{},exposeAll:true,basedir:path.resolve(__dirname,"../")});
 	cacheApi(bundle,{cacheFile:"./cache.json"})
-	bundle.require(require.resolve("./lib/app"),{expose:"/boxify/lib/app.js"});
+	bundle.require(require.resolve("./lib/app"));
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);
 		fs.writeFileSync("./lib/main.js",build);

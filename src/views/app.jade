@@ -1,64 +1,69 @@
 #sel
-	SnackBar(ref="snackbar")
-	Navbar(fixedTop)
-		Header
-			Brand
-				a(href="/")
-					img(src="/public/logo.png")
-			Toggle
-		Collapse
-			= this.create()
-			Nav(pullRight)
-				if client.session
-					NavDropdown(id="nav" title=[React.createElement("i",{key:"icon",className:"glyphicon glyphicon-user"})," "+client.session.user.firstname+" "+client.session.user.lastname])
-						MenuItem(onClick=this.logout.bind(this)) Ausloggen
-	div(style="paddingTop:60px")
-		if client.session
-			case this.props.route.name
-				when "main"
-				when "equipmentcategories"
-				when "profile"
-					= this.props.route.render({})
-				when "equipment"
-					= this.props.route.render({onSelect:this.showEquipmentType.bind(this),onCategoriesClicked:this.showEquipmentCategories.bind(this)})
-				when "equipmenttype"
-					= this.props.route.render({type:this.props.params.type})
-				when "equipmentitem"
-					= this.props.route.render({type:this.props.params.type,id:this.props.params.id})
-				when "contact"
-					= this.props.route.render({contact:this.props.params.contact})
-				when "users"
-					= this.props.route.render({onSelect:this.showUser.bind(this)})
-				when "user"
-					= this.props.route.render({user:this.props.params.user})
-				when "customers"
-					= this.props.route.render({onSelect:this.showCustomer.bind(this)})
-				when "customer"
-					= this.props.route.render({customer:this.props.params.customer})
-				when "suppliers"
-					= this.props.route.render({onSelect:this.showSupplier.bind(this)})
-				when "supplier"
-					= this.props.route.render({supplier:this.props.params.supplier})
-				when "projects"
-					= this.props.route.render({onSelect:this.showProject.bind(this)})
-				when "project"
-					= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this),onSelectOffer:this.showOffer.bind(this)})
-				when "reservation"
-					= this.props.route.render({project:this.props.params.project,reservation:this.props.params.reservation})
-				when "checkout"
-					= this.props.route.render({project:this.props.params.project,checkout:this.props.params.checkout})
-				when "checkin"
-					= this.props.route.render({project:this.props.params.project,checkin:this.props.params.checkin})
-				when "projectrental"
-					= this.props.route.render({project:this.props.params.project,rental:"newrequest"})
-				when "rentals"
-					= this.props.route.render({onSelect:this.showRental.bind(this)})
-				when "rental"
-					= this.props.route.render({rental:this.props.params.rental})
-				when "offer"
-					= this.props.route.render({offer:this.props.params.offer})
-		else
-			LoginPage(onLogin=this.update.bind(this))
+	if this.props.route.name == "rootPlugin"
+		= this.props.route.render({})
+	else
+		SnackBar(ref="snackbar")
+		Navbar(fixedTop)
+			Header
+				Brand
+					a(href="/")
+						img(src="/public/logo.png")
+				Toggle
+			Collapse
+				= this.create()
+				Nav(pullRight)
+					if client.session
+						NavDropdown(id="nav" title=[React.createElement("i",{key:"icon",className:"glyphicon glyphicon-user"})," "+client.session.user.firstname+" "+client.session.user.lastname])
+							MenuItem(onClick=this.logout.bind(this)) Ausloggen
+		div(style="paddingTop:60px")
+			if client.session
+				case this.props.route.name
+					when "main"
+					when "equipmentcategories"
+					when "profile"
+						= this.props.route.render({})
+					when "equipment"
+						= this.props.route.render({onSelect:this.showEquipmentType.bind(this),onCategoriesClicked:this.showEquipmentCategories.bind(this)})
+					when "equipmenttype"
+						= this.props.route.render({type:this.props.params.type})
+					when "equipmentitem"
+						= this.props.route.render({type:this.props.params.type,id:this.props.params.id})
+					when "contact"
+						= this.props.route.render({contact:this.props.params.contact})
+					when "users"
+						= this.props.route.render({onSelect:this.showUser.bind(this)})
+					when "user"
+						= this.props.route.render({user:this.props.params.user})
+					when "customers"
+						= this.props.route.render({onSelect:this.showCustomer.bind(this)})
+					when "customer"
+						= this.props.route.render({customer:this.props.params.customer})
+					when "suppliers"
+						= this.props.route.render({onSelect:this.showSupplier.bind(this)})
+					when "supplier"
+						= this.props.route.render({supplier:this.props.params.supplier})
+					when "projects"
+						= this.props.route.render({onSelect:this.showProject.bind(this)})
+					when "project"
+						= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this),onSelectOffer:this.showOffer.bind(this)})
+					when "reservation"
+						= this.props.route.render({project:this.props.params.project,reservation:this.props.params.reservation})
+					when "checkout"
+						= this.props.route.render({project:this.props.params.project,checkout:this.props.params.checkout})
+					when "checkin"
+						= this.props.route.render({project:this.props.params.project,checkin:this.props.params.checkin})
+					when "projectrental"
+						= this.props.route.render({project:this.props.params.project,rental:"newrequest"})
+					when "rentals"
+						= this.props.route.render({onSelect:this.showRental.bind(this)})
+					when "rental"
+						= this.props.route.render({rental:this.props.params.rental})
+					when "offer"
+						= this.props.route.render({offer:this.props.params.offer})
+					when "plugin"
+						= this.props.route.render({})
+			else
+				LoginPage(onLogin=this.update.bind(this))
 script(section="body").
 	constructor(props,context){
 		super(props,context);
@@ -163,7 +168,7 @@ script.
 	var Button = require("react-bootstrap/lib/Button");
 	var SnackBar = require("./SnackBar");
 	
-	var menu = Component.menu = {
+	var menu = module.exports.menu = Component.menu = {
 		"Equipment":{url:"/equipment",permissions:["equipment_read"]},
 		"Projekte":{url:"/projects",permissions:["projects_read"]},
 		"Zumieten":{url:"/rentals",permissions:["rentals_read"]},

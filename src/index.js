@@ -72,7 +72,7 @@ var Boxify = module.exports = function Boxify(config){
     this.addPermission("rentals_write","Zumieten erfassen, ändern & löschen");
 
     for(var module in config.modules){
-        this.modules[module] = require(module+"/lib/server")(this,config.modules[module]);
+        this.modules[module] = require(module).server(this,config.modules[module]);
         this.moduleclients.push(module);
         this.app.use(route.get("/modules/"+module+".js",async function(ctx){
             await send(ctx,"build.js",{root:path.dirname(require.resolve(module+"/lib/build.js"))});
