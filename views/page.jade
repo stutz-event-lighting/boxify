@@ -8,6 +8,10 @@ html
         link(rel="icon" href="/public/icon.png" sizes="48x48" type="image/png")
     body
         script(src="/public/quagga.min.js")
+        script.
+            window.onerror = function(e,url,line){
+                alert("error"+e+","+url+","+line)
+            }
         script(src='/main.js')
         each module in modules
             script(src="/modules/"+module+".js")

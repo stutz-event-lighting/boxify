@@ -13,7 +13,20 @@ localize(moment);
 
 var App = require("./views/app");
 
+Object.assign = function(obj){
+    for(var i = 1; i < arguments.length; i++){
+        for(var key in arguments[i]){
+            obj[key] = arguments[i][key];
+        }
+    }
+    return obj;
+}
+
 window.onload = async function(){
     await client.getSession();
-    ReactDOM.render(React.createElement(RootComponent,{component:App}),document.body)
+    try{
+        ReactDOM.render(React.createElement(RootComponent,{component:App}),document.body)
+    }catch(e){
+        alert(e.message+e.stack)
+    }
 }

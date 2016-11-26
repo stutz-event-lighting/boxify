@@ -8,6 +8,7 @@ var transform = require("gulp-transform");
 var jade2react = require("jade2react");
 var cp = require("child_process");
 var babel = require("gulp-babel");
+var babelify = require("babelify");
 var es = require("event-stream");
 var cache = new (require("gulp-file-cache"))();
 var cacheApi = require("browserify-cache-api");
@@ -39,6 +40,12 @@ gulp.task("buildClient",["compile"],function(cb){
 	var bundle = browserify({basedir:path.resolve(__dirname,"../"),cache:{},packageCache:{},exposeAll:true,basedir:path.resolve(__dirname,"../")});
 	cacheApi(bundle,{cacheFile:"./cache.json"})
 	bundle.require(require.resolve("./lib/app"));
+	bundle.transform(babelify.configure({
+		presets:["es2015"],
+		extensions:[".js"],
+		babelrc:false,
+		ignore:/^((?!(bicon|route-system)).)*$/
+	}),{global:true})
 	bundle.bundle((err,build)=>{
 		if(err) return cb(err);
 		fs.writeFileSync("./lib/main.js",build);
