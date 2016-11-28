@@ -212,7 +212,10 @@ module.exports = function(db){
         location: String,
         date: Number,
         expiration: Number,
-        person: Number,
+        person: {
+            type:Number,
+            ref: "contacts"
+        },
         projects:[{
             name: String,
     		deliveryType: String, //delivery or pickup
@@ -221,13 +224,17 @@ module.exports = function(db){
     		returnType: String, //pickup or delivery
     		returnDate: Number,
             items: [{
+                _id:false,
                 section: String,
                 name: String,
         		count: Number,
-        		rate: Number
+        		rate: Number,
+                type: {type:Number},
+                category: ObjectId
             }]
         }],
         discounts:[{
+            _id:false,
             section: String,
 			name: String,
 			amount: Number,

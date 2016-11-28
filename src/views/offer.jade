@@ -139,7 +139,7 @@
 													td= money.format(discount.sectionTotal)
 														.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discount))
 															.glyphicon.glyphicon-trash
-					.btn-toolbar
+					.btn-toolbar.pull-right
 						.btn.btn-primary(onClick=this.save.bind(this)) Speichern
 script.
 	var client = require("../client");
@@ -215,13 +215,20 @@ script(section="body").
 	}
 	
 	filterEquipmentTypes(type){
-		return !this.project.items.filter(i=>i._id == type._id).length
+		return !this.project.items.filter(i=>(i.type||i.category) == type._id).length
 	}
 	
 	onAddEquipment(items){
 		for(var item of items){
-			var type = (item.kind=="type"?this.types:this.categories)[item._id]
-			this.project.items.push({name:(type.manufacturer?(type.manufacturer+" "):"")+type.name,section:"equipment",kind:item.kind,_id:item._id,count:1,rate:0});
+			var type = (item.kind=="type"?this.types:this.categories)[item._id];
+			var entry = {
+				name:(type.manufacturer?(type.manufacturer+" "):"")+type.name,
+				section:"equipment",
+				count:1,
+				rate:0
+			}
+			entry[item.kind == "type"?"type":"category"] = item._id;
+			this.project.items.push(entry);
 		}
 		this.recalculate();
 	}
@@ -297,8 +304,6 @@ script(section="body").
 			discount.sectionTotal = section.total = section.total+discount.total;
 		}
 		
-		console.log("calculated",this.offer)
-		
 		this.forceUpdate();
 	}
 	
@@ -313,14 +318,11 @@ script(section="body").
 				delete item.total;
 			}
 		}
-		
-		console.log(data);
-		return;
 	
-		if(data.id){
-			await client.saveOffer(data.id,data)
+		if(data._id){
+			this.props.onCraete(await client.updateOffer(data._id,data));
 		}else{
 			this.offer.id = await client.createOffer(data);
+			this.forceUpdate();
 		}
-		this.forceUpdate();
 	}

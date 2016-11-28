@@ -8,8 +8,8 @@ module.exports = async function(ctx){
 
 	var offers = await ctx.app.db.Offer
         .find(query)
-        .select("person","total","expiration")
-        .populate("person","fistname","lastname")
+        .select("date person total expiration")
+        .populate("person","firstname lastname")
 
     ctx.set("Content-Type","application/json");
     ctx.body = JSON.stringify(offers);

@@ -45,7 +45,7 @@
 					when "projects"
 						= this.props.route.render({onSelect:this.showProject.bind(this)})
 					when "project"
-						= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this),onSelectOffer:this.showOffer.bind(this)})
+						= this.props.route.render({id:this.props.params.project,onReservationSelected:this.showReservation.bind(this),onCheckoutSelected:this.showCheckout.bind(this),onCheckinSelected:this.showCheckin.bind(this),onCreateRental:this.showProjectRental.bind(this),onSelectOffer:this.showOffer.bind(this,this.props.params.project)})
 					when "reservation"
 						= this.props.route.render({project:this.props.params.project,reservation:this.props.params.reservation})
 					when "checkout"
@@ -59,7 +59,7 @@
 					when "rental"
 						= this.props.route.render({rental:this.props.params.rental})
 					when "offer"
-						= this.props.route.render({offer:this.props.params.offer})
+						= this.props.route.render({project:this.props.params.project,offer:this.props.params.offer, onCreate:this.showOffer.bind(this,this.props.params.project)})
 					when "plugin"
 						= this.props.route.render({})
 			else

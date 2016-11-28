@@ -4,17 +4,20 @@ div
 	table.table.table-striped
 		thead
 			tr
+				th Person
 				th Datum
 				th Preis
 				th Gültig bis
 		tbody
 			each offer in this.offers
 				tr(onClick=this.props.onSelect.bind(this,offer._id))
-					td= moment(offer.date).format("DD.MM.YYYY")
+					td= offer.person.firstname+" "+offer.person.lastname
+					td= moment(offer.date*24*60*60*1000).format("DD.MM.YYYY")
 					td= offer.total
-					td= moment(offer.expiration).format("DD.MM.YYYY")
+					td= moment(offer.expiration*24*60*60*1000).format("DD.MM.YYYY")
 script.
-	var client = require("../client")
+	var client = require("../client");
+	var moment = require("moment");
 script(section="body").
 	constructor(props,context){
 		super(props,context);

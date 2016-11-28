@@ -112,7 +112,7 @@
 			when "documents"
 				Documents(entity="project-"+this.props.id)
 			when "offers"
-				= this.props.route.render({onSelect:this.props.onSelectOffer.bind(this,this.props.project)})
+				= this.props.route.render({onSelect:this.props.onSelectOffer})
 script.
 	var client = require("../client");
 	var moment = require("moment");

@@ -3,35 +3,43 @@ var calcEquipmentBalance = require("../equipment/calculatebalance");
 module.exports = async function(db,project){
     var project = await db.Project.findOne({_id:project}).select("start end reserved");
     if(!project) throw new Error("Project does not exist");
-    var results = await Promise.all([
+    var [needed,rentals,reservations] = await Promise.all([
         calcEquipmentBalance(db),
-        db.EquipmentRental.find({return:{$gte:project.start},delivery:{$lte:project.end},status:{$in:["requested","booked"]}}).select("delivery return items")
+        db.EquipmentRental.find({return:{$gte:project.start},delivery:{$lte:project.end},status:{$in:["requested","booked"]}}).select("delivery return items").lean(),
+        db.Project.find({start:{$lte:project.start},end:{$gte:project.end}}).select("start end reserved").lean()
     ]);
-
-    var needed = results[0];
-    var rentals = results[1];
 
     for(var type in needed){
         needed[type] = -needed[type].count;
     }
 
+    var changes = reservations.map(r=>{
+        r.items = r.reserved||{};
+        delete r.reserved;
+        return r;
+    }).concat(rentals.map(r=>{
+        for(var key in r.items){
+            r.items[key] = -r.items[key].count;
+        }
+        return {start:r.delivery,end:r.return,items:r.items};
+    }));
+
     //create timeline out of all projects
     var timeline = {};
-    for(var i = 0; i < rentals.length; i++){
-        var rental = rentals[i];
-        var start = timeline[rental.delivery];
-        if(!start) timeline[rental.delivery] = start = {};
-        var end = timeline[rental.return];
-        if(!end) timeline[rental.return] = end = {};
-        for(var type in rental.items){
+    for(var i = 0; i < changes.length; i++){
+        var change = changes[i];
+        var start = timeline[change.start];
+        if(!start) timeline[change.start] = start = {};
+        var end = timeline[change.end];
+        if(!end) timeline[change.end] = end = {};
+        for(var type in change.items){
             if(start[type] === undefined) start[type] = 0;
-            start[type] += rental.items[type].count;
+            start[type] -= change.items[type];
             if(end[type] === undefined) end[type] = 0;
-            end[type] -= rental.items[type].count;
+            end[type] += change.items[type];
         }
     }
     timeline = Object.keys(timeline).map(function(time){return parseFloat(time)}).sort().map(function(time){return {time:time,types:timeline[time]}});
-
 
     //find the lowest count for every type in the timeline
     var min = {};
@@ -61,12 +69,5 @@ module.exports = async function(db,project){
         needed[type] -= min[type];
     }
 
-    //calculate the needed value for each type
-    for(var type in project.reserved){
-        needed[type] += project.reserved[type];
-        if(needed[type] <= 0){
-            delete needed[type];
-        }
-    }
     return needed;
 }

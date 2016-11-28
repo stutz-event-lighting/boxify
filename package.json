@@ -32,7 +32,7 @@
     "koa-static": "^3.0.0",
     "moment": "~2.9.0",
     "mongodb": "^2.1.6",
-    "mongoose": "^4.4.19",
+    "mongoose": "^4.7.0",
     "path-to-regexp": "~1.0.2",
     "pug": "^2.0.0-beta3",
     "react": "^15.0.2",
