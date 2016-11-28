@@ -205,4 +205,34 @@ module.exports = function(db){
         _id:ObjectId,
         name:String
     })
+
+    db.Offer = db.model("offers",{
+        _id:ObjectId,
+        project: ObjectId,
+        location: String,
+        date: Number,
+        expiration: Number,
+        person: Number,
+        projects:[{
+            name: String,
+    		deliveryType: String, //delivery or pickup
+    		deliveryDate: Number,
+    		deliveryLocation: String,
+    		returnType: String, //pickup or delivery
+    		returnDate: Number,
+            items: [{
+                section: String,
+                name: String,
+        		count: Number,
+        		rate: Number
+            }]
+        }],
+        discounts:[{
+            section: String,
+			name: String,
+			amount: Number,
+			type: String // percent or chf
+        }],
+        total:Number
+    })
 }

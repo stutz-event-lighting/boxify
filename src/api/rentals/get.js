@@ -6,7 +6,7 @@ module.exports = async function(ctx){
     var [rental,project] = await Promise.all([
         async function(){
             if(["newrequest","newbooking","newrental"].indexOf(ctx.params.rental) >= 0) return;
-            return await ctx.app.db.EquipmentRental.findOne({_id:mongo.ObjectID(ctx.params.rental)}).select("name items status supplier");
+            return await ctx.app.db.EquipmentRental.findOne({_id:mongo.ObjectID(ctx.params.rental)}).select("name items status supplier return delivery");
         }.call(ctx),
         async function(){
             if(!ctx.query.project) return;

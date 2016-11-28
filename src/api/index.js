@@ -14,6 +14,7 @@ module.exports = compose([
 	mount("/equipmentio",require("./equipmentio")),
 	mount("/rentals",require("./rentals")),
 	mount("/documents",require("./documents")),
+	mount("/offers",require("./offers")),
 	route.get("/barcode/:code/*",async function(ctx,code,text){
 		var generator = new Barc();
 		var buf = generator.code128(code,1200,240,text||"");

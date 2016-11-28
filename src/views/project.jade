@@ -196,7 +196,7 @@ script(section="body").
 	}
 	
 	async deleteReservation(reservation){
-		await client.deleteReservation(this.props.id,reservation);
+		await client.deleteReservation(this.props.id,reservation._id);
 		this.loadData();
 	}
 	

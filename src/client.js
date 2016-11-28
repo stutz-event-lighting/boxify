@@ -330,19 +330,19 @@ class Client extends events.EventEmitter{
     }
 
     async getOffers(opts){
-        return [];
+        return await this.getJson("/api/offers");
     }
     async getOffer(offer){
-
+        return await this.getJson("/api/offers/"+offer)
     }
     async createOffer(data){
-
+        return await this.getText("/api/offers",{method:"POST",jsonBody:data})
     }
     async updateOffer(offer,data){
-
+        await this.execute("/api/offers/"+offer,{method:"PUT",jsonBody:data});
     }
     async deleteOffer(offer){
-        
+        await this.execute("/api/offers/"+offer,{method:"DELETE"});
     }
 }
 module.exports = new Client();

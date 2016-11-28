@@ -1,104 +1,103 @@
 .container
 	h3 Offerte
-	Context(target=this.offer)
-		.form-horizontal
-			Binding(name="location")
-				FormGroup(label="Ort" labelClass="col-sm-2" wrapperClass="col-sm-10")
-					Input(type="text")
-			Binding(name="date")
-				FormGroup(label="Datum" labelClass="col-sm-2" wrapperClass="col-sm-10")
-					Date
-			Binding(name="expiration")
-				FormGroup(label="Gültig bis" labelClass="col-sm-2" wrapperClass="col-sm-10")
-					Date
-			Binding(name="person")
-				FormGroup(label="Kontakt" labelClass="col-sm-2" wrapperClass="col-sm-10")
-					ContactBox
-			ul.nav.nav-tabs
-				li(className=this.project?"":"active")
-					a(onClick=this.selectProject.bind(this,null)) Übersicht
-				each project in this.offer.projects
-					li(className=project==this.project?"active":"")
-						a(onClick=this.selectProject.bind(this,project))= project.name
-				li
-					a(onClick=this.addProject.bind(this))
-						.glyphicon.glyphicon-plus
-			if this.project
-				Context(name="projects")
-					Context(name=this.offer.projects.indexOf(this.project)+"")
-						div
-							br
-							br
-							.form-horizontal
-								Binding(name="name")
-									FormGroup(label="Name" labelClass="col-sm-2" wrapperClass="col-sm-10")
-										Input(type="text")
-							.row
-								.col-sm-6
-									.form-horizontal
-										Binding(name="deliveryType" onChange=this.forceUpdate.bind(this))
-											FormGroup(label="Übergabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
-												Input(type="select")
-													option(value="delivery") Lieferung dur SEL
-													option(value="pickup") Abholung durch Kunde
-										Binding(name="deliveryDate")
-											FormGroup(label="Übergabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
-												Date
-										Binding(name="deliveryLocation")
-											FormGroup(label="Übergabeort" labelClass="col-sm-4" wrapperClass="col-sm-8")
-												Input(type="textarea")
-								.col-sm-6
-									.form-horizontal
-										Binding(name="returnType" onChange=this.forceUpdate.bind(this))
-											FormGroup(label="Rückgabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
-												Input(type="select")
-													option(value="pickup") Abholung durch SEL
-													option(value="delivery") Lieferung durch Kunde
-										Binding(name="returnDate")
-											FormGroup(label="Rückgabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
-												Date
-							each name,section in sections
-								h4= name
-								table.table.table-striped
-									thead
-										tr
-											th Name
-											th(style="width:70px") Menge
-											th(style="width:100px") Stückpreis
-											th(style="width:120px") Betrag
-									tbody
-										each item,i in this.project[section].items
-											- if(section == "equipment") var type = (item.kind=="type"?this.types:this.categories)[item._id]
-											Context(name=section)
-												Context(name="items")
-													Context(name=i+"")
-														tr
-															td
-																if section == "equipment"
-																	= (type.manufacturer?(type.manufacturer+" "):"")+type.name
-																else
+	if this.offer
+		- console.log(JSON.stringify(this.offer,null,"\t"));
+		Context(target=this.offer)
+			.form-horizontal
+				Binding(name="location")
+					FormGroup(label="Ort" labelClass="col-sm-2" wrapperClass="col-sm-10")
+						Input(type="text")
+				Binding(name="date")
+					FormGroup(label="Datum" labelClass="col-sm-2" wrapperClass="col-sm-10")
+						Date
+				Binding(name="expiration")
+					FormGroup(label="Gültig bis" labelClass="col-sm-2" wrapperClass="col-sm-10")
+						Date
+				Binding(name="person")
+					FormGroup(label="Kontakt" labelClass="col-sm-2" wrapperClass="col-sm-10")
+						ContactBox
+				ul.nav.nav-tabs
+					li(className=this.project?"":"active")
+						a(onClick=this.selectProject.bind(this,null)) Übersicht
+					each project in this.offer.projects
+						li(className=project==this.project?"active":"")
+							a(onClick=this.selectProject.bind(this,project))= project.name
+					li
+						a(onClick=this.addProject.bind(this))
+							.glyphicon.glyphicon-plus
+				if this.project
+					Context(name="projects")
+						Context(name=this.offer.projects.indexOf(this.project)+"")
+							div
+								br
+								br
+								.form-horizontal
+									Binding(name="name")
+										FormGroup(label="Name" labelClass="col-sm-2" wrapperClass="col-sm-10")
+											Input(type="text")
+								.row
+									.col-sm-6
+										.form-horizontal
+											Binding(name="deliveryType" onChange=this.forceUpdate.bind(this,undefined))
+												FormGroup(label="Übergabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Input(type="select")
+														option(value="delivery") Lieferung dur SEL
+														option(value="pickup") Abholung durch Kunde
+											Binding(name="deliveryDate")
+												FormGroup(label="Übergabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Date
+											Binding(name="deliveryLocation")
+												FormGroup(label="Übergabeort" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Input(type="textarea")
+									.col-sm-6
+										.form-horizontal
+											Binding(name="returnType" onChange=this.forceUpdate.bind(this,undefined))
+												FormGroup(label="Rückgabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Input(type="select")
+														option(value="pickup") Abholung durch SEL
+														option(value="delivery") Lieferung durch Kunde
+											Binding(name="returnDate")
+												FormGroup(label="Rückgabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Date
+								each name,section in sections
+									h4= name
+									table.table.table-striped
+										thead
+											tr
+												th Name
+												th(style="width:70px") Menge
+												th(style="width:100px") Stückpreis
+												th(style="width:120px") Betrag
+										tbody
+											each item,i in this.project.items
+												if item.section == section
+													Context(name="items")
+														Context(name=i+"")
+															tr
+																td
 																	Binding(name="name")
-																		Input(type="text")
-															td
-																Binding(name="count" onChange=this.recalculate.bind(this))
-																	Number
-															td
-																Binding(name="rate" onChange=this.recalculate.bind(this))
-																	Money
-															td= money.format(item.total)
-																.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,item))
-																	.glyphicon.glyphicon-trash
-										tr
-											th(colSpan="3") Projekt-Total
-											td= money.format(this.project[section].total)
-												if section == "equipment"
-													AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
-														.glyphicon.glyphicon-plus
-												else
-													.btn.btn-default.pull-right(onClick=this.addItem.bind(this,section))
-														.glyphicon.glyphicon-plus
-			else
-				each name,section in sections
+																		Input(type="text" disabled=section =="equipment")
+																td
+																	Binding(name="count" onChange=this.recalculate.bind(this))
+																		Number
+																td
+																	Binding(name="rate" onChange=this.recalculate.bind(this))
+																		Money
+																td= money.format(item.total)
+																	.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,item))
+																		.glyphicon.glyphicon-trash
+											tr
+												th(colSpan="3") Projekt-Total
+												td= money.format(this.project[section].total)
+													if section == "equipment"
+														AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
+															.glyphicon.glyphicon-plus
+													else
+														.btn.btn-default.pull-right(onClick=this.addItem.bind(this,section))
+															.glyphicon.glyphicon-plus
+								.btn-toolbar.pull-right
+									.btn.btn-warning(onClick=this.deleteProject.bind(this)) Teilprojeklt löschen
+				else
 					table.table.table-striped
 						thead
 							tr
@@ -108,37 +107,40 @@
 								th
 								th Betrag
 						tbody
-							tr
-								td= name+" aller Projekte"
-								td
-								td
-								td
-								td= money.format(this.offer[section].totalBeforeDiscount)
-									.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,"equipment"))
-										.glyphicon.glyphicon-plus
-							each discount,i in this.offer.discounts
-								if discount.section == section
-									Context(name="discounts")
-										Context(name=i)
-											tr
-												td
-													Binding(name="name")
-														Input(type="text")
-												td
-													Binding(name="amount" onChange=this.recalculate.bind(this))
-														if discount.type == "percent"
-															Number
-														else
-															Money
-												td
-													Binding(name="type" onChange=this.recalculate.bind(this))
-														Input(type="select")
-															option(value="percent") %
-															option(value="chf") CHF
-												td= money.format(discount.total)
-												td= money.format(discount.sectionTotal)
-													.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discount))
-														.glyphicon.glyphicon-trash
+							each name,section in Object.assign({},sections,{"total":"Total"})
+								tr
+									th= name+" aller Projekte"
+									td
+									td
+									td
+									th= money.format(section=="total"?this.offer.totalBeforeDiscount:this.offer[section].totalBeforeDiscount)
+										.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,section))
+											.glyphicon.glyphicon-plus
+								each discount,i in this.offer.discounts
+									if discount.section == section
+										Context(name="discounts")
+											Context(name=i)
+												tr
+													td
+														Binding(name="name")
+															Input(type="text")
+													td
+														Binding(name="amount" onChange=this.recalculate.bind(this))
+															if discount.type == "percent"
+																Number
+															else
+																Money
+													td
+														Binding(name="type" onChange=this.recalculate.bind(this))
+															Input(type="select")
+																option(value="percent") %
+																option(value="chf") CHF
+													td= money.format(discount.total)
+													td= money.format(discount.sectionTotal)
+														.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discount))
+															.glyphicon.glyphicon-trash
+					.btn-toolbar
+						.btn.btn-primary(onClick=this.save.bind(this)) Speichern
 script.
 	var client = require("../client");
 	var {Context,Binding} = require("react-bicon");
@@ -159,9 +161,6 @@ script.
 		deliveryLocation:"",
 		returnType:"pickup",
 		returnDate:null,
-	}
-	
-	var defaultSection = {
 		items:[]
 	}
 	
@@ -178,16 +177,14 @@ script.
 		"transportation":"Transport",
 		"consumables":"Verbrauchsmaterial"
 	}
-	
-	for(var section in sections){
-		defaultSubproject[section] = JSON.parse(JSON.stringify(defaultSection));
-	}
 script(section="body").
 	constructor(props,context){
 		super(props,context);
 		this.componentWillReceiveProps(props);
 	}
 	async componentWillReceiveProps(props){
+		this.types = util.createIndex(await client.findEquipmentTypes({}),"_id");
+		this.categories = util.createIndex(await client.getEquipmentCategories(),"_id");
 		if(props.offer == "new"){
 			this.offer = {
 				location:"",
@@ -203,8 +200,6 @@ script(section="body").
 		}else{
 			this.offer = await client.getOffer(props.offer);
 		}
-		this.types = util.createIndex(await client.findEquipmentTypes({}),"_id");
-		this.categories = util.createIndex(await client.getEquipmentCategories(),"_id");
 		this.recalculate();
 	}
 	
@@ -220,18 +215,19 @@ script(section="body").
 	}
 	
 	filterEquipmentTypes(type){
-		return !this.project.equipment.items.filter(i=>i._id == type._id).length
+		return !this.project.items.filter(i=>i._id == type._id).length
 	}
 	
 	onAddEquipment(items){
 		for(var item of items){
-			this.project.equipment.items.push({section:"equipment",kind:item.kind,_id:item._id,count:1,rate:0});
+			var type = (item.kind=="type"?this.types:this.categories)[item._id]
+			this.project.items.push({name:(type.manufacturer?(type.manufacturer+" "):"")+type.name,section:"equipment",kind:item.kind,_id:item._id,count:1,rate:0});
 		}
 		this.recalculate();
 	}
 	
 	removeEquipment(entry){
-		this.project.equipment.splice(this.project.equipment.indexOf(entry),1);
+		this.project.items.splice(this.project.items.indexOf(entry),1);
 		this.recalculate();
 	}
 	
@@ -244,6 +240,12 @@ script(section="body").
 	
 	removeItem(item){
 		this.project.items.splice(this.project.items.indexOf(item),1);
+		this.recalculate();
+	}
+	
+	deleteProject(){
+		this.offer.projects.splice(this.offer.projects.indexOf(this.project),1);
+		delete this.project;
 		this.recalculate();
 	}
 	
@@ -268,8 +270,8 @@ script(section="body").
 		}
 		for(var p of this.offer.projects){
 			for(var section in sections){
-				p[section].total = 0;
-				for(var i of p[section].items){
+				p[section] = {total:0};
+				for(var i of p.items.filter(i=>i.section==section)){
 					i.total = (i.count||0)*(i.rate||0);
 					p[i.section].total += i.total;
 				}
@@ -279,10 +281,46 @@ script(section="body").
 		for(var section in sections){
 			this.offer[section].totalBeforeDiscount = this.offer[section].total;
 		}
-		for(var discount of this.offer.discounts){		
-			discount.total = -(discount.type=="percent"?this.offer[discount.section].total/100*discount.amount:discount.amount);
-			discount.sectionTotal = this.offer[discount.section].total = this.offer[section].total+discount.total;
+		for(var discount of this.offer.discounts.filter(d=>d.section!="total")){
+			var section = this.offer[discount.section];
+			discount.total = -(discount.type=="percent"?section.total/100*discount.amount:discount.amount);
+			discount.sectionTotal = section.total = section.total+discount.total;
+		}
+		this.offer.totalBeforeDiscount = 0;
+		for(var section in sections){
+			this.offer.totalBeforeDiscount += this.offer[section].total;
+		}
+		this.offer.total = this.offer.totalBeforeDiscount;
+		for(var discount of this.offer.discounts.filter(d=>d.section=="total")){
+			var section = this.offer;
+			discount.total = -(discount.type=="percent"?section.total/100*discount.amount:discount.amount);
+			discount.sectionTotal = section.total = section.total+discount.total;
 		}
 		
+		console.log("calculated",this.offer)
+		
+		this.forceUpdate();
+	}
+	
+	async save(){
+		var data = JSON.parse(JSON.stringify(this.offer));
+		data.project = this.props.project;
+		for(var section in sections) delete data[section];
+		delete data.totalBeforeDiscount;
+		for(var project of data.projects){
+			for(var section in sections) delete project[section];
+			for(var item of project.items){
+				delete item.total;
+			}
+		}
+		
+		console.log(data);
+		return;
+	
+		if(data.id){
+			await client.saveOffer(data.id,data)
+		}else{
+			this.offer.id = await client.createOffer(data);
+		}
 		this.forceUpdate();
 	}

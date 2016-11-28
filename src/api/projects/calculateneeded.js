@@ -32,6 +32,7 @@ module.exports = async function(db,project){
     }
     timeline = Object.keys(timeline).map(function(time){return parseFloat(time)}).sort().map(function(time){return {time:time,types:timeline[time]}});
 
+
     //find the lowest count for every type in the timeline
     var min = {};
     if(timeline.length){
@@ -40,6 +41,7 @@ module.exports = async function(db,project){
             if(timeline[i].time >= project.end) break;
             var time = timeline[i].types;
             for(var type in time){
+                if(!current[type]) current[type] = 0;
                 current[type] += time[type];
             }
             if(timeline[i].time < project.start) continue;
