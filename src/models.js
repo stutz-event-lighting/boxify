@@ -223,14 +223,16 @@ module.exports = function(db){
     		deliveryLocation: String,
     		returnType: String, //pickup or delivery
     		returnDate: Number,
+            servicesUs: String,
+            servicesCustomer: String,
             items: [{
                 _id:false,
                 section: String,
                 name: String,
         		count: Number,
         		rate: Number,
-                type: {type:Number},
-                category: ObjectId
+                type: {type:Number,ref:"equipmenttypes"},
+                category: {type:ObjectId,ref:"equipmentcategories"}
             }]
         }],
         discounts:[{
@@ -238,7 +240,7 @@ module.exports = function(db){
             section: String,
 			name: String,
 			amount: Number,
-			type: String // percent or chf
+			type: {type:String} // percent or chf
         }],
         total:Number
     })

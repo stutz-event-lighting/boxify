@@ -59,6 +59,17 @@
 											Binding(name="returnDate")
 												FormGroup(label="Rückgabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Date
+								.row
+									.col-sm-6
+										.form-horizontal
+											Binding(name="servicesUs")
+												FormGroup(label="Unsere Leistungen" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Input(type="textarea")
+									.col-sm-6
+										.form-horizontal
+											Binding(name="servicesCustomer")
+												FormGroup(label="Unsere Leistungen" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Input(type="textarea")
 								each name,section in sections
 									h4= name
 									table.table.table-striped
@@ -76,7 +87,7 @@
 															tr
 																td
 																	Binding(name="name")
-																		Input(type="text" disabled=section =="equipment")
+																		Input(type="text")
 																td
 																	Binding(name="count" onChange=this.recalculate.bind(this))
 																		Number
@@ -140,6 +151,8 @@
 														.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discount))
 															.glyphicon.glyphicon-trash
 					.btn-toolbar.pull-right
+						if this.offer._id
+							.btn.btn-danger(onClick=this.delete.bind(this)) Löschen
 						.btn.btn-primary(onClick=this.save.bind(this)) Speichern
 script.
 	var client = require("../client");
@@ -161,6 +174,8 @@ script.
 		deliveryLocation:"",
 		returnType:"pickup",
 		returnDate:null,
+		servicesUs:"",
+		servicesCustomer:"",
 		items:[]
 	}
 	
@@ -320,9 +335,13 @@ script(section="body").
 		}
 	
 		if(data._id){
-			this.props.onCraete(await client.updateOffer(data._id,data));
+			await client.updateOffer(data._id,data)
 		}else{
-			this.offer.id = await client.createOffer(data);
-			this.forceUpdate();
+			this.props.onCreate(await client.createOffer(data));
 		}
+	}
+	
+	async delete(){
+		await client.deleteOffer(this.offer._id);
+		history.back();
 	}
