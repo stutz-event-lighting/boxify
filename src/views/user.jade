@@ -12,9 +12,9 @@
             a(onClick=this.goTo.bind(this,"/documents")) Dokumente
     case route.name
         when "details"
-            Contact(contact=client.session.user._id onContactSelected=this.props.onContactSelected)
+            Contact(contact=this.props.user onContactSelected=this.props.onContactSelected)
         when "password"
-            ChangePassword(contact=client.session.user._id)
+            ChangePassword(contact=this.props.user)
         when "permissions"
             if this.user
                 each permission,key in this.user.permissions
