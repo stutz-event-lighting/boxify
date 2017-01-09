@@ -1,5 +1,5 @@
-extends ./contact
-script(section="body").
-    getContactId(){
-        return this.props.customer;
-    }
+.container
+    h3 Kunde
+    Contact(contact=this.props.customer onContactSelected=this.props.onContactSelected)
+script.
+    var Contact = require("./contact");

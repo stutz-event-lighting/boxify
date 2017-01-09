@@ -11,7 +11,7 @@ module.exports = class Input extends react.Component{
 			checked:isCheckbox?this.props.value:undefined,
 			onChange:this.onChange.bind(this),
 			onFocus:this.onFocus.bind(this),
-			className:(isCheckbox?"":"form-control")+(this.props.errors.length?" has-error":"")+(this.props.className?(" "+this.props.className):""),
+			className:(isCheckbox?"":"form-control")+(this.props.errors.length?" has-error":"")+(this.props.className?(" "+this.props.className):"")
 		});
 		delete props.errors;
 		return react.createElement(component,props,this.props.children);

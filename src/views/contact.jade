@@ -1,155 +1,150 @@
-.container
-    if this.state.item
-        h2 Kontakt bearbeiten
-            .btn-toolbar.pull-right
-                if !this.hideBackButton
-                    button.btn.btn-default(onClick=this.cancel.bind(this))
-                        i.glyphicon.glyphicon-chevron-left
-                        |  Zurück
-                button.btn.btn-primary(onClick=this.save.bind(this))
-                    i.glyphicon.glyphicon-ok
-                    |  Speichern
+div
+    if this.contact
         .row
             .col-lg-3.col-md-4.col-sm-6.col-xs-12
                 div.text-center
                     ImageViewer(image=this.getImagePath() onChange=this.onImageChanged.bind(this) editable)
             .col-lg-9.col-md-8.col-sm-6.col-xs-12
                 h3 Kontakt Daten
-                .form-horizontal
-                    .form-group
-                        label.col-lg-2.control-label Typ
-                        .col-lg-10
-                            select.form-control(value=this.state.item.type onChange=this.setValue.bind(this,"type"))
-                                option(value="person") Person
-                                option(value="company") Firma
-                                option(value="club") Verein
-                    if this.state.item.type == "person"
-                        .form-group
-                            label.col-lg-2.control-label Anrede
-                            .col-lg-10
-                                input.form-control(placeholder="Anrede" value=this.state.item.salutation onChange=this.setValue.bind(this,"salutation"))
+                Context(target=this.contact)
+                    - console.log(this.contact)
+                    .form-horizontal
+                        Binding(name="type" onChange=this.forceUpdate.bind(this,undefined))
+                            FormGroup(label="Typ" labelClass="col-lg-2" wrapperClass="col-lg-10")
+                                Input(type="select")
+                                    option(value="person") Person
+                                    option(value="company") Firma
+                                    option(value="club") Verein
+                        if this.contact.type == "person"
+                            Binding(name="salutation")
+                                FormGroup(label="Anrede" labelClass="col-lg-2" wrapperClass="col-lg-10")
+                                    Input(type="text")
                         .form-group
                             label.col-lg-2.control-label Name
                             .col-lg-10(style="display:flex")
-                                input.form-control(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.firstname onChange=this.setValue.bind(this,"firstname"))
-                                input.form-control(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.lastname onChange=this.setValue.bind(this,"lastname"))
-                    else
+                                if this.contact.type == "person"
+                                    Binding(name="firstname")
+                                        Input(type="text" placeholder="Vorname" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;")
+                                    Binding(name="lastname")
+                                        Input(type="text" placeholder="Nachname" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px")
+                                else
+                                    Binding(name="firstname")
+                                        Input(type="text")
                         .form-group
-                            label.col-lg-2.control-label Name
+                            label.col-lg-2.control-label Adresse
                             .col-lg-10
-                                input.form-control(placeholder="Name" value=this.state.item.firstname onChange=this.setValue.bind(this,"firstname"))
-                    .form-group
-                        label.col-lg-2.control-label Adresse
-                        .col-lg-10
-                            div(style="marginBottom:15px;display:flex")
-                                input.form-control(placeholder="Strasse" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.streetName onChange=this.setValue.bind(this,"streetName"))
-                                input.form-control(placeholder="Hausnummer" style="width:25%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.streetNr onChange=this.setValue.bind(this,"streetNr"))
-                            div(style="marginBottom:15px;display:flex")
-                                input.form-control(placeholder="PLZ" style="width:25%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;" value=this.state.item.zip onChange=this.setValue.bind(this,"zip"))
-                                input.form-control(placeholder="Ort" style="flex:1;borderTopLeftRadius:0px;borderBottomLeftRadius:0px" value=this.state.item.city onChange=this.setValue.bind(this,"city"))
-                    .form-group
-                        label.col-lg-2.control-label E-Mail
-                        .col-lg-10
-                            each email in this.state.item.emails
                                 div(style="marginBottom:15px;display:flex")
-                                    input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=email.type onChange=this.setValue.bind(this,"type",email))
-                                    input.form-control(placeholder="E-Mail" style="flex:1;borderRight:0px;borderRadius:0px" value=email.email onChange=this.setValue.bind(this,"email",email))
-                                    .btn.btn-default(style="borderRight:0px;borderRadius:0px;"+(email.standard?"color:orange":"") onClick=this.setEmailAsStandard.bind(this,email))
-                                        i.glyphicon.glyphicon-star
-                                    .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removeEmail.bind(this,email))
-                                        i.glyphicon.glyphicon-trash
-                            div(style="marginBottom:15px")
-                                .btn.btn-default.pull-right(onClick=this.addEmail.bind(this))
-                                    i.glyphicon.glyphicon-plus
-                    .form-group
-                        label.col-lg-2.control-label Telefon
-                        .col-lg-10
-                            each phone in this.state.item.phones
+                                    Binding(name="streetName")
+                                        Input(type="text" placeholder="Strasse" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;")
+                                    Binding(name="streetNr")
+                                        Input(type="text" placeholder="Hausnummer" style="width:25%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px")
                                 div(style="marginBottom:15px;display:flex")
-                                    input.form-control(placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px" value=phone.type onChange=this.setValue.bind(this,"type",phone))
-                                    input.form-control(placeholder="Nummer" style="flex:1;borderRight:0px;borderRadius:0px" value=phone.number onChange=this.setValue.bind(this,"number",phone))
-                                    .btn.btn-default(style="borderRight:0px;borderRadius:0px;"+(phone.standard?"color:orange":"") onClick=this.setPhoneAsStandard.bind(this,phone))
-                                        i.glyphicon.glyphicon-star
-                                    .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removePhone.bind(this,phone))
-                                        i.glyphicon.glyphicon-trash
-                            div(style="marginBottom:15px")
-                                .btn.btn-default.pull-right(onClick=this.addPhone.bind(this))
-                                    i.glyphicon.glyphicon-plus
-                    if this.state.item.type == "company" || this.state.item.type == "club"
+                                    Binding(name="zip")
+                                        Input(type="text" placeholder="PLZ" style="flex:1;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px;")
+                                    Binding(name="city")
+                                        Input(type="text" placeholder="Ort" style="width:75%;borderTopLeftRadius:0px;borderBottomLeftRadius:0px")
                         .form-group
-                            label.col-lg-2.control-label Kontakte
-                            .col-lg-10
-                                each contact in this.state.item.contacts
-                                    .input-group(style="marginBottom:15px")
-                                        span.input-group-addon
-                                            a(href="/contacts/"+contact.id)=contact.name
-                                        input.form-control(placeholder="Funktion" value=contact.type onChange=this.setValue.bind(this,"type",contact))
-                                        span.input-group-btn
-                                            .btn.btn-default(onClick=this.removeContact.bind(this,contact))
-                                                i.glyphicon.glyphicon-trash
-                                CreateContactButton(callback=this.addContact.bind(this))
-                    .form-group
-                        label.col-lg-2.control-label Kommentar
-                        .col-lg-10
-                            TextArea.form-control(placeholder="Kommentar" value=this.state.item.remark onChange=this.setValue.bind(this,"remark"))
-
-                block properties
-        block container
+                            label.col-lg-2.control-label E-Mail
+                            Context(name="emails")
+                                .col-lg-10
+                                    each email,i in this.contact.emails
+                                        Context(name=i)
+                                            div(style="marginBottom:15px;display:flex")
+                                                Binding(name="type")
+                                                    Input(type="text" placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px")
+                                                Binding(name="email")
+                                                    Input(type="email" placeholder="E-Mail" style="flex:1;borderRight:0px;borderRadius:0px")
+                                                .btn.btn-default(style="borderRight:0px;borderRadius:0px;"+(email.standard?"color:orange":"") onClick=this.setEmailAsStandard.bind(this,email))
+                                                    .glyphicon.glyphicon-star
+                                                .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removeEmail.bind(this,email))
+                                                    .glyphicon.glyphicon-trash
+                                    div(style="marginBottom:15px")
+                                        .btn.btn-default.pull-right(onClick=this.addEmail.bind(this))
+                                            i.glyphicon.glyphicon-plus
+                        .form-group
+                            label.col-lg-2.control-label Telefon
+                            Context(name="phones")
+                                .col-lg-10
+                                    each phone,i in this.contact.phones
+                                        Context(name=i)
+                                            div(style="marginBottom:15px;display:flex")
+                                                Binding(name="type")
+                                                    Input(type="text" placeholder="Typ" style="width:30%;borderRight:0px;borderTopRightRadius:0px;borderBottomRightRadius:0px")
+                                                Binding(name="number")
+                                                    Input(type="text" placeholder="Nummer" style="flex:1;borderRight:0px;borderRadius:0px")
+                                                .btn.btn-default(style="borderRight:0px;borderRadius:0px;"+(phone.standard?"color:orange":"") onClick=this.setPhoneAsStandard.bind(this,phone))
+                                                    i.glyphicon.glyphicon-star
+                                                .btn.btn-default(style="borderTopLeftRadius:0px;borderBottomLeftRadius:0px" onClick=this.removePhone.bind(this,phone))
+                                                    i.glyphicon.glyphicon-trash
+                                    div(style="marginBottom:15px")
+                                        .btn.btn-default.pull-right(onClick=this.addPhone.bind(this))
+                                            i.glyphicon.glyphicon-plus
+                        if this.contact.type == "company" || this.contact.type == "club"                            
+                            .form-group
+                                label.col-lg-2.control-label Kontakte
+                                Context(name="contacts")
+                                    .col-lg-10
+                                        each contact,i in this.contact.contacts
+                                            Context(name=i)
+                                                .input-group(style="marginBottom:15px")
+                                                    span.input-group-addon
+                                                        a(onClick=this.props.onContactSelected.bind(this,contact.id))=contact.name                                                    
+                                                    Binding(name="type")
+                                                        Input(type="text" placeholder="Funktion" style="flex:1")
+                                                    span.input-group-btn
+                                                        .btn.btn-default(onClick=this.removeContact.bind(this,contact))
+                                                            i.glyphicon.glyphicon-trash
+                                        CreateContactButton(callback=this.addContact.bind(this))
+                        Binding(name="remark")
+                            FormGroup(label="Kommentar" labelClass="col-lg-2" wrapperClass="col-lg-10")
+                                Input(type="textare")
+        .btn-toolbar.pull-right
+            button.btn.btn-primary(onClick=this.save.bind(this))
+                i.glyphicon.glyphicon-ok
+                |  Speichern
 script.
     var client = require("../client");
-    var TextArea = require("react-textarea-autosize").default;
     var CreateContactButton = require("./CreateContactButton");
     var ImageViewer = require("./ImageViewer");
+    var {Context,Binding} = require("react-bicon");
+    var FormGroup = require("./formgroup");
+    var Input = require("./input");
+    var ContactBox = require("./ContactBox");
+    var CreateContactButton = require("./CreateContactButton");
 script(section="body").    
     constructor(props,context){
         super(props,context);
-        this.state = {};
-        this.componentWillReceiveProps(props);
-        
+        this.componentWillReceiveProps(props);        
     }
-    componentWillReceiveProps(props){
-        this.props = props;
-        this.loadContact();
-    }
-    
-    getContactId(){
-        return this.props.contact;
-    }
-    
-    async loadContact(){
-        this.state.item = await client.getContact(this.getContactId());
-        this.forceUpdate();
-    }
-    
-    setValue(name,target,e){
-        (target||this.state.item)[name] = e.target.value;
+    async componentWillReceiveProps(props){
+        this.contact = await client.getContact(props.contact);
         this.forceUpdate();
     }
     
     getImagePath(){
-        return this.state.item.image?this.state.item.image.url:"/api/contacts/"+this.state.item._id+"/image";
+        return this.image?this.image.url:"/api/contacts/"+this.contact._id+"/image";
     }
     
     onImageChanged(image){
-        this.state.item.image = image;
+        this.image = image;
         this.forceUpdate();
     }
     
     addEmail(){
         var entry = {type:"",email:""};
-        if(!this.state.item.emails.length) entry.standard = true;
-        this.state.item.emails.push(entry);
+        if(!this.contact.emails.length) entry.standard = true;
+        this.contact.emails.push(entry);
         this.forceUpdate();
     }
     
     removeEmail(email){
-        this.state.item.emails.splice(this.state.item.emails.indexOf(email),1);
-        if(email.standard && this.state.item.emails.length) this.state.item.emails[0].standard = true;
+        this.contact.emails.splice(this.contact.emails.indexOf(email),1);
+        if(email.standard && this.contact.emails.length) this.contact.emails[0].standard = true;
         this.forceUpdate();
     }
     
     setEmailAsStandard(email){
-        var emails = this.state.item.emails;
+        var emails = this.contact.emails;
         for(var i = 0; i < emails.length; i++) delete emails[i].standard;
         email.standard = true;
         this.forceUpdate();
@@ -157,69 +152,43 @@ script(section="body").
     
     addPhone(){
         var entry = {type:"",number:""};
-        if(!this.state.item.phones.length) entry.standard = true;
-        this.state.item.phones.push(entry);
+        if(!this.contact.phones.length) entry.standard = true;
+        this.contact.phones.push(entry);
         this.forceUpdate();
     }
     
     removePhone(phone){      
-        this.state.item.phones.splice(this.state.item.phones.indexOf(phone),1);
-        if(phone.standard && this.state.item.phones.length) this.state.item.phones[0].standard = true;
+        this.contact.phones.splice(this.contact.phones.indexOf(phone),1);
+        if(phone.standard && this.contact.phones.length) this.contact.phones[0].standard = true;
         this.forceUpdate();
     }
     
     setPhoneAsStandard(phone){
-        var phones = this.state.item.phones;
+        var phones = this.contact.phones;
         for(var i = 0; i < phones.length; i++) delete phones[i].standard;
         phone.standard = true;
         this.forceUpdate();
     }
     
-    addContact(id,name){
-        if(!this.state.item.contacts) this.state.item.contacts = [];
-        this.state.item.contacts.push({
-            id:id,
-            name:name,
+    addContact(){
+        if(!this.contact.contacts) this.contact.contacts = [];
+        this.contact.contacts.push({
+            id:null,
             type:""
         });
         this.forceUpdate();
     }
     
     removeContact(contact){        
-        this.state.item.contacts.splice(this.state.item.contacts.indexOf(contact),1);
+        this.contact.contacts.splice(this.contact.contacts.indexOf(contact),1);
         this.forceUpdate();
     }
     
-    cancel(){
-        history.back();
-    }
-    
     async save(){
-        var data = {
-            type:this.state.item.type,
-            salutation:this.state.item.salutation,
-            firstname:this.state.item.firstname,
-            lastname:this.state.item.lastname,
-            streetName:this.state.item.streetName,
-            streetNr:this.state.item.streetNr,
-            zip:this.state.item.zip,
-            city:this.state.item.city,
-            emails:this.state.item.emails,
-            phones:this.state.item.phones,
-            contacts:this.state.item.contacts,
-            remark:this.state.item.remark,
-        };
-        await client.updateContact(this.getContactId(),data);
-        if(this.state.item.image){
-            await client.updateContactImage(this.getContactId(),{image:this.state.item.image.url});
-            delete this.state.item.image;
+        await client.updateContact(this.props.contact,this.contact);
+        if(this.image){
+            await client.updateContactImage(this.props.contact,{image:this.image.url});
+            delete this.image;
             this.forceUpdate();
         }
-        this.onSaved();
-    }
-    
-    onSaved(){
-        history.back();
-    }
-    
-    
+    }    

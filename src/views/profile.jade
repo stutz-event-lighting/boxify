@@ -1,69 +1,29 @@
-extends ./contact
-
-append container
-    .row
-        .col-xs-12
-            h2 Passwort
-            .btn-toolbar
-                .btn.btn-default(onClick=this.changePassword.bind(this)) Passwort ändern
-    each Section in this.constructor.extensionSections
-        Section(user=this.getContactId())
-    if this.state.changepassword
-        Modal
-            .modal-header
-                h2 Passwort ändern
-            .modal-body
-                .form-horizontal
-                    .form-group
-                        label.col-lg-2.control-label Neues Passwort
-                        .col-lg-10
-                            input.form-control(type="password" value=this.state.changepassword.password onChange=this.onPasswordChanged.bind(this))
-                    .form-group
-                        label.col-lg-2.control-label Neues Passwort bestätigen
-                        .col-lg-10
-                            input.form-control(type="password" value=this.state.changepassword.password2 onChange=this.onPassword2Changed.bind(this))
-            .modal-footer
-                button.btn.btn-default(onClick=this.cancelChangePassword.bind(this)) Abbrechen
-                button.btn.btn-primary(onClick=this.confirmChangePassword.bind(this)) Speichern
+.container
+    h3 Profil
+    - var route = this.props.route
+    ul.nav.nav-tabs
+        li(className=route.name=="details"?"active":"")
+            a(onClick=this.goTo.bind(this,"")) Details
+        li(className=route.name=="password"?"active":"")
+            a(onClick=this.goTo.bind(this,"/password")) Passwort
+    case route.name
+        when "details"
+            Contact(contact=client.session.user._id  onContactSelected=this.props.onContactSelected)
+        when "password"
+            ChangePassword(contact=client.session.user._id)
 script.
     var client = require("../client");
-    var Modal = require("./Modal");
+    var {Router} = require("react-route-system");
+    var Contact = require("./contact");
+    var ChangePassword = require("./changepassword");
+    
     Component.extensionSections = [];
-    Component.hideBackButton = true;
-script(section="body").
-    getNeededPermissions(){
-        return [];
-    }    
-    getContactId(){
-        return client.session.user._id;
+    Component.router = new Router()
+        .add("details","")
+        .add("password","/password")
+            
+script(section="body").    
+    goTo(path){
+        this.props.location.replace(path);
     }
-    
-    changePassword(){
-        this.state.changepassword = {password:"",password2:""};
-        this.update();
-    }
-    
-    onPasswordChanged(e){
-        this.state.changepassword.password = e.target.value;
-        this.update();
-    }
-    
-    onPassword2Changed(e){
-        this.state.changepassword.password2 = e.target.value;
-        this.update();
-    }
-    
-    cancelChangePassword(){
-        delete this.state.changepassword;
-        this.update();
-    }
-    
-    async confirmChangePassword(){
-        if(!this.state.changepassword.password.length) return alert("Bitte geben Sie ein neues Passwort ein");
-        if(this.state.changepassword.password != this.state.changepassword.password2) return alert("Die Passwörter sind nicht gleich");        
-        await client.setPassword(this.getContactId(),this.state.changepassword.password);
-        delete this.state.changepassword;
-        this.update();
-    }
-    
-    onSaved(){}
+        

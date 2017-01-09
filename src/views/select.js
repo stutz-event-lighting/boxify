@@ -1,4 +1,5 @@
-var ReactSelect = require("react-select").Async;
+var Creatable = require("react-select").AsyncCreatable;
+var Async = require("react-select").Async;
 var react = require("react");
 module.exports = class Select extends react.Component{
 	constructor(props,context){
@@ -34,7 +35,7 @@ module.exports = class Select extends react.Component{
 		}
 	}
 	render(){
-		return react.createElement(ReactSelect,{
+		return react.createElement(this.create?Creatable:Async,{
 			value:this.value?{value:this.value,label:this.label}:null,
 			loadOptions:async function(term){
 				return {options:await this.getOptions(term)}
@@ -43,7 +44,11 @@ module.exports = class Select extends react.Component{
 			onChange:this.onChange.bind(this),
 			disabled:this.props.disabled,
 			ref:"select",
-			placeholder:this.props.placeholder
+			onNewOptionClick:this.create?this.create.bind(this):undefined,
+			placeholder:this.props.placeholder,
+			style:this.props.style,
+			wrapperStyle:this.props.wrapperStyle,
+			promptTextCreator:(name)=>"\""+name+"\" erstellen"
 		})
 	}
 	onChange(val){

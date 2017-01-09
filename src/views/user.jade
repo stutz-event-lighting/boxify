@@ -1,50 +1,70 @@
-extends ./profile
-
-append properties
-    if this.state.user
-        h4 Berechtigungen
-        each permission,key in this.state.user.permissions
-            if client.hasPermission(key)
-                div
-                    label
-                        input(type="checkbox" checked=permission.allowed onChange=this.togglePermission.bind(this,permission))
-                        = " "+permission.name
+.container
+    h3 Profil
+    - var route = this.props.route
+    ul.nav.nav-tabs
+        li(className=route.name=="details"?"active":"")
+            a(onClick=this.goTo.bind(this,"")) Details
+        li(className=route.name=="password"?"active":"")
+            a(onClick=this.goTo.bind(this,"/password")) Passwort
+        li(className=route.name=="permissions"?"active":"")
+            a(onClick=this.goTo.bind(this,"/permissions")) Berechtigungen
+        li(className=route.name=="documents"?"active":"")
+            a(onClick=this.goTo.bind(this,"/documents")) Dokumente
+    case route.name
+        when "details"
+            Contact(contact=client.session.user._id onContactSelected=this.props.onContactSelected)
+        when "password"
+            ChangePassword(contact=client.session.user._id)
+        when "permissions"
+            if this.user
+                each permission,key in this.user.permissions
+                    if client.hasPermission(key)
+                        div
+                            label
+                                input(type="checkbox" checked=permission.allowed onChange=this.togglePermission.bind(this,permission))
+                                = " "+permission.name
+                .btn-toolbar
+                    .btn.btn-primary(onClick=this.save.bind(this)) Speichern
+        when "documents"
+            Documents(entity="user-"+this.props.user)
 script.
     var client = require("../client");
-    Component.hideBackButton = false;
+    var {Router} = require("react-route-system");
+    var Contact = require("./contact");
+    var ChangePassword = require("./changepassword");
+    var Documents = require("./documents");
     
+    Component.extensionSections = [];
+    Component.router = new Router()
+        .add("details","")
+        .add("password","/password")
+        .add("permissions","/permissions")
+        .add("documents","/documents")
+            
 script(section="body").
-    getNeededPermissions(){
-        return ["users_read"];
+    constructor(props,context){
+        super(props,context);
+        this.componentWillReceiveProps(props);
     }
-    
-    getContactId(){
-        return this.props.user;
-    }    
-        
-    async loadContact(){
-        super.loadContact();
-        this.state.user = await client.getUser(this.getContactId());
+    async componentWillReceiveProps(p){
+        this.user = await client.getUser(p.user);
         this.forceUpdate();
     }
-    
-    cancel(){
-        history.back();
+    goTo(path){
+        this.props.location.replace(path);
     }
     
     togglePermission(permission,e){
         permission.allowed = e.target.checked;
-        this.forceUpdate();     
+        this.forceUpdate();
     }
     
-    async onSaved(){
+    async save(){
         var permissions = {};
-        for(var permission in this.state.user.permissions){
-            permissions[permission] = this.state.user.permissions[permission].allowed;
-        }
-        
-        await client.saveUser(this.state.user._id,{
+        for(var permission in this.user.permissions){
+            permissions[permission] = this.user.permissions[permission].allowed;
+        }        
+        await client.saveUser(this.props.user,{
             permissions:permissions
         });
-        history.back();
     }
