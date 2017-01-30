@@ -5,12 +5,13 @@ module.exports = async function(ctx,role){
     if(body.search){
         var words = body.search.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&").replace(/\s\s+/g," ").split(" ");
         var needed = [];
-        for(var i = 0; i < words.length; i++){
+        for(var word of words){
+            var q = [
+                {firstname:{$regex:word,$options:"i"}},
+                {lastname:{$regex:word,$options:"i"}}
+            ];
             needed.push({
-                $or:[
-                    {firstname:{$regex:words[i],$options:"i"}},
-                    {lastname:{$regex:words[i],$options:"i"}}
-                ]
+                $or:q
             })
         }
         if(needed.length){
