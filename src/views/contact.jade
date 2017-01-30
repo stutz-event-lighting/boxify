@@ -170,10 +170,12 @@ script(section="body").
         this.forceUpdate();
     }
     
-    addContact(){
+    async addContact(id){
         if(!this.contact.contacts) this.contact.contacts = [];
+        var c = await client.getContact(id);
         this.contact.contacts.push({
-            id:null,
+            id:id,
+            name: [c.firstname,c.lastname].filter(n=>n).join(" "),
             type:""
         });
         this.forceUpdate();
