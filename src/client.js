@@ -330,7 +330,9 @@ class Client extends events.EventEmitter{
     }
 
     async getOffers(opts){
-        return await this.getJson("/api/offers");
+        var params = new URLSearchParams();
+		if(opts.project) params.append("project",opts.project);
+        return await this.getJson("/api/offers?"+params.toString());
     }
     async getOffer(offer){
         return await this.getJson("/api/offers/"+offer)
