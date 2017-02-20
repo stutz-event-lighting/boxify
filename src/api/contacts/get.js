@@ -11,7 +11,7 @@ module.exports = async function(ctx){
     };
     var contact = await ctx.app.db.Contact
         .findOne(select)
-        .select("type salutation firstname lastname streetName streetNr zip city emails phones contacts")
+        .select("type salutation firstname lastname streetName streetNr zip city emails phones contacts remark")
         .populate("contacts._id",undefined,undefined,{select:"firstname lastname"});
     if(!contact) ctx.throw(404);
 
