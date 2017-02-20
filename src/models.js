@@ -187,7 +187,7 @@ module.exports = function(db){
                 }
             }
         ]*/
-    },{minimize:false}))
+    },{minimize:false}),"equipmentio")
 
     db.EquipmentReservation = db.model("equipmentreservations",new Schema({
         _id:        ObjectId,

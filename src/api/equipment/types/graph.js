@@ -94,7 +94,7 @@ module.exports = async function(ctx){
         var demand = demands[i];
         demandtimeline[demand.time] = currentdemand += demand.count;
     }
-
+    
     ctx.set("Content-Type","application/json");
     ctx.body = JSON.stringify({supply:supplytimeline,ownsupply:ownsupplytimeline,demand:demandtimeline});
 }

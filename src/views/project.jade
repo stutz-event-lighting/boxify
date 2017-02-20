@@ -7,7 +7,7 @@
 					i.glyphicon.glyphicon-chevron-left
 					|  Zurück
 			.btn-toolbar.pull-right
-				if this.state.item.status == "ongoing"
+				if this.state.item.status == "ongoing" && Object.keys(this.state.item.balance).length === 0 && this.state.reservations.length === 0
 					.btn.btn-primary(onClick=this.finish.bind(this) disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
 		h2 Projekt			
 		- var route = this.props.route;
