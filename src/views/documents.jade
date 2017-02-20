@@ -12,7 +12,7 @@ div
 						DeleteButton.btn-xs(containerClass="pull-right" onDelete=this.delete.bind(this,document))
 	.btn-toolbar.pull-right
 		.btn.btn-primary(onClick=this.chooseFile.bind(this)) Neues Dokument
-		input(type="file" style="display:none" ref="file" onChange=this.applyFile.bind(this))
+		input(type="file" multiple="multiple" style="display:none" ref="file" onChange=this.applyFile.bind(this))
 script(section="body").
 	constructor(props,context){
 		super(props,context);
@@ -31,12 +31,15 @@ script(section="body").
 	}
 	applyFile(e){
 		var files = e.target.files;
+		for(var file of files) this.uploadFile(file);		
+	}
+	uploadFile(file){
 		var reader = new FileReader();
 		reader.onload = async function(e) {
-			var id = await client.uploadDocument({entity:this.props.entity,name:files[0].name,file:e.target.result});
+			var id = await client.uploadDocument({entity:this.props.entity,name:file.name,file:e.target.result});
 			this.reloadDocuments();
 		}.bind(this)
-		reader.readAsDataURL(files[0]);
+		reader.readAsDataURL(file);
 	}
 	viewDocument(document){
 		window.open("/api/documents/"+document._id,"_blank");
