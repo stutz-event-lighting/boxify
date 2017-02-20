@@ -7,7 +7,7 @@ module.exports = async function(ctx){
         var words = body.search.split(" ");
         for(var word of words){
             var q = [{
-                name:{$regex:"^"+word.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),$options:"i"}
+                name:new RegExp(word.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),"i")
             }];
             if(word.split(".").length == 2){
                 var customer = parseFloat(word.split(".")[0]);
@@ -25,8 +25,12 @@ module.exports = async function(ctx){
     if(body.finished !== true){
         needed.push({status:"ongoing"})
     }
+
+    var query = {};
+    if(needed.length) query.$and = needed;
+
     var projects = await ctx.app.db.Project
-        .find({$and:needed})
+        .find(query)
         .select("name customer start end status")
         .populate("customer","firstname lastname")
         .sort({start:1});
