@@ -38,6 +38,8 @@ module.exports = function(db){
         permissions: [
             String
         ],
+        ahvNumber: String,
+        ibanNumber: String,
         //only present for customers_read
         lastProjectNumber: Number
     });

@@ -7,6 +7,5 @@ module.exports = router
 	.post("/find",ensurePermission("users_read"),require("./find"))
 	.get("/:id",getSession,require("./get"))
 	.post("/:id/save",getSession,require("./update"))
-	.post("/:user/password",getSession,require("./setpassword"))
 	.get("/:user/delete",getSession,require("./delete"))
 	.routes();

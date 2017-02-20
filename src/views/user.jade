@@ -4,6 +4,8 @@
     ul.nav.nav-tabs
         li(className=route.name=="details"?"active":"")
             a(onClick=this.goTo.bind(this,"")) Details
+        li(className=route.name=="employee"?"active":"")
+            a(onClick=this.goTo.bind(this,"/employee")) Mitarbeiterdetails
         li(className=route.name=="password"?"active":"")
             a(onClick=this.goTo.bind(this,"/password")) Passwort
         li(className=route.name=="permissions"?"active":"")
@@ -13,6 +15,8 @@
     case route.name
         when "details"
             Contact(contact=this.props.user onContactSelected=this.props.onContactSelected)
+        when "employee"
+            Employee(user=this.props.user)
         when "password"
             ChangePassword(contact=this.props.user)
         when "permissions"
@@ -31,16 +35,17 @@ script.
     var client = require("../client");
     var {Router} = require("react-route-system");
     var Contact = require("./contact");
+    var Employee = require("./employee");
     var ChangePassword = require("./changepassword");
     var Documents = require("./documents");
     
     Component.extensionSections = [];
     Component.router = new Router()
         .add("details","")
+        .add("employee","/employee")
         .add("password","/password")
         .add("permissions","/permissions")
-        .add("documents","/documents")
-            
+        .add("documents","/documents")            
 script(section="body").
     constructor(props,context){
         super(props,context);

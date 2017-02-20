@@ -2,7 +2,7 @@ module.exports = async function(ctx){
     var id = parseFloat(ctx.params.id);
     if(ctx.session.permissions.indexOf("users_read") < 0 && id != ctx.session.user) ctx.throw(403);
 
-    var user = await ctx.app.db.Contact.findOne({_id:id}).select("permissions");
+    var user = await ctx.app.db.Contact.findOne({_id:id}).select("permissions ahvNumber ibanNumber");
     if(!user) ctx.throw(404);
     user = JSON.parse(JSON.stringify(user));
     var permissions = {};

@@ -200,10 +200,6 @@ class Client extends events.EventEmitter{
         return await this.execute("/api/users/"+id+"/pin",{method:"POST",jsonBody:({pin:pin})});
     }
 
-    async setPassword(id,password){
-        await this.execute("/api/users/"+id+"/password",{method:"POST",jsonBody:({password:password})});
-    }
-
     async deleteUser(id){
         await this.execute("/api/users/"+id+"/delete");
     }
