@@ -71,6 +71,27 @@ script(section="body").
 		super(props,context);
 		this.state = this.props.state||{};
 	}
+	
+	componentDidMount(){
+		bs.on("scan",(code)=>{
+			var view = this.refs.location && this.refs.location.getView && this.refs.location.getView();
+			if(view && view.handleScan){
+				view.handleScan(code);
+			}else{
+				switch(code.kind){
+					case "EQ":
+						if(code.item){
+							this.showEquipmentItem(code.type,code.item);
+						}else{
+							this.showEquipmentType(code.type);
+						}
+						break;
+				}
+			}		
+		})
+		bs.start();
+	}
+	
 	getChildContext(){
 		return {
 			alert:function(type,message){
@@ -96,6 +117,9 @@ script(section="body").
 	
 	showEquipmentType(type){
 		this.goTo("/equipment/"+type)
+	}
+	showEquipmentItem(type,item){
+		this.goTo("/equipment/"+type+"/"+item);
 	}
 	showEquipmentCategories(){
 		this.goTo("/equipment/categories");
@@ -172,6 +196,7 @@ script.
 	var MenuItem = require("react-bootstrap/lib/MenuItem");
 	var Button = require("react-bootstrap/lib/Button");
 	var SnackBar = require("./SnackBar");
+	var bs = require("../barcodescanner");
 	
 	var menu = module.exports.menu = Component.menu = {
 		"Equipment":{url:"/equipment",permissions:["equipment_read"]},
