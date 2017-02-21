@@ -1,0 +1,31 @@
+div
+    if this.user
+        Context(target=this.user)
+            .form-horizontal
+                Binding(name="ahvNumber")
+                    FormGroup(label="AHV Nummer" labelClass="col-lg-2" wrapperClass="col-lg-10")
+                        Input(type="text")
+                Binding(name="ibanNumber")
+                    FormGroup(label="IBAN Nummer" labelClass="col-lg-2" wrapperClass="col-lg-10")
+                        Input(type="text")
+        .btn-toolbar.pull-right
+            button.btn.btn-primary(onClick=this.save.bind(this))
+                i.glyphicon.glyphicon-ok
+                |  Speichern
+script.
+    var client = require("../client");
+    var {Context,Binding} = require("react-bicon");
+    var FormGroup = require("./formgroup");
+    var Input = require("./input");
+script(section="body").    
+    constructor(props,context){
+        super(props,context);
+        this.componentWillReceiveProps(props);        
+    }
+    async componentWillReceiveProps(props){
+        this.user = await client.getUser(props.user);
+        this.forceUpdate();
+    }    
+    async save(){
+        await client.saveUser(this.props.user,this.user);
+    }    
