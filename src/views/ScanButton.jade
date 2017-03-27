@@ -36,7 +36,10 @@ script.
 script(section="body").   
     componentDidMount(){
         document.addEventListener("keydown",this.onKeyDown = function(e){
-            if(this.type !== undefined && e.keyCode == 13) this.confirmScan();
+            if(this.type !== undefined && e.keyCode == 13){
+                this.refs.countfield.blur();
+                setTimeout(this.confirmScan.bind(this),1);                
+            } 
         }.bind(this))
     }
     

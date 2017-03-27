@@ -22,4 +22,8 @@ module.exports = class Component extends react.Component{
 	focus(){
 		this.refs.input.focus();
 	}
+
+	blur(){
+		this.refs.input.blur();
+	}
 }

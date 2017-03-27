@@ -30,4 +30,8 @@ module.exports = class Input extends react.Component{
 		this.refs.input.focus();
 		this.refs.input.select();
 	}
+
+	blur(){
+		this.refs.input.blur();
+	}
 }

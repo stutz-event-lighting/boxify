@@ -61,6 +61,7 @@ module.exports = class Select extends react.Component{
 		}
 	}
 	focus(){
-		this.refs.select.focus();
+		console.log(this.refs.select);
+		this.refs.select.select();
 	}
 }
