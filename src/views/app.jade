@@ -23,9 +23,9 @@
 					when "profile"
 						= this.props.route.render({onContactSelected:this.showContact.bind(this)})
 					when "equipment"
-						= this.props.route.render({onSelect:this.showEquipmentType.bind(this),onCategoriesClicked:this.showEquipmentCategories.bind(this)})
+						= this.props.route.render({onSelect:this.showEquipmentType.bind(this)})
 					when "equipmenttype"
-						= this.props.route.render({type:this.props.params.type})
+						= this.props.route.render({type:this.props.params.type,onSelect:this.showEquipmentItem.bind(this),onCategoriesClicked:this.showEquipmentCategories.bind(this)})
 					when "equipmentitem"
 						= this.props.route.render({type:this.props.params.type,id:this.props.params.id})
 					when "contact"

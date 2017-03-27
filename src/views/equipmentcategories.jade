@@ -59,33 +59,33 @@ script(section="body").
     
     async loadCategories(){
         this.state.categories = await client.getEquipmentCategories();
-        this.update();
+        this.forceUpdate();
     }
 
     addCategory(){
         this.state.category = {name:""};
-        this.update();
+        this.forceUpdate();
     }
     
     onCategoryNameChange(e){
         this.state.category.name = e.target.value;
-        this.update();
+        this.forceUpdate();
     }
     
     cancel(){
         delete this.state.category;
-        this.update();
+        this.forceUpdate();
     }
     
     edit(category,e){        
         if(e.target.tagName == "I" || e.target.tagName == "BUTTON") return;
         this.state.category = category;
-        this.update();
+        this.forceUpdate();
     }
     
     dismiss(){
         delete this.state.error;
-        this.update();
+        this.forceUpdate();
     }
     async delete(category){
         try{
@@ -94,7 +94,7 @@ script(section="body").
         }catch(err){
             this.state.error = err.code;
         }
-        this.update();
+        this.forceUpdate();
     }
     
     async save(){
@@ -105,7 +105,7 @@ script(section="body").
             this.state.categories.push({_id:id,name:this.state.category.name});            
         }
         delete this.state.category;
-        this.update();
+        this.forceUpdate();
     }
     
     finish(){
