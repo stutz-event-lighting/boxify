@@ -42,7 +42,7 @@
     "react-bootstrap": "^0.30.3",
     "react-dom": "^15.0.2",
     "react-route-system": "github:vancoding/react-route-system",
-    "react-select": "^1.0.0-rc.2",
+    "react-select": "^1.0.0-rc.3",
     "react-textarea-autosize": "^4.0.1",
     "react-widgets": "^3.4.4",
     "semver": "^4.3.4",
