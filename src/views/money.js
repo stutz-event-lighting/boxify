@@ -1,3 +1,3 @@
 exports.format = function(amount){
-	return (amount/100).toFixed(2);
+	return amount.toFixed(2);
 }

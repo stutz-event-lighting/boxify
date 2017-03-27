@@ -93,7 +93,7 @@
 																		Number
 																td
 																	Binding(name="rate" onChange=this.recalculate.bind(this))
-																		Money
+																		Number
 																td= money.format(item.total)
 																	.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,item))
 																		.glyphicon.glyphicon-trash
@@ -137,10 +137,7 @@
 															Input(type="text")
 													td
 														Binding(name="amount" onChange=this.recalculate.bind(this))
-															if discount.type == "percent"
-																Number
-															else
-																Money
+															Number
 													td
 														Binding(name="type" onChange=this.recalculate.bind(this))
 															Input(type="select")
@@ -162,7 +159,6 @@ script.
 	var Date = require("./datefield");
 	var money = require("./money");
 	var Number = require("./numberfield");
-	var Money = require("./moneyfield");
 	var ContactBox = require("./ContactBox");
 	var AddEquipment = require("./AddEquipmentButton");
 	var util = require("../util");
@@ -233,7 +229,7 @@ script(section="body").
 		return !this.project.items.filter(i=>(i.type||i.category) == type._id).length
 	}
 	
-	onAddEquipment(items){
+	async onAddEquipment(items){
 		for(var item of items){
 			var type = (item.kind=="type"?this.types:this.categories)[item._id];
 			var entry = {
@@ -241,6 +237,9 @@ script(section="body").
 				section:"equipment",
 				count:1,
 				rate:0
+			}
+			if(item.kind == "type"){
+				entry.rate = (await client.getEquipmentType(item._id)).rent;
 			}
 			entry[item.kind == "type"?"type":"category"] = item._id;
 			this.project.items.push(entry);
