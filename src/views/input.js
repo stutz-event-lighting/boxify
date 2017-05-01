@@ -1,5 +1,5 @@
 var react = require("react");
-var Textarea = require("react-autosize-textarea");
+var Textarea = require("react-textarea-autosize").default;
 module.exports = class Input extends react.Component{
 	render(){
 		var component = ["select","textarea"].indexOf(this.props.type)>=0?this.props.type:"input";
