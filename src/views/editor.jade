@@ -1,0 +1,39 @@
+div(style="position:fixed;top:0px;left:0px;bottom:0px;right:0px;background:rgba(0,0,0,0.2);zIndex:10000")
+	.btn-toolbar(style="position:absolute;top:10px;right:10px")
+		.btn.btn-primary(onClick=this.save.bind(this)) Speichern
+		.btn.btn-danger(onClick=this.close.bind(this)) Schliessen
+	div(style="position:absolute;top:60px;left:10px;bottom:10px;right:10px")
+		#document-editor
+script(section="body").
+	async componentDidMount(){
+		var url = location.origin+"/api/documents/"+this.props.document+"?session="+client.session._id;
+		this.editor = new DocsAPI.DocEditor("document-editor", {
+		    "document": {
+		        "fileType": "docx",
+		        "key": new Date().getTime()+"",
+		        "title": this.props.document,
+		        "url": url,
+				"permissions":{
+					"allow-scripts":true
+				}
+		    },
+		    "documentType": "text",
+			events:{
+				onDownloadAs:async function(e){
+					var doc = await (await fetch(e.data)).blob();
+					this.props.save(doc);
+				}.bind(this)
+			}
+		});
+	}
+	componentWillUnmount(){
+		this.editor.destroyEditor();
+	}
+	save(){
+		this.editor.downloadAs();
+	}	
+	close(){		
+		this.props.close();
+	}
+script.
+	var client = require("../client");

@@ -1,7 +1,6 @@
 .container
 	h3 Offerte
 	if this.offer
-		- console.log(JSON.stringify(this.offer,null,"\t"));
 		Context(target=this.offer)
 			.form-horizontal
 				Binding(name="location")
@@ -70,42 +69,69 @@
 											Binding(name="servicesCustomer")
 												FormGroup(label="Ihre Leistungen" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Input(type="textarea")
-								each name,section in sections
-									h4= name
+								each section,sectionId in this.project.sections
+									h4= sections[sectionId]
 									table.table.table-striped
 										thead
 											tr
-												th Name
+												th(colSpan="2") Name
 												th(style="width:70px") Menge
 												th(style="width:100px") Stückpreis
 												th(style="width:120px") Betrag
-										tbody
-											each item,i in this.project.items
-												if item.section == section
-													Context(name="items")
-														Context(name=i+"")
-															tr
-																td
-																	Binding(name="name")
-																		Input(type="text")
-																td
-																	Binding(name="count" onChange=this.recalculate.bind(this))
-																		Number
-																td
-																	Binding(name="rate" onChange=this.recalculate.bind(this))
-																		Number
-																td= money.format(item.total)
-																	.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,item))
-																		.glyphicon.glyphicon-trash
-											tr
-												th(colSpan="3") Projekt-Total
-												td= money.format(this.project[section].total)
-													if section == "equipment"
+													if sectionId == "equipment"
 														AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
 															.glyphicon.glyphicon-plus
 													else
-														.btn.btn-default.pull-right(onClick=this.addItem.bind(this,section))
+														.btn.btn-default.pull-right(onClick=this.addItem.bind(this,sectionId))
 															.glyphicon.glyphicon-plus
+										tbody
+											each item,i in section.items
+												Context(name="sections")
+													Context(name=sectionId)
+														Context(name="items")
+															Context(name=i+"")
+																tr
+																	td(colSpan="2")
+																		Binding(name="name")
+																			Input(type="text")
+																	td
+																		Binding(name="count" onChange=this.recalculate.bind(this))
+																			Number
+																	td
+																		Binding(name="rate" onChange=this.recalculate.bind(this))
+																			Number
+																	td= money.format(item.total)
+																		.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,section.items,item))
+																			.glyphicon.glyphicon-trash
+											tr
+												th(colSpan="4") Subtotal
+												td= money.format(section.totalBeforeDiscount)
+													.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,section.discounts))
+														.glyphicon.glyphicon-plus
+											+renderDiscounts(section.discounts)
+											tr
+												th(colSpan="4") Total
+												td= money.format(section.total)
+								h4 Projektzusammenfassung
+								table.table.table-striped
+									thead
+										tr
+											th(colSpan="4") Kategorie
+											th Betrag
+									tbody
+										each section,sectionId in this.project.sections
+											tr
+												td(colSpan="4")= sections[sectionId]
+												td= money.format(section.total)
+										tr
+											th(colSpan="4") Subtotal
+											th= money.format(this.project.totalBeforeDiscount)
+												.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,this.project.discounts))
+													.glyphicon.glyphicon-plus
+										+renderDiscounts(this.project.discounts)
+										tr
+											th(colSpan="4") Total
+											th= money.format(this.project.total)
 								.btn-toolbar.pull-right
 									.btn.btn-warning(onClick=this.deleteProject.bind(this)) Teilprojeklt löschen
 				else
@@ -118,39 +144,55 @@
 								th
 								th Betrag
 						tbody
-							each name,section in Object.assign({},sections,{"total":"Total"})
+							each project in this.offer.projects
 								tr
-									th= name+" aller Projekte"
+									td= project.name
 									td
 									td
 									td
-									th= money.format(section=="total"?this.offer.totalBeforeDiscount:this.offer[section].totalBeforeDiscount)
-										.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,section))
-											.glyphicon.glyphicon-plus
-								each discount,i in this.offer.discounts
-									if discount.section == section
-										Context(name="discounts")
-											Context(name=i)
-												tr
-													td
-														Binding(name="name")
-															Input(type="text")
-													td
-														Binding(name="amount" onChange=this.recalculate.bind(this))
-															Number
-													td
-														Binding(name="type" onChange=this.recalculate.bind(this))
-															Input(type="select")
-																option(value="percent") %
-																option(value="chf") CHF
-													td= money.format(discount.total)
-													td= money.format(discount.sectionTotal)
-														.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discount))
-															.glyphicon.glyphicon-trash
+									td= money.format(project.total)
+							tr
+								th Subtotal
+								td
+								td
+								td
+								th= money.format(this.offer.totalBeforeDiscount)
+									.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,this.offer.discounts))
+										.glyphicon.glyphicon-plus
+							+renderDiscounts(this.offer.discounts)
+							tr
+								th Total
+								th
+								th
+								th
+								th= money.format(this.offer.total)
 					.btn-toolbar.pull-right
 						if this.offer._id
 							.btn.btn-danger(onClick=this.delete.bind(this)) Löschen
+						if this.docs.length
+							.btn.btn-default(onClick=this.editDocx.bind(this)) DOCX editieren
 						.btn.btn-primary(onClick=this.save.bind(this)) Speichern
+	if this.editing
+		Editor(document=this.editing close=this.closeDocx.bind(this) save=this.saveDocx.bind(this))
+mixin renderDiscounts(discounts)
+	each discount in discounts
+		Context(target=discount)
+				tr
+					td
+						Binding(name="name")
+							Input(type="text")
+					td
+						Binding(name="amount" onChange=this.recalculate.bind(this))
+							Number
+					td
+						Binding(name="type" onChange=this.recalculate.bind(this))
+							Input(type="select")
+								option(value="percent") %
+								option(value="chf") CHF
+					td= money.format(discount.total)
+					td= money.format(discount.subTotal)
+						.btn.btn-default.pull-right(onClick=this.removeDiscount.bind(this,discounts,discount))
+							.glyphicon.glyphicon-trash
 script.
 	var client = require("../client");
 	var {Context,Binding} = require("react-bicon");
@@ -162,6 +204,10 @@ script.
 	var ContactBox = require("./ContactBox");
 	var AddEquipment = require("./AddEquipmentButton");
 	var util = require("../util");
+	var Template = require("docxtemplater");
+	var Zip = require("jszip");
+	var Editor = require("./editor");
+	var moment = require("moment");
 	
 	var defaultSubproject = {
 		name:"Teilprojekt",
@@ -172,14 +218,8 @@ script.
 		returnDate:null,
 		servicesUs:"",
 		servicesCustomer:"",
-		items:[]
-	}
-	
-	var defaultItem = {
-		name:"",
-		section:"services",
-		count:1,
-		rate:0
+		sections:{},
+		discounts:[]
 	}
 	
 	var sections = {
@@ -188,6 +228,21 @@ script.
 		"transportation":"Transport",
 		"consumables":"Verbrauchsmaterial"
 	}
+	
+	var defaultSection = {
+		items:[],
+		discounts:[]
+	}
+	
+	for(var section in sections){
+		defaultSubproject.sections[section] = defaultSection;
+	}
+	
+	var defaultItem = {
+		name:"",
+		count:1,
+		rate:0
+	}	
 script(section="body").
 	constructor(props,context){
 		super(props,context);
@@ -198,6 +253,7 @@ script(section="body").
 		this.categories = util.createIndex(await client.getEquipmentCategories(),"_id");
 		if(props.offer == "new"){
 			this.offer = {
+				project: props.project,
 				location:"",
 				date:null,
 				expiration:null,
@@ -208,8 +264,10 @@ script(section="body").
 				discounts:[]
 			};
 			this.project = this.offer.projects[0];
+			this.docs = [];
 		}else{
 			this.offer = await client.getOffer(props.offer);
+			this.docs = await client.getDocuments("offers."+this.offer._id);
 		}
 		this.recalculate();
 	}
@@ -226,7 +284,7 @@ script(section="body").
 	}
 	
 	filterEquipmentTypes(type){
-		return !this.project.items.filter(i=>(i.type||i.category) == type._id).length
+		return !this.project.sections.equipment.items.filter(i=>(i.type||i.category) == type._id).length
 	}
 	
 	async onAddEquipment(items){
@@ -240,27 +298,24 @@ script(section="body").
 			}
 			if(item.kind == "type"){
 				entry.rate = (await client.getEquipmentType(item._id)).rent;
+				entry.type = parseFloat(item._id);
+			}else{
+				entry.category = item._id;
 			}
-			entry[item.kind == "type"?"type":"category"] = item._id;
-			this.project.items.push(entry);
+			this.project.sections.equipment.items.push(entry);
 		}
-		this.recalculate();
-	}
-	
-	removeEquipment(entry){
-		this.project.items.splice(this.project.items.indexOf(entry),1);
 		this.recalculate();
 	}
 	
 	addItem(section){
 		var item = JSON.parse(JSON.stringify(defaultItem));
 		item.section = section;
-		this.project.items.push(item);
+		this.project.sections[section].items.push(item);
 		this.recalculate();
 	}
 	
-	removeItem(item){
-		this.project.items.splice(this.project.items.indexOf(item),1);
+	removeItem(items,item){
+		items.splice(items.indexOf(item),1);
 		this.recalculate();
 	}
 	
@@ -270,9 +325,8 @@ script(section="body").
 		this.recalculate();
 	}
 	
-	addDiscount(section){
-		this.offer.discounts.push({
-			section:section,
+	addDiscount(discounts){
+		discounts.push({
 			name:"Rabatt",
 			amount:10,
 			type:"percent"
@@ -280,64 +334,169 @@ script(section="body").
 		this.recalculate();
 	}
 	
-	removeDiscount(discount){
-		this.offer.discounts.splice(this.offer.discounts.indexOf(discount),1);
+	removeDiscount(discounts,discount){
+		discounts.splice(discounts.indexOf(discount),1);
 		this.recalculate();
 	}
 	
+	calculateDiscounts(item){
+		item.total = item.totalBeforeDiscount;
+		for(var discount of item.discounts){
+			discount.total = -(discount.type=="percent"?item.totalBeforeDiscount/100*discount.amount:discount.amount);
+			discount.subTotal = item.total = item.total+discount.total;
+			item.total = discount.subTotal;
+		}
+	}
+	
 	recalculate(){
-		for(var section in sections){
-			this.offer[section] = {total:0};
-		}
-		for(var p of this.offer.projects){
-			for(var section in sections){
-				p[section] = {total:0};
-				for(var i of p.items.filter(i=>i.section==section)){
-					i.total = (i.count||0)*(i.rate||0);
-					p[i.section].total += i.total;
-				}
-				this.offer[section].total += p[section].total;
-			}
-		}
-		for(var section in sections){
-			this.offer[section].totalBeforeDiscount = this.offer[section].total;
-		}
-		for(var discount of this.offer.discounts.filter(d=>d.section!="total")){
-			var section = this.offer[discount.section];
-			discount.total = -(discount.type=="percent"?section.total/100*discount.amount:discount.amount);
-			discount.sectionTotal = section.total = section.total+discount.total;
-		}
 		this.offer.totalBeforeDiscount = 0;
-		for(var section in sections){
-			this.offer.totalBeforeDiscount += this.offer[section].total;
+		for(var p of this.offer.projects){
+			p.totalBeforeDiscount = 0;
+			for(var section in p.sections){
+				var sec = p.sections[section];
+				sec.totalBeforeDiscount = 0;
+				for(var i of sec.items){
+					i.total = (i.count||0)*(i.rate||0);
+					sec.totalBeforeDiscount += i.total;
+				}
+				this.calculateDiscounts(sec);
+				p.totalBeforeDiscount += sec.total;
+			}
+			this.calculateDiscounts(p);
+			this.offer.totalBeforeDiscount = p.total;
 		}
-		this.offer.total = this.offer.totalBeforeDiscount;
-		for(var discount of this.offer.discounts.filter(d=>d.section=="total")){
-			var section = this.offer;
-			discount.total = -(discount.type=="percent"?section.total/100*discount.amount:discount.amount);
-			discount.sectionTotal = section.total = section.total+discount.total;
-		}
+		this.calculateDiscounts(this.offer);
 		
 		this.forceUpdate();
 	}
 	
 	async save(){
-		var data = JSON.parse(JSON.stringify(this.offer));
-		data.project = this.props.project;
-		for(var section in sections) delete data[section];
-		delete data.totalBeforeDiscount;
-		for(var project of data.projects){
-			for(var section in sections) delete project[section];
-			for(var item of project.items){
-				delete item.total;
+		if(this.offer._id){
+			await client.updateOffer(this.offer._id,this.offer)
+			await this.renderTemplate();
+		}else{
+			this.offer._id = await client.createOffer(this.offer);
+			await this.renderTemplate();
+			this.props.onCreate(this.offer._id);
+		}
+	}
+	
+	renderDate(days){
+		return moment.utc(days * 24*60*60*1000).format("DD.MM.YYYY");
+	}
+	
+	async renderTemplate(){	
+		var project = (await client.getProject(this.props.project)).project;
+		var contact = await client.getContact(this.offer.person);
+		var customer = await client.getContact(project.customer);
+
+		function addDiscounts(source,target){
+			target.Subtotal = money.format(source.totalBeforeDiscount);
+			target.Total = money.format(source.total);
+			for(var discount of source.discounts){
+				target.Rabatte.push({
+					Name: discount.name+(discount.type=="percent"?" "+discount.amount+"%":""),
+					Betrag: money.format(discount.total),
+					Subtotal: money.format(discount.subTotal)
+				});
 			}
 		}
 	
-		if(data._id){
-			await client.updateOffer(data._id,data)
-		}else{
-			this.props.onCreate(await client.createOffer(data));
+		var data = {
+			Empfänger: customer.firstname+"\r\n"+customer.streetName+" "+customer.streetNr+"\r\n"+customer.zip+" "+customer.city,
+			Ort: this.offer.location,
+			Datum: this.renderDate(this.offer.date),
+			Projektname: project.name,
+			Ablaufdatum: this.renderDate(this.offer.expiration),
+			Ersteller: contact.firstname+" "+contact.lastname,
+			Teilprojekte:[],
+			Rabatte:[]
 		}
+		
+		addDiscounts(this.offer,data);		
+		
+		for(var sp of this.offer.projects){
+			var subproject = {
+				Name: sp.name,
+				Übergabetyp: sp.deliveryType=="delivery"?"Lieferung durch SEL":"Abholung durch Kunde",
+				Übergabeort: sp.deliveryLocation.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
+				Übergabedatum: this.renderDate(sp.deliveryDate),				
+				Rückgabetyp: sp.returnType=="delivery"?"Abholung durch SEL":"Lieferung durch Kunde",
+				Rückgabedatum: this.renderDate(sp.returnDate),
+				"Unsere Leistungen": sp.servicesUs.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
+				"Ihre Leistungen": sp.servicesCustomer.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
+				Kategorien:[],
+				Rabatte:[]				
+			}
+			addDiscounts(sp,subproject);
+			data.Teilprojekte.push(subproject);
+			for(var section in sections){
+				var s = {
+					Name: sections[section],
+					Positionen: [],
+					Rabatte: []
+				};
+				addDiscounts(sp.sections[section],s)
+				subproject.Kategorien.push(s);
+				for(var item of sp.sections[section].items){
+					s.Positionen.push({
+						Name: item.name,
+						Menge: item.count,
+						Stückpreis: money.format(item.rate),
+						Betrag: money.format(item.total)
+					});
+				}
+			}
+		}
+		
+		var docx = await client.getDocument((await client.getDocuments("templates.offer"))[0]._id);
+		docx = await new Promise((s,e)=>{
+			var reader = new FileReader();
+			reader.onload = function(){
+				s(reader.result);
+			}
+			reader.readAsArrayBuffer(docx);
+		});
+		
+		docx = new Zip(docx);
+		
+		var template = new Template();
+		template.load(docx);
+		template.setData(data);
+		template.render();
+
+		docx = template.getZip().generate({type:"blob"});
+		await this.saveDocx(docx);
+	}
+	
+	editDocx(){
+		this.editing = this.docs[0]._id;
+		this.forceUpdate();
+	}
+	
+	async saveDocx(file){
+		for(var doc of this.docs){
+			await client.deleteDocument(doc._id);
+		}
+		var doc = {
+			entity:"offers."+this.offer._id,
+			name:"Offerte.docx",
+			file:await new Promise((s,e)=>{
+				var reader = new FileReader();
+				reader.onload = function(){
+					s(reader.result);
+				}
+				reader.readAsDataURL(file);
+			})
+		};
+		doc._id = await client.uploadDocument(doc)
+		this.docs = [doc];
+		this.forceUpdate();
+	}
+	
+	closeDocx(){
+		delete this.editing;
+		this.forceUpdate();
 	}
 	
 	async delete(){

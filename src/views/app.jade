@@ -64,6 +64,8 @@
 						= this.props.route.render({project:this.props.params.project,offer:this.props.params.offer, onCreate:this.showOffer.bind(this,this.props.params.project)})
 					when "plugin"
 						= this.props.route.render({})
+					when "templates"
+						= this.props.route.render()
 			else
 				LoginPage(onLogin=this.update.bind(this))
 script(section="body").
@@ -205,6 +207,7 @@ script.
 		"Kunden":{url:"/customers",permissions:["customers_read"]},
 		"Zulieferer":{url:"/suppliers",permissions:["suppliers_read"]},
 		"Benutzer":{url:"/users",permissions:["users_read"]},
+		"Vorlagen":{url:"/templates",permissions:[]},
 		"Profil":{url:"/profile",loggedIn:true}
 	}
 	
@@ -235,6 +238,7 @@ script.
 		.add("rental","/rentals/:rental",require("./rental"))
 		.add("profile","/profile",require("./profile"))
 		.add("offer","/projects/:project/offers/:offer",require("./offer"))
+		.add("templates","/templates",require("./templates"))
 			
 	Component.childContextTypes = {
 		alert:React.PropTypes.func

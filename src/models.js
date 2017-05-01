@@ -208,6 +208,21 @@ module.exports = function(db){
         name:String
     })
 
+    var Discounts = Mixed;
+
+    var Section = {
+        items: [{
+            _id:false,
+            section: String,
+            name: String,
+            count: Number,
+            rate: Number,
+            type: {type:Number,ref:"equipmenttypes"},
+            category: {type:ObjectId,ref:"equipmentcategories"}
+        }],
+        discounts: Discounts
+    }
+
     db.Offer = db.model("offers",{
         _id:ObjectId,
         project: ObjectId,
@@ -219,6 +234,7 @@ module.exports = function(db){
             ref: "contacts"
         },
         projects:[{
+            _id:false,
             name: String,
     		deliveryType: String, //delivery or pickup
     		deliveryDate: Number,
@@ -227,23 +243,15 @@ module.exports = function(db){
     		returnDate: Number,
             servicesUs: String,
             servicesCustomer: String,
-            items: [{
-                _id:false,
-                section: String,
-                name: String,
-        		count: Number,
-        		rate: Number,
-                type: {type:Number,ref:"equipmenttypes"},
-                category: {type:ObjectId,ref:"equipmentcategories"}
-            }]
+            sections:{
+                consumables: Section,
+                equipment: Section,
+                services: Section,
+                transportation: Section
+            },
+            discounts: Discounts,
         }],
-        discounts:[{
-            _id:false,
-            section: String,
-			name: String,
-			amount: Number,
-			type: {type:String} // percent or chf
-        }],
+        discounts: Discounts,
         total:Number
     })
 }

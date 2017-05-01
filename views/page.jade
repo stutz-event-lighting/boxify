@@ -6,15 +6,12 @@ html
         meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no")
         link(rel="stylesheet" type="text/css" href="/public/style.css")
         link(rel="icon" href="/public/icon.png" sizes="48x48" type="image/png")
-    body
+        script(src=onlyoffice)
         script(src="/public/quagga.min.js")
-        script.
-            window.onerror = function(e,url,line){
-                //alert("error"+e+","+url+","+line)
-            }
         script(src='/main.js')
         each module in modules
-            script(src="/modules/"+module+".js")
+            script(src="/modules/"+module+".js")        
+    body
         script.
             require("/boxify/lib/app.js");
             require("/control-center/index.js").client();

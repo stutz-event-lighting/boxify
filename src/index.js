@@ -82,7 +82,7 @@ var Boxify = module.exports = function Boxify(config){
     this.app.use(async function(ctx,next){
         if(App.router.route(ctx.path)){
             ctx.set("Content-Type","text/html");
-            ctx.body = page({modules:this.moduleclients});
+            ctx.body = page({modules:this.moduleclients,onlyoffice:ctx.app.config.onlyoffice});
         }else{
             await next();
         }

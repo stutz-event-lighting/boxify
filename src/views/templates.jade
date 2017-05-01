@@ -1,0 +1,82 @@
+.container
+	h3 Vorlagen
+	table.table.table-striped.table-hover
+		thead
+			tr
+				th Name
+				th
+		tbody
+			each template in templates
+				tr
+					td= template.name
+					th
+						.btn.btn-default.btn-xs(onClick=this.edit.bind(this,template))
+							.glyphicon.glyphicon-pencil
+						.btn.btn-default.btn-xs(onClick=this.download.bind(this,template))
+							.glyphicon.glyphicon-save
+						.btn.btn-default.btn-xs(onClick=this.upload.bind(this,template))
+							.glyphicon.glyphicon-open
+	if this.editing
+		Editor(document=this.editing save=this.save.bind(this) close=this.close.bind(this))
+script(section="body").
+	async edit(template){
+		this.template = template;
+		var docs = await client.getDocuments("templates."+template.id);
+		this.editing = docs[0]._id;
+		this.forceUpdate();
+	}
+	base64(file){
+		return new Promise((s,e)=>{
+			var reader = new FileReader();
+			reader.onload = function(){
+				s(reader.result);
+			}
+			reader.readAsDataURL(file);
+		});
+	}
+	async save(doc){
+		var id = await client.uploadDocument({
+			entity:"templates."+this.template.id,
+			name:"template.docx",
+			file:await this.base64(doc)
+		});
+		await client.deleteDocument(this.editing);
+		this.editing = id;
+	}
+	close(){
+		delete this.editing;
+		this.forceUpdate();
+	}
+	async download(template){
+		var docs = await client.getDocuments("templates."+template.id);
+		if(docs.length){
+			var link = document.createElement("a")
+			window.open("/api/documents/"+docs[0]._id,"_blank");
+		}
+	}
+	async upload(template){
+		var file = await new Promise((s,e)=>{
+			var input = document.createElement("input");
+			input.setAttribute("type","file");
+			input.onchange = function(){
+				s(input.files[0])
+			}
+			input.click();
+		});
+		var docs = await client.getDocuments("templates."+template.id);
+		for(var doc of docs) await client.deleteDocument(doc._id);
+		await client.uploadDocument({
+			entity:"templates."+template.id,
+			name:"template.docx",
+			file:await this.base64(file)
+		});
+	}
+	
+script.
+	var client = require("../client");
+	var Editor = require("./editor");
+	
+	var templates = [
+		{id:"offer",name:"Offerte"},
+		{id:"pickup",name:"Abholschein"}
+	]

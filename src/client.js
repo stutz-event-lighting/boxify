@@ -28,6 +28,10 @@ class Client extends events.EventEmitter{
 		var res = await this.getResponse(url,opts);
 		return await res.text();
 	}
+    async getBlob(url,opts){
+        var res = await this.getResponse(url,opts);
+        return await res.blob();
+    }
 	async getJson(url,opts){
 		var data = await this.getText(url,opts);
 		try{
@@ -321,6 +325,9 @@ class Client extends events.EventEmitter{
     async uploadDocument(data){
         return await this.getText("/api/documents",{method:"POST",jsonBody:data})
     }
+    async getDocument(id){
+        return await this.getBlob("/api/documents/"+id)
+    }
     async deleteDocument(id){
         await this.execute("/api/documents/"+id,{method:"DELETE"})
     }
@@ -341,6 +348,9 @@ class Client extends events.EventEmitter{
     }
     async deleteOffer(offer){
         await this.execute("/api/offers/"+offer,{method:"DELETE"});
+    }
+    async getPublicFile(path){
+        return await this.getBlob("/public/"+path);
     }
 }
 module.exports = new Client();

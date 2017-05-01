@@ -1,6 +1,6 @@
 {
   "name": "boxify",
-  "version": "0.3.21",
+  "version": "0.3.22",
   "description": "",
   "main": "lib/index.js",
   "directories": {
@@ -30,6 +30,7 @@
     "koa-router": "^7.0.1",
     "koa-send": "^3.2.0",
     "koa-static": "^3.0.0",
+    "memoizejs": "^0.1.1",
     "moment": "~2.9.0",
     "mongodb": "^2.1.6",
     "mongoose": "^4.7.0",
