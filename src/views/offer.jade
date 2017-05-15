@@ -363,7 +363,7 @@ script(section="body").
 				p.totalBeforeDiscount += sec.total;
 			}
 			this.calculateDiscounts(p);
-			this.offer.totalBeforeDiscount = p.total;
+			this.offer.totalBeforeDiscount += p.total;
 		}
 		this.calculateDiscounts(this.offer);
 		
