@@ -69,6 +69,12 @@
 											Binding(name="servicesCustomer")
 												FormGroup(label="Ihre Leistungen" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Input(type="textarea")
+								.row
+									.col-sm-6
+										.form-horizontal
+											Binding(name="factor" onChange=this.recalculate.bind(this))
+												FormGroup(label="Faktor" labelClass="col-sm-4" wrapperClass="col-sm-8")
+													Number
 								each section,sectionId in this.project.sections
 									h4= sections[sectionId]
 									table.table.table-striped
@@ -78,12 +84,6 @@
 												th(style="width:70px") Menge
 												th(style="width:100px") Stückpreis
 												th(style="width:120px") Betrag
-													if sectionId == "equipment"
-														AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
-															.glyphicon.glyphicon-plus
-													else
-														.btn.btn-default.pull-right(onClick=this.addItem.bind(this,sectionId))
-															.glyphicon.glyphicon-plus
 										tbody
 											each item,i in section.items
 												Context(name="sections")
@@ -106,12 +106,24 @@
 											tr
 												th(colSpan="4") Subtotal
 												td= money.format(section.totalBeforeDiscount)
-													.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,section.discounts))
-														.glyphicon.glyphicon-plus
+													if sectionId == "equipment"
+														AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
+															.glyphicon.glyphicon-plus
+													else
+														.btn.btn-default.pull-right(onClick=this.addItem.bind(this,sectionId))
+															.glyphicon.glyphicon-plus
+											if sectionId=="equipment"
+												tr
+													th(colSpan="2") Faktor
+													td= this.project.factor
+													td= money.format(section.totalBeforeDiscount)													
+													td= money.format(section.factorTotal)
 											+renderDiscounts(section.discounts)
 											tr
 												th(colSpan="4") Total
 												td= money.format(section.total)
+													.btn.btn-default.pull-right(onClick=this.addDiscount.bind(this,section.discounts))
+														.glyphicon.glyphicon-plus
 								h4 Projektzusammenfassung
 								table.table.table-striped
 									thead
@@ -219,7 +231,8 @@ script.
 		servicesUs:"",
 		servicesCustomer:"",
 		sections:{},
-		discounts:[]
+		discounts:[],
+		factor:1
 	}
 	
 	var sections = {
@@ -251,6 +264,7 @@ script(section="body").
 	async componentWillReceiveProps(props){
 		this.types = util.createIndex(await client.findEquipmentTypes({}),"_id");
 		this.categories = util.createIndex(await client.getEquipmentCategories(),"_id");
+		this.equipment = {};
 		if(props.offer == "new"){
 			this.offer = {
 				project: props.project,
@@ -268,6 +282,11 @@ script(section="body").
 		}else{
 			this.offer = await client.getOffer(props.offer);
 			this.docs = await client.getDocuments("offers."+this.offer._id);
+			for(var p of this.offer.projects){
+				for(var i of p.sections.equipment.items){
+					if(i.type) this.equipment[i.type] = await client.getEquipmentType(i.type);
+				}
+			}
 		}
 		this.recalculate();
 	}
@@ -297,7 +316,8 @@ script(section="body").
 				rate:0
 			}
 			if(item.kind == "type"){
-				entry.rate = (await client.getEquipmentType(item._id)).rent;
+				var type = this.equipment[item._id] = await client.getEquipmentType(item._id);
+				entry.rate = type.rent;
 				entry.type = parseFloat(item._id);
 			}else{
 				entry.category = item._id;
@@ -359,7 +379,15 @@ script(section="body").
 					i.total = (i.count||0)*(i.rate||0);
 					sec.totalBeforeDiscount += i.total;
 				}
+				if(section == "equipment"){
+					var tbd = sec.totalBeforeDiscount;
+					sec.totalBeforeDiscount *= p.factor||1;
+					sec.factorTotal = sec.totalBeforeDiscount;
+				}
 				this.calculateDiscounts(sec);
+				if(section == "equipment"){
+					sec.totalBeforeDiscount = tbd;
+				}
 				p.totalBeforeDiscount += sec.total;
 			}
 			this.calculateDiscounts(p);
@@ -401,6 +429,10 @@ script(section="body").
 				});
 			}
 		}
+		
+		var getCategory = (item)=>{
+			return item.category||this.equipment[item.type].category+"";
+		}
 	
 		var data = {
 			Empfänger: customer.firstname+"\r\n"+customer.streetName+" "+customer.streetNr+"\r\n"+customer.zip+" "+customer.city,
@@ -436,10 +468,31 @@ script(section="body").
 					Positionen: [],
 					Rabatte: []
 				};
+				if(section == "equipment"){
+					s.Equipment = true;
+					s.Faktor = sp.factor||1;
+					s.FaktorTotal = money.format(sp.sections[section].factorTotal);
+				}
 				addDiscounts(sp.sections[section],s)
 				subproject.Kategorien.push(s);
-				for(var item of sp.sections[section].items){
+				var items = sp.sections[section].items.slice();
+				items.sort((a,b)=>{
+					return getCategory(a).localeCompare(getCategory(b));
+				})
+				var lastCategory = "";
+				for(var item of items){
+					if(section == "equipment"){
+						var category = getCategory(item);
+						if(category != lastCategory){
+							s.Positionen.push({
+								Titel: true,
+								Name: this.categories[category].name
+							})
+							lastCategory = category;
+						}
+					}
 					s.Positionen.push({
+						Position: true,
 						Name: item.name,
 						Menge: item.count,
 						Stückpreis: money.format(item.rate),
