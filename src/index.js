@@ -16,6 +16,8 @@ var pug = require("pug");
 var App = require("./views/app")
 require("babel-polyfill")
 
+mongoose.Promise = Promise;
+
 var page = pug.compile(fs.readFileSync(path.resolve(__dirname,"../views/page.jade")));
 
 var Boxify = module.exports = function Boxify(config){
