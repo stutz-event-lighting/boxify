@@ -13,6 +13,8 @@ var es = require("event-stream");
 var cache = new (require("gulp-file-cache"))();
 var cacheApi = require("browserify-cache-api");
 
+var serverProcess = null;
+
 gulp.task("clean",function(){
 	rimraf("./lib");
 	fs.mkdirSync("./lib");
@@ -61,7 +63,13 @@ gulp.task("build",["buildClient","buildServer"],function(){
 });
 
 gulp.task("start",["build"],function(cb){
-	var p = cp.spawn("node",["start"]);
-	p.stdout.pipe(process.stdout);
-	p.stderr.pipe(process.stderr);
+	if(serverProcess) serverProcess.kill();
+	serverProcess = cp.spawn("node",["start"]);
+	serverProcess.stdout.pipe(process.stdout);
+	serverProcess.stderr.pipe(process.stderr);
+	cb();
 });
+
+gulp.task("watch",["start"],function(cb){
+	gulp.watch(["./src/**"],["start"]);
+})
