@@ -92,7 +92,6 @@ module.exports = function(db){
     });
 
     db.EquipmentItem = db.model("equipment",new Schema({
-        _id:                ObjectId,
         id:                 Number,
         type:               {type:Number, ref:"equipmenttypes"},
         remark:            String,
@@ -109,7 +108,6 @@ module.exports = function(db){
     },{minimize:false}));
 
     db.EquipmentLog = db.model("equipmentlogs",{
-        _id:        ObjectId,
         time:       Number,
         type:       {type:Number, ref:"equipmenttypes"},
         id:         Number, //eiter count or id, not both
@@ -119,7 +117,6 @@ module.exports = function(db){
     });
 
     db.Project = db.model("projects",new Schema({
-        _id:        ObjectId,
         customer:   {type:Number,ref:"contacts"},
         projectNumber: Number,
         name:       String,
@@ -141,7 +138,6 @@ module.exports = function(db){
     },{minimize:false}));
 
     db.EquipmentRental = db.model("equipmentrentals",new Schema({
-        _id:        ObjectId,
         name:       String,
         projects:    [{type:ObjectId,ref:"projects"}],
         supplier:   {type:Number,ref:"contacts"},
@@ -157,7 +153,6 @@ module.exports = function(db){
     },{minimize:false}));
 
     db.EquipmentIo = db.model("equipmentio",new Schema({
-        _id:        ObjectId,
         project:    {type:ObjectId,ref:"projects"},
         type:       String, //checkout, checkin
         draft:      Boolean,
@@ -192,7 +187,6 @@ module.exports = function(db){
     },{minimize:false}),"equipmentio")
 
     db.EquipmentReservation = db.model("equipmentreservations",new Schema({
-        _id:        ObjectId,
         project:    {type:ObjectId,ref:"projects"},
         items:Mixed/*{
             TYPE:   Number
@@ -204,7 +198,6 @@ module.exports = function(db){
     });
 
     db.EquipmentCategory = db.model("equipmentcategories",{
-        _id:ObjectId,
         name:String
     })
 
@@ -224,7 +217,6 @@ module.exports = function(db){
     }
 
     db.Offer = db.model("offers",{
-        _id:ObjectId,
         project: ObjectId,
         location: String,
         date: Number,
