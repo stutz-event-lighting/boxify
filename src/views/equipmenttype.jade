@@ -479,8 +479,8 @@ script(section="body").
         return {options:types.map(function(type){return {value:type._id,label:type.name}})};
     }
     
-    onEquipmenttypeChanged(id,selection){
-        this.state.item.contents = selection.map(function(sel){return {_id:sel.value,name:sel.label}});
+    onEquipmenttypeChanged(value){
+        this.state.item.contents = value.map(v=>({_id:v.value,name:v.label}))
         this.forceUpdate();
     }
     

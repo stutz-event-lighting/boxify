@@ -48,7 +48,8 @@ module.exports = class Select extends react.Component{
 			placeholder:this.props.placeholder,
 			style:this.props.style,
 			wrapperStyle:this.props.wrapperStyle,
-			promptTextCreator:(name)=>"\""+name+"\" erstellen"
+			promptTextCreator:(name)=>"\""+name+"\" erstellen",
+			multi:this.props.multi
 		})
 	}
 	onChange(val){
