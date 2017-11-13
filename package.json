@@ -37,6 +37,7 @@
     "mongoose": "^4.7.0",
     "path-to-regexp": "~1.0.2",
     "pug": "^2.0.0-beta3",
+    "quagga": "^0.12.1",
     "react": "^15.0.2",
     "react-addons-css-transition-group": "^15.3.2",
     "react-bicon": "^1.0.0",

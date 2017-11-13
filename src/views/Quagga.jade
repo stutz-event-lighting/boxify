@@ -3,7 +3,10 @@ script(section="body").
     componentDidMount(){    
         Quagga.init({
             inputStream: {
-                type : "LiveStream"
+                type : "LiveStream",
+                constraints: {
+                    facingMode: "environment" // or user
+                }
             },
             locator: {
                 patchSize: "medium",
@@ -25,6 +28,8 @@ script(section="body").
         }
         Quagga.onDetected(onDetected.bind(this));       
     }
+script.
+    var Quagga = require("quagga");
 
     
     
