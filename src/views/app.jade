@@ -9,7 +9,7 @@
 					a(href="/")
 						img(src="/public/logo.png")
 				Toggle
-			Collapse
+			Collapse(ref="collapse")
 				= this.create()
 				Nav(pullRight)
 					if client.session
@@ -92,6 +92,12 @@ script(section="body").
 			}		
 		})
 		bs.start();
+	}
+	
+	componentWillReceiveProps(){
+		if(this.refs.collapse && this.refs.collapse.context.$bs_navbar.expanded){
+			this.refs.collapse.context.$bs_navbar.onToggle();
+		}
 	}
 	
 	getChildContext(){
