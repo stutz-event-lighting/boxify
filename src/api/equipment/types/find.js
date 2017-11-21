@@ -21,7 +21,7 @@ module.exports = async function(ctx){
             query.$and = needed;
         }
     }
-    var items = await ctx.app.db.EquipmentType.find(query).select("name manufacturer category count weight height width length");
+    var items = await ctx.app.db.EquipmentType.find(query).select("name manufacturer category count weight height width length rent");
     ctx.set("Content-Type","application/json");
     ctx.body = JSON.stringify(items);
 }

@@ -264,7 +264,6 @@ script(section="body").
 	async componentWillReceiveProps(props){
 		this.types = util.createIndex(await client.findEquipmentTypes({}),"_id");
 		this.categories = util.createIndex(await client.getEquipmentCategories(),"_id");
-		this.equipment = {};
 		if(props.offer == "new"){
 			this.offer = {
 				project: props.project,
@@ -282,11 +281,6 @@ script(section="body").
 		}else{
 			this.offer = await client.getOffer(props.offer);
 			this.docs = await client.getDocuments("offers."+this.offer._id);
-			for(var p of this.offer.projects){
-				for(var i of p.sections.equipment.items){
-					if(i.type) this.equipment[i.type] = await client.getEquipmentType(i.type);
-				}
-			}
 		}
 		this.recalculate();
 	}
@@ -316,8 +310,7 @@ script(section="body").
 				rate:0
 			}
 			if(item.kind == "type"){
-				var type = this.equipment[item._id] = await client.getEquipmentType(item._id);
-				entry.rate = type.rent;
+				entry.rate = this.types[item._id].rent;
 				entry.type = parseFloat(item._id);
 			}else{
 				entry.category = item._id;
@@ -421,6 +414,10 @@ script(section="body").
 		function addDiscounts(source,target){
 			target.Subtotal = money.format(source.totalBeforeDiscount);
 			target.Total = money.format(source.total);
+			target.Projektnummer = customer._id+"."+project._id;
+			target.AnsprechpersonName = customer.firstname+" "+customer.lastname;
+			target.AnsprechpersonTelefon = customer.phones[0].number;
+			target.AnsprechpersonMail = customer.emails[0].email;
 			for(var discount of source.discounts){
 				target.Rabatte.push({
 					Name: discount.name+(discount.type=="percent"?" "+discount.amount+"%":""),
@@ -431,7 +428,7 @@ script(section="body").
 		}
 		
 		var getCategory = (item)=>{
-			return item.category||this.equipment[item.type].category+"";
+			return item.category||this.types[item.type].category+"";
 		}
 	
 		var data = {
