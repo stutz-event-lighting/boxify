@@ -3,9 +3,7 @@
 		br
 		div.clearfix
 			.btn-toolbar.pull-left
-				button.btn.btn-default(onClick=this.cancel.bind(this))
-					i.glyphicon.glyphicon-chevron-left
-					|  Zurück
+				BackButton
 			.btn-toolbar.pull-right
 				if this.state.item.status == "ongoing" && Object.keys(this.state.item.balance).length === 0 && this.state.reservations.length === 0
 					.btn.btn-primary(onClick=this.finish.bind(this) disabled=Object.keys(this.state.item.balance).length>0) Projekt abschliessen
@@ -123,6 +121,7 @@ script.
 	var {Router} = require("react-route-system");
 	var Delete = require("./deletebutton");
 	var Input = require("./input");
+	var BackButton = require("./backbutton");
 	
 	Component.router = new Router()
 		.add("detail","")
@@ -228,10 +227,6 @@ script(section="body").
 		await client.finishProject(this.state.item._id);
 		this.state.item.status = "finished";
 		this.forceUpdate();
-	}
-
-	cancel(){
-		history.back();
 	}
 
 	async save(){

@@ -1,5 +1,7 @@
 .container
-	h3 Offerte
+	br
+	BackButton
+	h2 Offerte
 	if this.offer
 		Context(target=this.offer)
 			.form-horizontal
@@ -226,6 +228,7 @@ script.
 	var Zip = require("jszip");
 	var Editor = require("./editor");
 	var moment = require("moment");
+	var BackButton = require("./backbutton");
 	
 	var defaultSubproject = {
 		name:"Teilprojekt",
