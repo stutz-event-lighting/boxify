@@ -423,7 +423,7 @@ script(section="body").
 		function addDiscounts(source,target){
 			target.Subtotal = money.format(source.totalBeforeDiscount);
 			target.Total = money.format(source.total);
-			target.Projektnummer = customer._id+"."+project._id;
+			target.Projektnummer = customer._id+"."+project.projectNumber;
 			target.AnsprechpersonName = customer.firstname+" "+customer.lastname;
 			target.AnsprechpersonTelefon = customer.phones[0]&&customer.phones[0].number;
 			target.AnsprechpersonMail = customer.emails[0]&&customer.emails[0].email;
