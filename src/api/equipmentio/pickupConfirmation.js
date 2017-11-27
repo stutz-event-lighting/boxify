@@ -1,6 +1,6 @@
 var mongo = require("mongodb");
 var moment = require("moment");
-var Template = require("docxtemplater");
+var Template = require("../../docxtemplater");
 var fs = require("fs-promise");
 var path = require("path");
 
