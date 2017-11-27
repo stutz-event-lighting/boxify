@@ -173,6 +173,12 @@
 										.glyphicon.glyphicon-plus
 							+renderDiscounts(this.offer.discounts)
 							tr
+								th Mehrwertsteuer (8%)
+								td
+								td
+								td
+								td= money.format(this.offer.taxAmount)
+							tr
 								th Total
 								th
 								th
@@ -387,6 +393,9 @@ script(section="body").
 			this.offer.totalBeforeDiscount += p.total;
 		}
 		this.calculateDiscounts(this.offer);
+		this.offer.taxAmount = this.offer.total*0.08;
+		this.offer.totalBeforeTax = this.offer.total;
+		this.offer.total += this.offer.taxAmount;
 		
 		this.forceUpdate();
 	}
@@ -416,8 +425,8 @@ script(section="body").
 			target.Total = money.format(source.total);
 			target.Projektnummer = customer._id+"."+project._id;
 			target.AnsprechpersonName = customer.firstname+" "+customer.lastname;
-			target.AnsprechpersonTelefon = customer.phones[0].number;
-			target.AnsprechpersonMail = customer.emails[0].email;
+			target.AnsprechpersonTelefon = customer.phones[0]&&customer.phones[0].number;
+			target.AnsprechpersonMail = customer.emails[0]&&customer.emails[0].email;
 			for(var discount of source.discounts){
 				target.Rabatte.push({
 					Name: discount.name+(discount.type=="percent"?" "+discount.amount+"%":""),
@@ -442,7 +451,9 @@ script(section="body").
 			Rabatte:[]
 		}
 		
-		addDiscounts(this.offer,data);		
+		addDiscounts(this.offer,data);
+		data.TotalNetto = money.format(this.offer.totalBeforeTax);
+		data.MwSt = money.format(this.offer.taxAmount);
 		
 		for(var sp of this.offer.projects){
 			var subproject = {
