@@ -472,7 +472,7 @@ script(section="body").
 				Übergabetyp: sp.deliveryType=="delivery"?"Stutz Event Lighting":"Kunde",
 				Übergabeort: sp.deliveryLocation.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
 				Übergabedatum: this.renderDate(sp.deliveryDate),				
-				Rückgabetyp: sp.returnType=="delivery"?"Stutz Event Lighting":"Kunde",
+				Rückgabetyp: sp.returnType=="delivery"?"Kunde":"Stutz Event Lighting",
 				Rückgabedatum: this.renderDate(sp.returnDate),
 				"Unsere Leistungen": sp.servicesUs.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
 				"Ihre Leistungen": sp.servicesCustomer.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
