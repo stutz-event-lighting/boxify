@@ -40,8 +40,8 @@
 											Binding(name="deliveryType" onChange=this.forceUpdate.bind(this,undefined))
 												FormGroup(label="Übergabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Input(type="select")
-														option(value="delivery") Lieferung dur SEL
-														option(value="pickup") Abholung durch Kunde
+														option(value="delivery") Stutz Event Lighting
+														option(value="pickup") Kunde
 											Binding(name="deliveryDate")
 												FormGroup(label="Übergabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Date
@@ -53,8 +53,8 @@
 											Binding(name="returnType" onChange=this.forceUpdate.bind(this,undefined))
 												FormGroup(label="Rückgabe" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Input(type="select")
-														option(value="pickup") Abholung durch SEL
-														option(value="delivery") Lieferung durch Kunde
+														option(value="pickup") Stutz Event Lighting
+														option(value="delivery") Kunde
 											Binding(name="returnDate")
 												FormGroup(label="Rückgabedatum" labelClass="col-sm-4" wrapperClass="col-sm-8")
 													Date
@@ -424,7 +424,7 @@ script(section="body").
 			target.Subtotal = money.format(source.totalBeforeDiscount);
 			target.Total = money.format(source.total);
 			target.Projektnummer = customer._id+"."+project.projectNumber;
-			target.AnsprechpersonName = customer.firstname+" "+customer.lastname;
+			target.AnsprechpersonName = customer.firstname+(customer.lastname?" "+customer.lastname:"");
 			target.AnsprechpersonTelefon = customer.phones[0]&&customer.phones[0].number;
 			target.AnsprechpersonMail = customer.emails[0]&&customer.emails[0].email;
 			for(var discount of source.discounts){
@@ -458,10 +458,10 @@ script(section="body").
 		for(var sp of this.offer.projects){
 			var subproject = {
 				Name: sp.name,
-				Übergabetyp: sp.deliveryType=="delivery"?"Lieferung durch SEL":"Abholung durch Kunde",
+				Übergabetyp: sp.deliveryType=="delivery"?"Stutz Event Lighting":"Kunde",
 				Übergabeort: sp.deliveryLocation.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
 				Übergabedatum: this.renderDate(sp.deliveryDate),				
-				Rückgabetyp: sp.returnType=="delivery"?"Abholung durch SEL":"Lieferung durch Kunde",
+				Rückgabetyp: sp.returnType=="delivery"?"Stutz Event Lighting":"Kunde",
 				Rückgabedatum: this.renderDate(sp.returnDate),
 				"Unsere Leistungen": sp.servicesUs.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
 				"Ihre Leistungen": sp.servicesCustomer.replace(/\r\n/g,"\n").replace(/\n/g,"\r\n"),
