@@ -225,6 +225,10 @@ module.exports = function(db){
             type:Number,
             ref: "contacts"
         },
+        user: {
+            type: Number,
+            ref: "contacts"
+        },
         projects:[{
             _id:false,
             name: String,

@@ -17,6 +17,9 @@
 				Binding(name="person")
 					FormGroup(label="Kontakt" labelClass="col-sm-2" wrapperClass="col-sm-10")
 						ContactBox
+				Binding(name="user")
+					FormGroup(label="Benutzer" labelClass="col-sm-2" wrapperClass="col-sm-10")
+						ContactBox
 				ul.nav.nav-tabs
 					li(className=this.project?"":"active")
 						a(onClick=this.selectProject.bind(this,null)) Übersicht
@@ -280,6 +283,7 @@ script(section="body").
 				date:null,
 				expiration:null,
 				person:null,
+				user: client.session.user._id,
 				projects:[
 					JSON.parse(JSON.stringify(defaultSubproject))
 				],
@@ -289,6 +293,7 @@ script(section="body").
 			this.docs = [];
 		}else{
 			this.offer = await client.getOffer(props.offer);
+			if(!this.offer.user) this.offer.user = client.session.user._id;
 			this.docs = await client.getDocuments("offers."+this.offer._id);
 		}
 		this.recalculate();
@@ -421,12 +426,16 @@ script(section="body").
 	async renderTemplate(){	
 		var project = (await client.getProject(this.props.project)).project;
 		var contact = await client.getContact(this.offer.person);
+		var user = await client.getContact(this.offer.user);
 		var customer = await client.getContact(project.customer);
 
 		function addDiscounts(source,target){
 			target.Subtotal = money.format(source.totalBeforeDiscount);
 			target.Total = money.format(source.total);
 			target.Projektnummer = customer._id+"."+project.projectNumber;
+			target.BenutzerName = user.firstname+" "+user.lastname;
+			target.BenutzerTelefon = user.phones[0]&&user.phones[0].number;
+			target.BenutzerMail = user.emails[0]&&user.emails[0].email;
 			target.AnsprechpersonName = customer.firstname+(customer.lastname?" "+customer.lastname:"");
 			target.AnsprechpersonTelefon = customer.phones[0]&&customer.phones[0].number;
 			target.AnsprechpersonMail = customer.emails[0]&&customer.emails[0].email;
