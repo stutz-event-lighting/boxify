@@ -436,9 +436,9 @@ script(section="body").
 			target.BenutzerName = user.firstname+" "+user.lastname;
 			target.BenutzerTelefon = user.phones[0]&&user.phones[0].number;
 			target.BenutzerMail = user.emails[0]&&user.emails[0].email;
-			target.AnsprechpersonName = customer.firstname+(customer.lastname?" "+customer.lastname:"");
-			target.AnsprechpersonTelefon = customer.phones[0]&&customer.phones[0].number;
-			target.AnsprechpersonMail = customer.emails[0]&&customer.emails[0].email;
+			target.AnsprechpersonName = contact.firstname+(contact.lastname?" "+contact.lastname:"");
+			target.AnsprechpersonTelefon = contact.phones[0]&&contact.phones[0].number;
+			target.AnsprechpersonMail = contact.emails[0]&&contact.emails[0].email;
 			for(var discount of source.discounts){
 				target.Rabatte.push({
 					Name: discount.name+(discount.type=="percent"?" "+discount.amount+"%":""),
@@ -458,7 +458,6 @@ script(section="body").
 			Datum: this.renderDate(this.offer.date),
 			Projektname: project.name,
 			Ablaufdatum: this.renderDate(this.offer.expiration),
-			Ersteller: contact.firstname+" "+contact.lastname,
 			Teilprojekte:[],
 			Rabatte:[]
 		}
