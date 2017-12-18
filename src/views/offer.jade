@@ -447,7 +447,6 @@ script(section="body").
 				});
 			}
 		}
-		
 		var getCategory = (item)=>{
 			return item.category||this.types[item.type].category+"";
 		}
@@ -495,9 +494,11 @@ script(section="body").
 				addDiscounts(sp.sections[section],s)
 				subproject.Kategorien.push(s);
 				var items = sp.sections[section].items.slice();
-				items.sort((a,b)=>{
-					return getCategory(a).localeCompare(getCategory(b));
-				})
+				if(section == "equipment"){
+					items.sort((a,b)=>{
+						return getCategory(a).localeCompare(getCategory(b));
+					})
+				}
 				var lastCategory = "";
 				for(var item of items){
 					if(section == "equipment"){
