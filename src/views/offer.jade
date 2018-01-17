@@ -178,7 +178,7 @@
 										.glyphicon.glyphicon-plus
 							+renderDiscounts(this.offer.discounts)
 							tr
-								th Mehrwertsteuer (8%)
+								th Mehrwertsteuer (7.7%)
 								td
 								td
 								td
@@ -401,7 +401,7 @@ script(section="body").
 			this.offer.totalBeforeDiscount += p.total;
 		}
 		this.calculateDiscounts(this.offer);
-		this.offer.taxAmount = this.offer.total*0.08;
+		this.offer.taxAmount = this.offer.total*0.077;
 		this.offer.totalBeforeTax = this.offer.total;
 		this.offer.total += this.offer.taxAmount;
 		
