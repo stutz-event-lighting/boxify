@@ -404,6 +404,7 @@ script(section="body").
 		this.offer.taxAmount = this.offer.total*0.077;
 		this.offer.totalBeforeTax = this.offer.total;
 		this.offer.total += this.offer.taxAmount;
+		this.offer.total = Math.round(this.offer.total*20)/20;
 		
 		this.forceUpdate();
 	}
