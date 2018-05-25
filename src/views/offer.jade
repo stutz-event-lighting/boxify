@@ -109,14 +109,13 @@
 																		.btn.btn-default.pull-right(onClick=this.removeItem.bind(this,section.items,item))
 																			.glyphicon.glyphicon-trash
 											tr
-												th(colSpan="4") Subtotal
-												td= money.format(section.totalBeforeDiscount)
+												th(colSpan="4")
+													| Subtotal
 													if sectionId == "equipment"
-														AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this))
-															.glyphicon.glyphicon-plus
-													else
-														.btn.btn-default.pull-right(onClick=this.addItem.bind(this,sectionId))
-															.glyphicon.glyphicon-plus
+														AddEquipment.btn-default(wrapperClass="pull-right" filter=this.filterEquipmentTypes.bind(this) onSelect=this.onAddEquipment.bind(this)) Equipment auswählen
+												td= money.format(section.totalBeforeDiscount)
+													.btn.btn-default.pull-right(onClick=this.addItem.bind(this,sectionId))
+														.glyphicon.glyphicon-plus
 											if sectionId=="equipment"
 												tr
 													th(colSpan="2") Faktor
