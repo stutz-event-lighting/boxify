@@ -1,7 +1,7 @@
 var compose = require("koa-compose");
 var mount = require("koa-mount");
 var route = require("koa-route");
-var Barc = require("barcode-generator");
+var {barcode} = require("pure-svg-code");
 
 module.exports = compose([
 	mount("/session",require("./sessions")),
@@ -16,9 +16,10 @@ module.exports = compose([
 	mount("/documents",require("./documents")),
 	mount("/offers",require("./offers")),
 	route.get("/barcode/:code/*",async function(ctx,code,text){
-		var generator = new Barc();
-		var buf = generator.code128(code,1200,240,text||"");
-		ctx.set("Content-Type","image/png");
-		ctx.body = buf;
+		ctx.set("Content-Type","image/svg+xml");
+		var width = 100;
+		var ratio = 1.5;
+		var size = Math.min(7,(width*ratio)/text.length);
+		ctx.body = barcode(code,"code128").replace("</svg>",'<rect x="5" y="40" width="90" height="10" fill="white"/><text x="50" y="47" text-anchor="middle" font-family="monospace" font-size="'+size+'px">'+text+'</text></svg>');
 	})
 ]);
