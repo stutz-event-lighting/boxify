@@ -452,7 +452,7 @@ script(section="body").
 		}
 	
 		var data = {
-			Empfänger: customer.firstname+"\r\n"+customer.streetName+" "+customer.streetNr+"\r\n"+customer.zip+" "+customer.city,
+			Empfänger: customer.firstname+"\r\n"+(customer.streetName||"")+" "+(customer.streetNr||"")+"\r\n"+customer.zip+" "+customer.city,
 			Ort: this.offer.location,
 			Datum: this.renderDate(this.offer.date),
 			Projektname: project.name,
