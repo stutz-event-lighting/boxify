@@ -239,6 +239,7 @@ module.exports = function(db){
     		returnDate: Number,
             servicesUs: String,
             servicesCustomer: String,
+            factor: Number,
             sections:{
                 consumables: Section,
                 equipment: Section,
