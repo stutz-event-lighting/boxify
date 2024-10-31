@@ -1,7 +1,8 @@
 /node_modules
 /config.json
+/data
+/.direnv
 build
 lib
 .gulp-cache
 cache.json
-package-lock.json

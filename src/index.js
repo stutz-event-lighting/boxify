@@ -113,7 +113,10 @@ Boxify.prototype.start = async function(){
 }
 
 Boxify.prototype.update = async function(cb){
-    var patches = await fsp.readdir(path.resolve(__dirname,"./patches"));
+    var patches = [];
+    try{
+      patches = await fsp.readdir(path.resolve(__dirname,"./patches"));
+    }catch(e){}
     var settings = await this.db.MainSettings.findOne({_id:"main"});
 
     if(!settings){

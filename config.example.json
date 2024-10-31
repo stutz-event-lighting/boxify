@@ -1,0 +1,6 @@
+{
+  "dbpath": "localhost",
+  "port": 8087,
+  "onlyoffice": "https://onlyoffice.timestatement.com/web-apps/apps/api/documents/api.js",
+  "modules": {}
+}
